@@ -64,6 +64,7 @@ namespace TheCodeKing.Demo
             XDBroadcast.SendToChannel("Status", string.Format("Window {0} created!",this.Handle));
 
        }
+
         /// <summary>
         /// The closing overrride used to broadcast on the status channel that the window is
         /// closing.
@@ -97,7 +98,6 @@ namespace TheCodeKing.Demo
             this.displayTextBox.SelectionColor = textColor;
             this.displayTextBox.Select(this.displayTextBox.Text.Length, this.displayTextBox.Text.Length);
             this.displayTextBox.ScrollToCaret();
-            XDBroadcast.SendToChannel("status", "received");
         }
         /// <summary>
         /// Sends a user input string on the Message channel. A message is not sent if

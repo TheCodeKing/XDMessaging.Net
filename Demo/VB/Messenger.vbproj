@@ -37,9 +37,9 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="XDMessaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Release\XDMessaging.dll</HintPath>
+      <HintPath>Lib\XDMessaging.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

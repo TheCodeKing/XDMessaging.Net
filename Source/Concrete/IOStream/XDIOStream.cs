@@ -103,22 +103,23 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         /// <param name="state"></param>
         private void CleanUp(object state)
         {
-            FileInfo filePath = state as FileInfo;
-            foreach (FileInfo file in filePath.Directory.GetFiles("*.msg"))
+            try
             {
-                // attempt to clean up all messages in the channel directory once they have expired.
-                if (file.CreationTimeUtc < filePath.CreationTimeUtc.AddMilliseconds(-fileTimeoutMilliseconds))
+                FileInfo filePath = state as FileInfo;
+                foreach (FileInfo file in filePath.Directory.GetFiles("*.msg"))
                 {
-                    if (file.Exists && !file.Equals(filePath))
+                    // attempt to clean up all messages in the channel directory once they have expired.
+                    if (file.CreationTimeUtc < filePath.CreationTimeUtc.AddMilliseconds(-fileTimeoutMilliseconds))
                     {
-                        try
+                        if (file.Exists && !file.Equals(filePath))
                         {
-                            file.Delete();
+                           file.Delete();
                         }
-                        catch (IOException) { } // the file could have been deleted by another broadcaster, retry later.
                     }
                 }
             }
+            catch (IOException) { } // the file could have been deleted by another broadcaster, retry later.
+            catch (UnauthorizedAccessException) { } //if file is still in use retry again later.
         }
 
         /// <summary>

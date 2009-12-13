@@ -40,7 +40,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         /// <summary>
         /// The timeout period after which messages are deleted. 
         /// </summary>
-        private const int fileTimeoutMilliseconds = 1000;
+        private const int fileTimeoutMilliseconds = 5000;
         /// <summary>
         /// The temporary folder where messages will be stored.
         /// </summary>

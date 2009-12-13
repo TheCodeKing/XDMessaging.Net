@@ -12,13 +12,14 @@
 *	History:
 *		11/02/2007	Michael Carlisle				Version 1.0
 *       08/09/2007  Michael Carlisle                Version 1.1
+*       12/12/2009  Michael Carlisle                Version 2.0
+ *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
 using System.Collections.Generic;
-using TheCodeKing.Native;
 
-namespace TheCodeKing.Utils
+namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
     /// <summary>
     /// A utility class built ontop of the native windows API. This is used to 
@@ -67,7 +68,7 @@ namespace TheCodeKing.Utils
         public List<IntPtr> Enumerate(IntPtr parent)
         {
             this.winEnumList = new List<IntPtr>();
-            Win32.EnumChildWindows(parent, OnWindowEnum, IntPtr.Zero);
+            Native.EnumChildWindows(parent, OnWindowEnum, IntPtr.Zero);
             return this.winEnumList;
         }
         /// <summary>

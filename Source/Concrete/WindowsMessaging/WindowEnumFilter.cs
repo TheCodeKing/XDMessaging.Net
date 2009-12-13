@@ -12,12 +12,14 @@
 *	History:
 *		11/02/2007	Michael Carlisle				Version 1.0
 *       08/09/2007  Michael Carlisle                Version 1.1
+*       12/12/2009  Michael Carlisle                Version 2.0
+ *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
-using TheCodeKing.Native;
+using System.Diagnostics;
 
-namespace TheCodeKing.Net.Messaging
+namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
     /// <summary>
     /// A class used as a WindowFilterHandler for the WindowsEnum class. This 
@@ -48,7 +50,8 @@ namespace TheCodeKing.Net.Messaging
         /// inclused in the enumeration output.</param>
         public void WindowFilterHandler(IntPtr hWnd, ref bool include)
         {
-            if (Win32.GetProp(hWnd, property) == 0)
+            Debug.WriteLine(">> "+hWnd);
+            if (Native.GetProp(hWnd, property) == 0)
                 include = false;
         }
     }

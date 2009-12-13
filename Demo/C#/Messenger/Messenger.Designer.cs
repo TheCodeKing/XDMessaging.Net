@@ -56,7 +56,7 @@ namespace TheCodeKing.Demo
             this.statusCheckBox.Location = new System.Drawing.Point(113, 31);
             this.statusCheckBox.Name = "statusCheckBox";
             this.statusCheckBox.Size = new System.Drawing.Size(61, 18);
-            this.statusCheckBox.TabIndex = 3;
+            this.statusCheckBox.TabIndex = 4;
             this.statusCheckBox.Text = "Status";
             this.statusCheckBox.UseVisualStyleBackColor = true;
             this.statusCheckBox.CheckedChanged += new System.EventHandler(this.statusCheckBox_CheckedChanged);
@@ -68,7 +68,7 @@ namespace TheCodeKing.Demo
             this.msgCheckBox.Location = new System.Drawing.Point(13, 32);
             this.msgCheckBox.Name = "msgCheckBox";
             this.msgCheckBox.Size = new System.Drawing.Size(94, 17);
-            this.msgCheckBox.TabIndex = 2;
+            this.msgCheckBox.TabIndex = 3;
             this.msgCheckBox.Text = "UserMessage";
             this.msgCheckBox.UseVisualStyleBackColor = true;
             this.msgCheckBox.CheckedChanged += new System.EventHandler(this.msgCheckBox_CheckedChanged);
@@ -85,18 +85,21 @@ namespace TheCodeKing.Demo
             this.sendBtn.Location = new System.Drawing.Point(197, 6);
             this.sendBtn.Name = "sendBtn";
             this.sendBtn.Size = new System.Drawing.Size(75, 23);
-            this.sendBtn.TabIndex = 0;
+            this.sendBtn.TabIndex = 2;
             this.sendBtn.Text = "Send";
             this.sendBtn.UseVisualStyleBackColor = true;
             this.sendBtn.Click += new System.EventHandler(this.sendBtn_Click);
             // 
             // displayTextBox
             // 
+            this.displayTextBox.BackColor = System.Drawing.Color.White;
             this.displayTextBox.Dock = System.Windows.Forms.DockStyle.Fill;
             this.displayTextBox.Location = new System.Drawing.Point(0, 0);
             this.displayTextBox.Name = "displayTextBox";
+            this.displayTextBox.ReadOnly = true;
             this.displayTextBox.Size = new System.Drawing.Size(289, 267);
             this.displayTextBox.TabIndex = 4;
+            this.displayTextBox.TabStop = false;
             this.displayTextBox.Text = "";
             // 
             // Messenger

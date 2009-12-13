@@ -38,7 +38,7 @@ Partial Class Messenger
         Me.statusCheckBox.Location = New System.Drawing.Point(113, 31)
         Me.statusCheckBox.Name = "statusCheckBox"
         Me.statusCheckBox.Size = New System.Drawing.Size(61, 18)
-        Me.statusCheckBox.TabIndex = 3
+        Me.statusCheckBox.TabIndex = 4
         Me.statusCheckBox.Text = "Status"
         Me.statusCheckBox.UseVisualStyleBackColor = True
         '
@@ -49,7 +49,7 @@ Partial Class Messenger
         Me.msgCheckBox.Location = New System.Drawing.Point(13, 32)
         Me.msgCheckBox.Name = "msgCheckBox"
         Me.msgCheckBox.Size = New System.Drawing.Size(94, 17)
-        Me.msgCheckBox.TabIndex = 2
+        Me.msgCheckBox.TabIndex = 3
         Me.msgCheckBox.Text = "UserMessage"
         Me.msgCheckBox.UseVisualStyleBackColor = True
         '
@@ -77,26 +77,29 @@ Partial Class Messenger
         Me.sendBtn.Location = New System.Drawing.Point(197, 6)
         Me.sendBtn.Name = "sendBtn"
         Me.sendBtn.Size = New System.Drawing.Size(75, 23)
-        Me.sendBtn.TabIndex = 0
+        Me.sendBtn.TabIndex = 2
         Me.sendBtn.Text = "Send"
         Me.sendBtn.UseVisualStyleBackColor = True
         '
         'displayTextBox
         '
+        Me.displayTextBox.BackColor = System.Drawing.Color.White
         Me.displayTextBox.Dock = System.Windows.Forms.DockStyle.Fill
         Me.displayTextBox.Location = New System.Drawing.Point(0, 0)
         Me.displayTextBox.Name = "displayTextBox"
+        Me.displayTextBox.ReadOnly = True
         Me.displayTextBox.Size = New System.Drawing.Size(289, 323)
         Me.displayTextBox.TabIndex = 6
+        Me.displayTextBox.TabStop = False
         Me.displayTextBox.Text = ""
         '
-        'Form1
+        'Messenger
         '
         Me.ClientSize = New System.Drawing.Size(289, 323)
         Me.Controls.Add(Me.panel1)
         Me.Controls.Add(Me.displayTextBox)
         Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
-        Me.Name = "Form1"
+        Me.Name = "Messenger"
         Me.Text = "XDMessaging Demo"
         Me.TopMost = True
         Me.panel1.ResumeLayout(False)

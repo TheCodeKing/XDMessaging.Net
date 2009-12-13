@@ -12,6 +12,8 @@
 *	History:
 *		11/02/2007	Michael Carlisle				Version 1.0
 *       08/09/2007  Michael Carlisle                Version 1.1
+*       12/12/2009  Michael Carlisle                Version 2.0
+ *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
@@ -19,7 +21,7 @@ using System.Text;
 using System.Runtime.InteropServices;
 using System.IO;
 using System.Runtime.Serialization.Formatters.Binary;
-using TheCodeKing.Native;
+using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -27,7 +29,7 @@ namespace TheCodeKing.Net.Messaging
     /// The data struct that is passed between AppDomain boundaries. This is
     /// sent as a delimited string containing the channel and message.
     /// </summary>
-    public struct DataGram
+    public struct DataGram : IDisposable
     {
         /// <summary>
         /// Stores the channel name associated with this message.
@@ -41,7 +43,7 @@ namespace TheCodeKing.Net.Messaging
         /// The native data struct used to pass the data between applications. This
         /// contains a pointer to the data packet.
         /// </summary>
-        private Win32.COPYDATASTRUCT dataStruct;
+        private Native.COPYDATASTRUCT dataStruct;
         /// <summary>
         /// Gets the channel name.
         /// </summary>
@@ -69,7 +71,7 @@ namespace TheCodeKing.Net.Messaging
         /// <param name="message">The string message to send.</param>
         public DataGram(string channel, string message)
         {
-            this.dataStruct = new Win32.COPYDATASTRUCT();
+            this.dataStruct = new Native.COPYDATASTRUCT();
             this.channel = channel;
             this.message = message;
         }
@@ -81,7 +83,7 @@ namespace TheCodeKing.Net.Messaging
         /// expand the DataGram.</param>
         private DataGram(IntPtr lpParam)
         {
-            this.dataStruct = (Win32.COPYDATASTRUCT)Marshal.PtrToStructure(lpParam, typeof(Win32.COPYDATASTRUCT));
+            this.dataStruct = (Native.COPYDATASTRUCT)Marshal.PtrToStructure(lpParam, typeof(Native.COPYDATASTRUCT));
             byte[] bytes = new byte[this.dataStruct.cbData];
             Marshal.Copy(this.dataStruct.lpData, bytes, 0, this.dataStruct.cbData);
             MemoryStream stream = new MemoryStream(bytes);
@@ -106,26 +108,29 @@ namespace TheCodeKing.Net.Messaging
         /// a pointer to the data so it can be sent in a Windows Message and read by another application.
         /// </summary>
         /// <returns>A struct containing the pointer to this DataGram's data.</returns>
-        internal Win32.COPYDATASTRUCT ToStruct()
+        internal Native.COPYDATASTRUCT ToStruct()
         {
             string raw = string.Format("{0}:{1}", channel, message);
 
+            byte[] bytes;
+
             // serialize data into stream
             BinaryFormatter b = new BinaryFormatter();
-            MemoryStream stream = new MemoryStream();
-            b.Serialize(stream, raw);
-            stream.Flush();
-            int dataSize = (int)stream.Length;
+            using (MemoryStream stream = new MemoryStream())
+            {
+                b.Serialize(stream, raw);
+                stream.Flush();
+                int dataSize = (int)stream.Length;
+            
+                // create byte array and get pointer to mem location
+                bytes = new byte[dataSize];
+                stream.Seek(0, SeekOrigin.Begin);
+                stream.Read(bytes, 0, dataSize);
+            }
+            IntPtr ptrData = Marshal.AllocCoTaskMem(bytes.Length);
+            Marshal.Copy(bytes, 0, ptrData, bytes.Length);
 
-            // create byte array and get pointer to mem location
-            byte[] bytes = new byte[dataSize];
-            stream.Seek(0, SeekOrigin.Begin);
-            stream.Read(bytes, 0, dataSize);
-            stream.Close();
-            IntPtr ptrData = Marshal.AllocCoTaskMem(dataSize);
-            Marshal.Copy(bytes, 0, ptrData, dataSize);
-
-            this.dataStruct.cbData = dataSize;
+            this.dataStruct.cbData = bytes.Length;
             this.dataStruct.dwData = IntPtr.Zero;
             this.dataStruct.lpData = ptrData;
 
@@ -143,12 +148,14 @@ namespace TheCodeKing.Net.Messaging
         {
             return new DataGram(lpParam);
         }
+
         /// <summary>
         /// Disposes of the unmanaged memory stored by the COPYDATASTRUCT instance
         /// when data is passed between applications.
         /// </summary>
         public void Dispose()
         {
+            /// clean up unmanaged resources
             if (this.dataStruct.lpData != IntPtr.Zero)
             {
                 Marshal.FreeCoTaskMem(this.dataStruct.lpData);

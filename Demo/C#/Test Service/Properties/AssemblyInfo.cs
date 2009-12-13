@@ -9,7 +9,7 @@ using System.Runtime.InteropServices;
 [assembly: AssemblyDescription("A demo application for the XDMessaging Library.")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("TheCodeKing.Messenger")]
+[assembly: AssemblyProduct("TheCodeKing.TestService")]
 [assembly: AssemblyCopyright("Copyright ©  2007")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("d027f6c0-4d77-4c11-85b0-702ce5ba477a")]
+[assembly: Guid("087ba725-5f64-458d-98d1-8e7dde3b4cf8")]
 
 // Version information for an assembly consists of the following four values:
 //

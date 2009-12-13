@@ -1,4 +1,4 @@
-/*=============================================================================
+﻿/*=============================================================================
 *
 *	(C) Copyright 2007, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
 *
@@ -17,36 +17,25 @@
 *=============================================================================
 */
 using System;
+using System.Collections.Generic;
+using System.Text;
 
 namespace TheCodeKing.Net.Messaging
 {
     /// <summary>
-    /// The event args used by the message handler. This enables DataGram data 
-    /// to be passed to the handler.
+    /// This defines the tranport modes that can be used for inter-process communication.
     /// </summary>
-    public sealed class XDMessageEventArgs : EventArgs
+    public enum XDTransportMode
     {
         /// <summary>
-        /// Stores the DataGram containing message and channel data.
+        /// Uses Windows Messaging to pass data beteen processes using WM_COPYDATA. This mode
+        /// is ideal for performant communication between windows form based applications.
         /// </summary>
-        private DataGram dataGram;
+        WindowsMessaging,
         /// <summary>
-        /// Gets the DataGram associated with this instance.
+        /// Uses file watchers to trigger events and pass data between processes. This mode can 
+        /// be used within non-form based applications such as Windows Services.
         /// </summary>
-        public DataGram DataGram
-        {
-            get
-            {
-                return dataGram;
-            }
-        }
-        /// <summary>
-        /// Constructor used to create a new instance from a DataGram struct.
-        /// </summary>
-        /// <param name="dataGram">The DataGram instance.</param>
-        internal XDMessageEventArgs(DataGram dataGram)
-        {
-            this.dataGram = dataGram;
-        }
+        IOStream
     }
 }

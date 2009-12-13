@@ -12,13 +12,15 @@
 *	History:
 *		11/02/2007	Michael Carlisle				Version 1.0
 *       08/09/2007  Michael Carlisle                Version 1.1
+*       12/12/2009  Michael Carlisle                Version 2.0
+ *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TheCodeKing.Utils;
-using TheCodeKing.Native;
+using TheCodeKing.Net.Messaging.Concrete.IOStream;
+using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -29,30 +31,32 @@ namespace TheCodeKing.Net.Messaging
     public static class XDBroadcast
     {
         /// <summary>
-        /// The API used to broadcast messages to a channel, and other applications that
-        /// may be listening.
+        /// Creates a concrete instance of IXDBroadcast used to broadcast messages to 
+        /// other processes.
+        /// </summary>
+        /// <param name="mode">The transport mechanism to use for inter-process communication.</param>
+        /// <returns>The concreate instance of IXDBroadcast</returns>
+        public static IXDBroadcast CreateBroadcast(XDTransportMode mode)
+        {
+            switch (mode)
+            {
+                case XDTransportMode.IOStream:
+                    return new XDIOStream();
+                default:
+                    return new XDWindowsMessaging();
+            }
+        }
+
+        /// <summary>
+        /// This method is deprecated, and uses the WindowsMessaging XDTransportMode implementation of IXDBroadcast. 
         /// </summary>
         /// <param name="channel">The channel name to broadcast on.</param>
         /// <param name="message">The string message data.</param>
+        [Obsolete("Create a concrete implementation of IXDBroadcast using CreateBroadcast(XDTransportMode mode), and call SendToChannel on the instance.")]
         public static void SendToChannel(string channel, string message)
         {
-            // create a DataGram instance
-            DataGram dataGram = new DataGram(channel, message);
-            // Allocate the DataGram to a memory address contained in COPYDATASTRUCT
-            Win32.COPYDATASTRUCT dataStruct = dataGram.ToStruct();
-            // Use a filter with the EnumWindows class to get a list of windows containing
-            // a property name that matches the destination channel. These are the listening
-            // applications.
-            WindowEnumFilter filter = new WindowEnumFilter(XDListener.GetChannelKey(channel));
-            WindowsEnum winEnum = new WindowsEnum(filter.WindowFilterHandler);
-            foreach (IntPtr hWnd in winEnum.Enumerate(Win32.GetDesktopWindow()))
-            {
-                IntPtr outPtr = IntPtr.Zero;
-                // For each listening window, send the message data. Return if hang or unresponsive within 1 sec.
-                Win32.SendMessageTimeout(hWnd, Win32.WM_COPYDATA, (int)IntPtr.Zero, ref dataStruct, Win32.SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 1000, out outPtr);
-            }
-            // free the memory
-            dataGram.Dispose();
+            XDWindowsMessaging windowsMessaging = new XDWindowsMessaging();
+            windowsMessaging.SendToChannel(channel, message);
         }
     }
 }

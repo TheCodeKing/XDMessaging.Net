@@ -12,17 +12,20 @@
 *	History:
 *		11/02/2007	Michael Carlisle				Version 1.0
 *       08/09/2007  Michael Carlisle                Version 1.1
+*       12/12/2009  Michael Carlisle                Version 2.0
+ *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
 using System.Runtime.InteropServices;
+using System.IO;
 
-namespace TheCodeKing.Native
+namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
     /// <summary>
     /// The native Win32 APIs used by the library.
     /// </summary>
-    internal static class Win32
+    internal static class Native
     {
         /// <summary>
         /// The WM_COPYDATA constant.
@@ -139,5 +142,39 @@ namespace TheCodeKing.Native
         /// <returns>A value indicating whether the function succeeded.</returns>
         [DllImport("user32", CharSet = CharSet.Auto)]
         public extern static int RemoveProp(IntPtr hwnd, string lpString);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern IntPtr CreateMailslot(string lpName, uint nMaxMessageSize, 
+            uint lReadTimeout, IntPtr lpSecurityAttributes);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        public static extern bool GetMailslotInfo(IntPtr hMailslot, int lpMaxMessageSize,
+            ref int lpNextSize, IntPtr lpMessageCount, IntPtr lpReadTimeout);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern IntPtr CreateFile(String lpFileName, 
+            [MarshalAs(UnmanagedType.U4)]FileAccess fileAccess,
+            [MarshalAs(UnmanagedType.U4)]FileShare fileShare,
+            int securityAttributes,
+            [MarshalAs(UnmanagedType.U4)]FileMode creationDisposition,
+            int flags,
+            IntPtr template);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern bool ReadFile(IntPtr hFile, byte[] lpBuffer, 
+            uint nNumberOfBytesToRead, out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
+        public static extern Boolean WriteFile(IntPtr hFile, Byte[] lpBuffer, 
+            UInt32 nNumberOfBytesToWrite, out UInt32 lpNumberOfBytesWritten, IntPtr lpOverlapped);
+
+        [DllImport("kernel32.dll", SetLastError = true)]
+        [return: MarshalAs(UnmanagedType.Bool)]
+        public static extern bool CloseHandle(IntPtr hObject);
+
+        [DllImport("kernel32.dll", EntryPoint = "PeekNamedPipe", SetLastError = true)]
+        public static extern bool PeekNamedPipe(IntPtr handle,
+         byte[] buffer, uint nBufferSize, ref uint bytesRead,
+             ref uint bytesAvail, ref uint BytesLeftThisMessage);
     }
 }

@@ -4,11 +4,11 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>9.0.30729</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</ProjectGuid>
-    <OutputType>Library</OutputType>
+    <ProjectGuid>{BB420C94-7862-4028-B105-4EFE3FD78877}</ProjectGuid>
+    <OutputType>WinExe</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TheCodeKing.Net.Messaging</RootNamespace>
-    <AssemblyName>XDMessaging</AssemblyName>
+    <RootNamespace>TheCodeKing.Demo</RootNamespace>
+    <AssemblyName>Messenger</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -50,23 +50,30 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Deployment" />
+    <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="XDMessaging, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Bin\XDMessaging.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Interfaces\IXDBroadcast.cs" />
-    <Compile Include="Interfaces\IXDListener.cs" />
-    <Compile Include="XDBroadcast.cs" />
-    <Compile Include="Concrete\IOStream\XDIOStream.cs" />
-    <Compile Include="Concrete\WindowsMessaging\XDWindowsMessaging.cs" />
-    <Compile Include="XDListener.cs" />
-    <Compile Include="DataGram.cs" />
-    <Compile Include="XDMessageEventArgs.cs" />
-    <Compile Include="Concrete\WindowsMessaging\Native.cs" />
+    <Compile Include="Messenger.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="Messenger.Designer.cs">
+      <DependentUpon>Messenger.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="Concrete\WindowsMessaging\WindowEnumFilter.cs" />
-    <Compile Include="Concrete\WindowsMessaging\WindowsEnum.cs" />
-    <Compile Include="XDTransportMode.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="Messenger.resx">
+      <SubType>Designer</SubType>
+      <DependentUpon>Messenger.cs</DependentUpon>
+    </EmbeddedResource>
   </ItemGroup>
   <ItemGroup>
     <BootstrapperPackage Include="Microsoft.Net.Client.3.5">

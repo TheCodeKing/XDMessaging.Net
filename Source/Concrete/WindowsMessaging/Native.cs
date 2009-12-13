@@ -142,39 +142,5 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <returns>A value indicating whether the function succeeded.</returns>
         [DllImport("user32", CharSet = CharSet.Auto)]
         public extern static int RemoveProp(IntPtr hwnd, string lpString);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern IntPtr CreateMailslot(string lpName, uint nMaxMessageSize, 
-            uint lReadTimeout, IntPtr lpSecurityAttributes);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        public static extern bool GetMailslotInfo(IntPtr hMailslot, int lpMaxMessageSize,
-            ref int lpNextSize, IntPtr lpMessageCount, IntPtr lpReadTimeout);
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern IntPtr CreateFile(String lpFileName, 
-            [MarshalAs(UnmanagedType.U4)]FileAccess fileAccess,
-            [MarshalAs(UnmanagedType.U4)]FileShare fileShare,
-            int securityAttributes,
-            [MarshalAs(UnmanagedType.U4)]FileMode creationDisposition,
-            int flags,
-            IntPtr template);
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern bool ReadFile(IntPtr hFile, byte[] lpBuffer, 
-            uint nNumberOfBytesToRead, out uint lpNumberOfBytesRead, IntPtr lpOverlapped);
-
-        [DllImport("kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
-        public static extern Boolean WriteFile(IntPtr hFile, Byte[] lpBuffer, 
-            UInt32 nNumberOfBytesToWrite, out UInt32 lpNumberOfBytesWritten, IntPtr lpOverlapped);
-
-        [DllImport("kernel32.dll", SetLastError = true)]
-        [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool CloseHandle(IntPtr hObject);
-
-        [DllImport("kernel32.dll", EntryPoint = "PeekNamedPipe", SetLastError = true)]
-        public static extern bool PeekNamedPipe(IntPtr handle,
-         byte[] buffer, uint nBufferSize, ref uint bytesRead,
-             ref uint bytesAvail, ref uint BytesLeftThisMessage);
     }
 }

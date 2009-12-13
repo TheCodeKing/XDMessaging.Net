@@ -59,7 +59,7 @@ namespace TheCodeKing.Demo
         {
             base.OnLoad(e);
 
-            UpdateDisplayText("Launch multiple instances to demo inter-process communication.\r\n", Color.Gray);
+            UpdateDisplayText("Launch multiple instances to demo interprocess communication.\r\n", Color.Gray);
 
             // set the handle id in the form title
             this.Text += string.Format("Window Id: {0}", this.Handle);

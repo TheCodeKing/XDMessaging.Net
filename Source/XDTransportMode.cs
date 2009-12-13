@@ -23,7 +23,7 @@ using System.Text;
 namespace TheCodeKing.Net.Messaging
 {
     /// <summary>
-    /// This defines the tranport modes that can be used for inter-process communication.
+    /// This defines the tranport modes that can be used for interprocess communication.
     /// </summary>
     public enum XDTransportMode
     {

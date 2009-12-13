@@ -25,7 +25,7 @@ Public Class Messenger
 
     Protected Overrides Sub OnLoad(ByVal e As EventArgs)
         MyBase.OnLoad(e)
-        Me.UpdateDisplayText("Launch multiple instances to demo inter-process communication." & ChrW(13) & ChrW(10), Color.Gray)
+        Me.UpdateDisplayText("Launch multiple instances to demo interprocess communication." & ChrW(13) & ChrW(10), Color.Gray)
         Me.Text = (Me.Text & String.Format("Window Id: {0}", MyBase.Handle))
         Me.listener = XDListener.CreateListener(XDTransportMode.IOStream)
         AddHandler Me.listener.MessageReceived, New XDMessageHandler(AddressOf Me.OnMessageReceived)

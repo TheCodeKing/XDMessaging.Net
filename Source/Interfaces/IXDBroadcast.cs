@@ -23,7 +23,7 @@ using System.Text;
 namespace TheCodeKing.Net.Messaging
 {
     /// <summary>
-    /// The API defined for dispatching messages inter-process and across appDomains.
+    /// The API defined for dispatching messages interprocess and across appDomains.
     /// </summary>
     public interface IXDBroadcast
     {

@@ -24,7 +24,7 @@ using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 namespace TheCodeKing.Net.Messaging
 {
     /// <summary>
-    /// An implementation of IXDListener used to send and recieve messages inter-process, using the Windows
+    /// An implementation of IXDListener used to send and recieve messages interprocess, using the Windows
     /// Messaging XDTransportMode. Applications may leverage this instance to register listeners on pseudo 'channels', and 
     /// receive messages broadcast using a concrete IXDBroadcast implementation on the same machine. Non-form based 
     /// application are not supported by this implementation.

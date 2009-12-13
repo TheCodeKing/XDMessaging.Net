@@ -34,7 +34,7 @@ namespace TheCodeKing.Net.Messaging
         /// Creates a concrete instance of IXDBroadcast used to broadcast messages to 
         /// other processes.
         /// </summary>
-        /// <param name="mode">The transport mechanism to use for inter-process communication.</param>
+        /// <param name="mode">The transport mechanism to use for interprocess communication.</param>
         /// <returns>The concreate instance of IXDBroadcast</returns>
         public static IXDBroadcast CreateBroadcast(XDTransportMode mode)
         {

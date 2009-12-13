@@ -27,7 +27,7 @@ using System.Threading;
 namespace Test_Service
 {
     /// <summary>
-    /// A sample Windows Service that demonstrates inter-process communication from a Windows Service. Run an
+    /// A sample Windows Service that demonstrates interprocess communication from a Windows Service. Run an
     /// instance of Messager to view the broadcast messages.
     /// </summary>
     public partial class TestService : ServiceBase

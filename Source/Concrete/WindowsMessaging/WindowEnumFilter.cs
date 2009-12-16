@@ -18,6 +18,7 @@
 */
 using System;
 using System.Diagnostics;
+using System.Collections.Generic;
 
 namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
@@ -50,7 +51,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// inclused in the enumeration output.</param>
         public void WindowFilterHandler(IntPtr hWnd, ref bool include)
         {
-            Debug.WriteLine(">> "+hWnd);
             if (Native.GetProp(hWnd, property) == 0)
                 include = false;
         }

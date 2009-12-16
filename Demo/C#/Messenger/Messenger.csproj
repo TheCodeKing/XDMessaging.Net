@@ -46,6 +46,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <DebugSymbols>true</DebugSymbols>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -56,7 +57,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="XDMessaging, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Bin\XDMessaging.dll</HintPath>
+      <HintPath>..\..\..\bin\XDMessaging.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
@@ -110,4 +111,7 @@
   <Target Name="AfterBuild">
   </Target>
   -->
+  <PropertyGroup>
+    <PostBuildEvent>xcopy /Y "$(TargetPath)" "$(SolutionDir)..\..\bin"</PostBuildEvent>
+  </PropertyGroup>
 </Project>

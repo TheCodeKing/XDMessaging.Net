@@ -20,6 +20,7 @@ using System;
 using System.Windows.Forms;
 using TheCodeKing.Net.Messaging.Concrete.IOStream;
 using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
+using System.Diagnostics;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -31,11 +32,14 @@ namespace TheCodeKing.Net.Messaging
     /// </summary>
     public sealed class XDListener : NativeWindow, IXDListener
     {
+        // Flag as to whether dispose has been called
+        private bool disposed = false;
+
         /// <summary>
         /// Creates a concrete IXDListener which uses the XDTransportMode.WindowsMessaging implementaion. This method
         /// is now deprecated and XDListener.CreateInstance(XDTransportMode.WindowsMessaging) should be used instead.
         /// </summary>
-        [Obsolete("Use the static factory method CreateListener to create a particular implementation of IXDListener.")]
+        [Obsolete("Use the static CreateListener method to create a particular implementation of IXDListener.")]
         public XDListener()
             :this(true)
         {
@@ -47,14 +51,14 @@ namespace TheCodeKing.Net.Messaging
         /// <param name="nonObsolete"></param>
         internal XDListener(bool nonObsolete)
         {
+            // create a top-level native window
             CreateParams p = new CreateParams();
-            p.Width = 0;
-            p.Height = 0;
-            p.X = 0;
-            p.Y = 0;
-            p.Style = (int)Native.WS_CHILD;
-            p.Caption = Guid.NewGuid().ToString();
-            p.Parent = Native.GetDesktopWindow();
+            p.Width = 10;
+            p.Height = 10;
+            p.X = 100;
+            p.Y = 100;
+            p.Caption = string.Concat("TheCodeKing.Net.XDServices.",Guid.NewGuid().ToString());
+            p.Parent = IntPtr.Zero;
             base.CreateHandle(p);
         }
 
@@ -97,6 +101,10 @@ namespace TheCodeKing.Net.Messaging
             {
                 throw new ArgumentNullException(channelName, "The channel name cannot be null or empty.");
             }
+            if (disposed)
+            {
+                throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
+            }
             Native.SetProp(this.Handle, GetChannelKey(channelName), (int)this.Handle);
         }
         /// <summary>
@@ -110,6 +118,10 @@ namespace TheCodeKing.Net.Messaging
             {
                 throw new ArgumentNullException(channelName, "The channel name cannot be null or empty.");
             }
+            if (disposed)
+            {
+                throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
+            }
             Native.RemoveProp(this.Handle, GetChannelKey(channelName));
         }
         /// <summary>
@@ -122,16 +134,18 @@ namespace TheCodeKing.Net.Messaging
             base.WndProc(ref msg);
             if (msg.Msg == Native.WM_COPYDATA)
             {
-                if (MessageReceived != null)
+                // we can free any unmanaged resources immediately in the dispose, managed channel and message 
+                // data will still be retained in the object passed to the event
+                using (DataGram dataGram = DataGram.FromPointer(msg.LParam))
                 {
-                    DataGram dataGram = DataGram.FromPointer(msg.LParam);
-                    if (!string.IsNullOrEmpty(dataGram.Message))
+                    if (MessageReceived != null && !string.IsNullOrEmpty(dataGram.Message))
                     {
-                        MessageReceived(this, new XDMessageEventArgs(dataGram));
+                        MessageReceived.Invoke(this, new XDMessageEventArgs(dataGram));
                     }
                 }
             }
         }
+
         /// <summary>
         /// Gets a channel key string associated with the channel name. This is used as the 
         /// property name attached to listening windows in order to identify them as
@@ -145,5 +159,49 @@ namespace TheCodeKing.Net.Messaging
             return string.Format("TheCodeKing.Net.XDServices.{0}", channelName);
         }
 
+        /// <summary>
+        /// Deconstructor, cleans unmanaged resources only
+        /// </summary>
+        ~XDListener()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Dispose implementation, which ensures the native window is destroyed
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        /// <summary>
+        /// Dispose implementation which ensures the native window is destroyed, and
+        /// managed resources detached.
+        /// </summary>
+        private void Dispose(bool disposeManaged)
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                if (disposeManaged)
+                {
+                    if (MessageReceived != null)
+                    {
+                        // remove all handlers
+                        Delegate[] del = MessageReceived.GetInvocationList();
+                        foreach (XDMessageHandler msg in del)
+                        {
+                            MessageReceived -= msg;
+                        }
+                    }
+                    if (this.Handle != IntPtr.Zero)
+                    {
+                        this.DestroyHandle();
+                        this.Dispose();
+                    }
+                }
+            }
+        }
     }
 }

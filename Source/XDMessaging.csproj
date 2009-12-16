@@ -34,15 +34,15 @@
     <DebugSymbols>true</DebugSymbols>
     <DebugType>full</DebugType>
     <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
+    <DebugType>none</DebugType>
     <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
+    <OutputPath>..\bin\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
@@ -59,7 +59,8 @@
     <Compile Include="XDBroadcast.cs" />
     <Compile Include="Concrete\IOStream\XDIOStream.cs" />
     <Compile Include="Concrete\WindowsMessaging\XDWindowsMessaging.cs" />
-    <Compile Include="XDListener.cs" />
+    <Compile Include="XDListener.cs">
+    </Compile>
     <Compile Include="DataGram.cs" />
     <Compile Include="XDMessageEventArgs.cs" />
     <Compile Include="Concrete\WindowsMessaging\Native.cs" />

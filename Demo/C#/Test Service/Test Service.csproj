@@ -43,7 +43,7 @@
     <Reference Include="System.Xml" />
     <Reference Include="XDMessaging, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Bin\XDMessaging.dll</HintPath>
+      <HintPath>..\..\..\bin\XDMessaging.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

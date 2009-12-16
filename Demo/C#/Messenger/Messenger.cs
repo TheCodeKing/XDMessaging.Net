@@ -59,34 +59,12 @@ namespace TheCodeKing.Demo
         {
             base.OnLoad(e);
 
-            UpdateDisplayText("Launch multiple instances to demo interprocess communication.\r\n", Color.Gray);
+            UpdateDisplayText("Launch multiple instances of this application to demo interprocess communication.\r\n", Color.Gray);
 
             // set the handle id in the form title
-            this.Text += string.Format("Window Id: {0}", this.Handle);
-            // creates an instance of the IXDListener object using the IOStream implementation  
-            // which enabled communication with the Windows Services.
-            listener = XDListener.CreateListener(XDTransportMode.IOStream);
+            this.Text += string.Format(" - Window {0}", this.Handle);
 
-            // *** NOTE **************************************************************************************
-            // we could use a WindowsMessaging based listener instead for receiving messages
-            // from forms apps using the WindowsMessaging implementation of IXDBroadcast.
-            // listener = XDListener.CreateListener(XDTransportMode.WindowsMessaging);
-            // ***********************************************************************************************
-
-            // attach the message handler
-            listener.MessageReceived += new XDListener.XDMessageHandler(OnMessageReceived);
-            // register the channels we want to listen on
-            listener.RegisterChannel("Status");
-            listener.RegisterChannel("UserMessage");
-
-            // create an instance of IXDBroadcast using the IOStream implmentation
-            broadcast = XDBroadcast.CreateBroadcast(XDTransportMode.IOStream);
-
-            // *** NOTE **************************************************************************************
-            // we could use a WindowsMessaging based broadcast instance instead for sending messages
-            // to other forms apps using the WindowsMessaging implementation of IXDListener.
-            // broadcast = XDBroadcast.CreateBroadcast(XDTransportMode.WindowsMessaging);
-            // ***********************************************************************************************
+            InitializeMode(XDTransportMode.WindowsMessaging);
 
             // broadcast on the status channel that we have loaded
             broadcast.SendToChannel("Status", string.Format("Window {0} created!", this.Handle));
@@ -109,19 +87,26 @@ namespace TheCodeKing.Demo
         /// <param name="e"></param>
         private void OnMessageReceived(object sender, XDMessageEventArgs e)
         {
-            // If called from a seperate thread, rejoin so that be can update form elements.
-            if (InvokeRequired)
+            if (e.DataGram.Channel == "ChangeMode")
             {
-                try
-                {
-                    // onClosing messages may fail if the form is being disposed.
-                    Invoke((MethodInvoker)delegate() { UpdateDisplayText(e.DataGram); });
-                }
-                catch { }
+                InitializeMode((XDTransportMode)Enum.Parse(typeof(XDTransportMode), e.DataGram.Message), false);
             }
             else
             {
-                UpdateDisplayText(e.DataGram);
+                // If called from a seperate thread, rejoin so that be can update form elements.
+                if (InvokeRequired)
+                {
+                    try
+                    {
+                        // onClosing messages may fail if the form is being disposed.
+                        Invoke((MethodInvoker)delegate() { UpdateDisplayText(e.DataGram); });
+                    }
+                    catch { }
+                }
+                else
+                {
+                    UpdateDisplayText(e.DataGram);
+                }
             }
         }
 
@@ -148,7 +133,8 @@ namespace TheCodeKing.Demo
         /// <summary>
         /// A helper method used to update the Windows Form.
         /// </summary>
-        /// <param name="dataGram">dataGram</param>
+        /// <param name="message">The message to be displayed on the form.</param>
+        /// <param name="textColor">The colour text to use for the message.</param>
         private void UpdateDisplayText(string message, Color textColor)
         {
             this.displayTextBox.AppendText(message);
@@ -165,6 +151,31 @@ namespace TheCodeKing.Demo
         /// <param name="sender">The event sender.</param>
         /// <param name="e">The event args.</param>
         private void sendBtn_Click(object sender, EventArgs e)
+        {
+            SendMessage();
+        }
+
+        /// <summary>
+        /// Wire up the enter key to submit a message.
+        /// </summary>
+        /// <param name="m"></param>
+        /// <param name="k"></param>
+        /// <returns></returns>
+        protected override bool ProcessCmdKey(ref Message m, Keys k)
+        {
+            // allow enter to send message
+            if (m.Msg == 256 && k == Keys.Enter)
+            {
+                SendMessage();
+                return true;
+            }
+            return base.ProcessCmdKey(ref m, k);
+        }
+
+        /// <summary>
+        /// Helper method for sending message.
+        /// </summary>
+        private void SendMessage()
         {
             if (this.inputTextBox.Text.Length > 0)
             {
@@ -192,7 +203,6 @@ namespace TheCodeKing.Demo
                 listener.UnRegisterChannel("UserMessage");
                 broadcast.SendToChannel("Status", string.Format("{0}: UnRegistering for UserMessage.", this.Handle));
             }
-        
         }
 
         /// <summary>
@@ -217,24 +227,64 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        /// Wire up the enter key to submit a message.
+        /// Initialize the broadcast and listener mode.
         /// </summary>
-        /// <param name="m"></param>
-        /// <param name="k"></param>
-        /// <returns></returns>
-        protected override bool ProcessCmdKey(ref Message m, Keys k)
+        /// <param name="mode">The new mode.</param>
+        private void InitializeMode(XDTransportMode mode)
         {
-            // allow enter to send message
-            if (m.Msg == 256 && k == Keys.Enter)
+            InitializeMode(mode, true);
+        }
+
+        private void InitializeMode(XDTransportMode mode, bool notify)
+        {
+            if (listener != null)
             {
-                if (this.inputTextBox.Text.Length > 0)
-                {
-                    broadcast.SendToChannel("UserMessage", string.Format("{0}: {1}", this.Handle, this.inputTextBox.Text));
-                    this.inputTextBox.Text = "";
-                }
-                return true;
+                // ensure we dispose any previous listeners, dispose should aways be
+                // called on IDisposable objects when we are done with it to avoid leaks
+                listener.Dispose();
             }
-            return base.ProcessCmdKey(ref m, k);
+
+            // creates an instance of the IXDListener object using the given implementation  
+            listener = XDListener.CreateListener(mode);
+
+            // attach the message handler
+            listener.MessageReceived += new XDListener.XDMessageHandler(OnMessageReceived);
+
+            // register the channels we want to listen on
+            if (statusCheckBox.Checked)
+            {
+                listener.RegisterChannel("Status");
+            }
+            if (msgCheckBox.Checked)
+            {
+                listener.RegisterChannel("UserMessage");
+            }
+
+            if (broadcast != null)
+            {
+                broadcast.SendToChannel("Status", string.Format("{0}: Mode changing to {1}", this.Handle, mode));
+            }
+
+            // create an instance of IXDBroadcast using the given mode, 
+            // note IXDBroadcast does not implement IDisposable
+            broadcast = XDBroadcast.CreateBroadcast(mode);
+        }
+
+        /// <summary>
+        /// On form changed mode.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mode_CheckedChanged(object sender, EventArgs e)
+        {
+            if (wmRadio.Checked)
+            {
+                InitializeMode(XDTransportMode.WindowsMessaging);
+            }
+            else
+            {
+                InitializeMode(XDTransportMode.IOStream);
+            }
         }
     }
 }

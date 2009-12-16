@@ -22,6 +22,7 @@ using System.Text;
 using System.IO;
 using System.Threading;
 using System.Diagnostics;
+using System.Windows.Forms;
 
 namespace TheCodeKing.Net.Messaging.Concrete.IOStream
 {
@@ -33,6 +34,12 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
     /// </summary>
     internal class XDIOStream : IXDBroadcast, IXDListener
     {
+        // Flag as to whether dispose has been called
+        private bool disposed = false;
+        /// <summary>
+        /// Unique mutex key to synchronize the clean up tasks across processes.
+        /// </summary>
+        private const string MutexCleanUpKey = "TheCodeKing.Net.XDServices.IOStream.Cleaner";
         /// <summary>
         /// Get a list of charactors that must be stripped from a channel name folder.
         /// </summary>
@@ -80,7 +87,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             {
                 throw new ArgumentNullException(message, "The messsage packet cannot be null");
             }
-
             // create temporary name
             string fileName = Guid.NewGuid().ToString();
             string folder = GetChannelDirectory(channelName);
@@ -93,8 +99,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                 writer.Write(string.Concat(channelName, ":", message));
                 writer.Flush();
             }
-            // queue the clean up task in a new thread
-            ThreadPool.QueueUserWorkItem(CleanUp, new FileInfo(filePath));
+            // return as fast as we can, leaving a clean up task
+            ThreadPool.QueueUserWorkItem(CleanUp, new FileInfo(filePath).Directory);
         }
         /// <summary>
         /// This method is called within a seperate thread and deletes messages that are older than
@@ -103,23 +109,47 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         /// <param name="state"></param>
         private void CleanUp(object state)
         {
-            try
+            DirectoryInfo directory = state as DirectoryInfo;
+            // use a mutex to ensure only one listener system wide is running
+            bool createdNew = true;
+            using (Mutex mutex = new Mutex(true, MutexCleanUpKey, out createdNew))
             {
-                FileInfo filePath = state as FileInfo;
-                foreach (FileInfo file in filePath.Directory.GetFiles("*.msg"))
+                if (createdNew)
                 {
-                    // attempt to clean up all messages in the channel directory once they have expired.
-                    if (file.CreationTimeUtc < filePath.CreationTimeUtc.AddMilliseconds(-fileTimeoutMilliseconds))
+                    try
                     {
-                        if (file.Exists && !file.Equals(filePath))
+                        // wait for the specified timeout before attempting to clean directory
+                        Thread.Sleep(fileTimeoutMilliseconds);
+                        // check directory not deleted, don't use cached version (directory.Exists)
+                        if (Directory.Exists(directory.FullName))
                         {
-                           file.Delete();
+                            foreach (FileInfo file in directory.GetFiles("*.msg"))
+                            {
+                                // attempt to clean up all expired messages in the channel directory
+                                if (file.CreationTimeUtc <= DateTime.UtcNow.AddMilliseconds(-fileTimeoutMilliseconds))
+                                {
+                                    if (File.Exists(file.FullName))
+                                    {
+                                        try
+                                        {
+                                            file.Delete();
+                                        }
+                                        catch (IOException) { } // the file could have been deleted by another broadcaster, retry later.
+                                        catch (UnauthorizedAccessException) { } // if the file is still in use retry again later.
+                                    }
+                                }
+                            }
                         }
                     }
+                    catch (IOException) { } // the file could have been deleted by another broadcaster, retry later.
+                    catch (UnauthorizedAccessException) { } // if the file is still in use retry again later.
                 }
             }
-            catch (IOException) { } // the file could have been deleted by another broadcaster, retry later.
-            catch (UnauthorizedAccessException) { } //if file is still in use retry again later.
+            if (createdNew)
+            {
+                // after mutex release add an additional thread, in case we're the last out to finalize cleanup
+                ThreadPool.QueueUserWorkItem(CleanUp, directory);
+            }
         }
 
         /// <summary>
@@ -137,6 +167,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             {
                 throw new ArgumentNullException(channelName, "The channel name cannot be null or empty.");
             }
+            if (disposed)
+            {
+                throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
+            }
             FileSystemWatcher watcher = EnsureWatcher(channelName);
             watcher.EnableRaisingEvents = true;
         }
@@ -149,6 +183,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             if (string.IsNullOrEmpty(channelName))
             {
                 throw new ArgumentNullException(channelName, "The channel name cannot be null or empty.");
+            }
+            if (disposed)
+            {
+                throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
             }
             FileSystemWatcher watcher = EnsureWatcher(channelName);
             watcher.EnableRaisingEvents = false;
@@ -256,7 +294,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                                 using (DataGram dataGram = new DataGram(channel, message))
                                 {
                                     // dispatch the message received event
-                                    MessageReceived(this, new XDMessageEventArgs(dataGram));
+                                     MessageReceived(this, new XDMessageEventArgs(dataGram));
                                 }
                             }
                         }
@@ -295,6 +333,58 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                 }
             }
             return channelName;
+        }
+
+        /// <summary>
+        /// Deconstructor, cleans unmanaged resources only
+        /// </summary>
+        ~XDIOStream()
+        {
+            Dispose(false);
+        }
+
+        /// <summary>
+        /// Dispose implementation which ensures all FileSystemWatchers
+        /// are shut down and handlers detatched.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+        /// <summary>
+        /// Dispose implementation, which ensures the native window is destroyed
+        /// </summary>
+        private void Dispose(bool disposeManaged)
+        {
+            if (!disposed)
+            {
+                disposed = true;
+                if (disposeManaged)
+                {
+                    if (MessageReceived != null)
+                    {
+                        // remove all handlers
+                        Delegate[] del = MessageReceived.GetInvocationList();
+                        foreach (TheCodeKing.Net.Messaging.XDListener.XDMessageHandler msg in del)
+                        {
+                            MessageReceived -= msg;
+                        }
+                    }
+                    if (watcherList != null)
+                    {
+                        // shut down watchers
+                        foreach (FileSystemWatcher watcher in watcherList.Values)
+                        {
+                            watcher.EnableRaisingEvents = false;
+                            watcher.Changed -= new FileSystemEventHandler(OnMessageReceived);
+                            watcher.Dispose();
+                        }
+                        watcherList.Clear();
+                        watcherList = null;
+                    }
+                }
+            }
         }
     }
 }

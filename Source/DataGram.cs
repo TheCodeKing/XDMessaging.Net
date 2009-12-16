@@ -86,10 +86,12 @@ namespace TheCodeKing.Net.Messaging
             this.dataStruct = (Native.COPYDATASTRUCT)Marshal.PtrToStructure(lpParam, typeof(Native.COPYDATASTRUCT));
             byte[] bytes = new byte[this.dataStruct.cbData];
             Marshal.Copy(this.dataStruct.lpData, bytes, 0, this.dataStruct.cbData);
-            MemoryStream stream = new MemoryStream(bytes);
-            BinaryFormatter b = new BinaryFormatter();
-            string rawmessage = (string)b.Deserialize(stream);
-
+            string rawmessage;
+            using (MemoryStream stream = new MemoryStream(bytes))
+            {
+                BinaryFormatter b = new BinaryFormatter();
+                rawmessage = (string)b.Deserialize(stream);
+            }
             // expand data gram
             if (!string.IsNullOrEmpty(rawmessage) && rawmessage.Contains(":"))
             {

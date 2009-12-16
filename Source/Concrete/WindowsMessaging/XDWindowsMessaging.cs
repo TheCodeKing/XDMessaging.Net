@@ -19,6 +19,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
+using System.Diagnostics;
 
 namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
@@ -49,11 +50,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                 // applications.
                 WindowEnumFilter filter = new WindowEnumFilter(XDListener.GetChannelKey(channelName));
                 WindowsEnum winEnum = new WindowsEnum(filter.WindowFilterHandler);
-                foreach (IntPtr hWnd in winEnum.Enumerate(Native.GetDesktopWindow()))
+                foreach (IntPtr hWnd in winEnum.Enumerate())
                 {
                     IntPtr outPtr = IntPtr.Zero;
                     // For each listening window, send the message data. Return if hang or unresponsive within 1 sec.
-                    Native.SendMessageTimeout(hWnd, Native.WM_COPYDATA, (int)IntPtr.Zero, ref dataStruct, Native.SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 1000, out outPtr);
+                    Native.SendMessageTimeout(hWnd, Native.WM_COPYDATA, (int)IntPtr.Zero, ref dataStruct, Native.SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 10000, out outPtr);
                 }
             }
         }

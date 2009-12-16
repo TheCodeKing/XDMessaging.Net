@@ -32,10 +32,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// </summary>
         public const int WM_COPYDATA = 0x4A;
         /// <summary>
-        /// The WM_CHILD window style constant.
-        /// </summary>
-        public const uint WS_CHILD = 0x40000000;
-        /// <summary>
         /// The struct used to marshal data between applications using
         /// the windows messaging API.
         /// </summary>
@@ -99,6 +95,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                     SendMessageTimeoutFlags flags,
                     uint timeout,
                     out IntPtr result);
+        
         /// <summary>
         /// A delegate used by the EnumChildWindows windows API to enumerate windows.
         /// </summary>
@@ -107,15 +104,14 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <returns></returns>
         public delegate int EnumWindowsProc(IntPtr hwnd, int lParam);
         /// <summary>
-        /// The API used to enumerate child windows of a given parent window.
+        /// The API used to enumerate topvlevel windows.
         /// </summary>
-        /// <param name="hwndParent">The parent window.</param>
         /// <param name="lpEnumFunc">The delegate called when a window is located.</param>
         /// <param name="lParam">The lParam passed to the deleage.</param>
         /// <returns></returns>
         [DllImport("user32.dll")]
         [return: MarshalAs(UnmanagedType.Bool)]
-        public static extern bool EnumChildWindows(IntPtr hwndParent, EnumWindowsProc lpEnumFunc, IntPtr lParam);
+        public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
         /// <summary>
         /// Gets a named window property for a given window address. 
         /// This returns zero if not found.

@@ -26,7 +26,7 @@ namespace TheCodeKing.Net.Messaging
     /// The API defined for receiving messages broadcast from a particular implementation
     /// of IXDBroadcast. Listeners can register to received messages on particular pseudo channels.
     /// </summary>
-    public interface IXDListener
+    public interface IXDListener : IDisposable
     {
         /// <summary>
         /// The event dispatched when new messages a re received. This contains the broadcast message data.

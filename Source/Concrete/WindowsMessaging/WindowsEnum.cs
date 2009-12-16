@@ -63,12 +63,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// delegate is specified this is used to determine whether the windows are included in 
         /// the resultant list.
         /// </summary>
-        /// <param name="parent">The parent window.</param>
         /// <returns>A filtered list of child windows.</returns>
-        public List<IntPtr> Enumerate(IntPtr parent)
+        public List<IntPtr> Enumerate()
         {
             this.winEnumList = new List<IntPtr>();
-            Native.EnumChildWindows(parent, OnWindowEnum, IntPtr.Zero);
+            Native.EnumWindows(OnWindowEnum, IntPtr.Zero);
             return this.winEnumList;
         }
         /// <summary>

@@ -8,12 +8,6 @@
 *	The code and information is provided "as-is" without waranty of any kind,
 *	either expresed or implied.
 *
-*-----------------------------------------------------------------------------
-*	History:
-*		11/02/2007	Michael Carlisle				Version 1.0
-*       08/09/2007  Michael Carlisle                Version 1.1
-*       12/12/2009  Michael Carlisle                Version 2.0
- *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
@@ -22,6 +16,7 @@ using System.Text;
 using TheCodeKing.Net.Messaging.Concrete.IOStream;
 using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 using TheCodeKing.Net.Messaging.Concrete.MailSlot;
+using TheCodeKing.Net.Messaging.Concrete.MultBroadcast;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -32,21 +27,67 @@ namespace TheCodeKing.Net.Messaging
     public static class XDBroadcast
     {
         /// <summary>
-        /// Creates a concrete instance of IXDBroadcast used to broadcast messages to 
-        /// other processes.
+        /// Creates an instance of IXDBroadcast with the otption to propagate over the local network.
         /// </summary>
-        /// <param name="mode">The transport mechanism to use for interprocess communication.</param>
-        /// <returns>The concreate instance of IXDBroadcast</returns>
-        public static IXDBroadcast CreateBroadcast(XDTransportMode mode)
+        /// <param name="mode">The broadcast mode.</param>
+        /// <param name="propagateNetwork">true to propagate messages over the local network.</param>
+        /// <returns></returns>
+        public static IXDBroadcast CreateBroadcast(XDTransportMode mode, bool propagateNetwork)
         {
-            switch (mode)
+            // MailSlots can communicate over a network by default, so
+            // no need to use the NetworkRelayBroadcast instance for this type.
+            if (mode == XDTransportMode.MailSlot)
             {
-                case XDTransportMode.IOStream:
-                    return new XDIOStream();
-                case XDTransportMode.MailSlot:
-                    return new XDMailSlotBroadcast();
-                default:
-                    return new XDWindowsMessaging();
+                return new XDMailSlotBroadcast(propagateNetwork);
+            }
+            IXDBroadcast broadcast = CreateBroadcast(mode);
+            if (propagateNetwork)
+            {
+                // create a wrapper to broadcast that will also send messages over network
+                return new NetworkRelayBroadcast(broadcast, XDBroadcast.CreateBroadcast(XDTransportMode.MailSlot, true));
+            }
+            else
+            {
+                return broadcast;
+            }
+        }
+        /// <summary>
+        /// Creates a concrete instance of IXDBroadcast used to broadcast messages to 
+        /// other processes in one or more modes.
+        /// </summary>
+        /// <param name="modes">One or more transport mechanisms to use for interprocess communication.</param>
+        /// <returns>The concreate instance of IXDBroadcast</returns>
+        public static IXDBroadcast CreateBroadcast(params XDTransportMode[] modes)
+        {
+            if (modes.Length == 0)
+            {
+                throw new ArgumentException("At least one transport mode must be defined.");
+            }
+            if (modes.Length == 1)
+            {
+                switch (modes[0])
+                {
+                    case XDTransportMode.IOStream:
+                        return new XDIOStreamBroadcast();
+                    case XDTransportMode.MailSlot:
+                        return new XDMailSlotBroadcast(false);
+                    default:
+                        return new XDWindowsMessaging();
+                }
+            }
+            else
+            {
+                // ensure only one of each type added
+                Dictionary<XDTransportMode, IXDBroadcast> singleItems = new Dictionary<XDTransportMode, IXDBroadcast>();
+                foreach (XDTransportMode mode in modes)
+                {
+                    // only add one of each mode
+                    if (!singleItems.ContainsKey(mode))
+                    {
+                        singleItems.Add(mode, XDBroadcast.CreateBroadcast(mode));
+                    }
+                }
+                return new XDMultiBroadcast(singleItems.Values);
             }
         }
 

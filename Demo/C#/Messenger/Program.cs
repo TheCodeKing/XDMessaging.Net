@@ -6,12 +6,8 @@
 *  
 *	All rights reserved.
 *	The code and information is provided "as-is" without waranty of any kind,
-*	either expresed or implied. Please do not use commerically without permission.
+*	either expresed or implied.
 *
-*-----------------------------------------------------------------------------
-*	History:
-*		11/02/2007	Michael Carlisle				Version 1.0
-*		12/12/2009	Michael Carlisle				Version 2.0
 *=============================================================================
 */
 using System;

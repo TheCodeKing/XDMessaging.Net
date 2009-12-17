@@ -8,12 +8,6 @@
 *	The code and information is provided "as-is" without waranty of any kind,
 *	either expresed or implied.
 *
-*-----------------------------------------------------------------------------
-*	History:
-*		11/02/2007	Michael Carlisle				Version 1.0
-*       08/09/2007  Michael Carlisle                Version 1.1
-*       12/12/2009  Michael Carlisle                Version 2.0
- *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
@@ -44,6 +38,16 @@ namespace TheCodeKing.Net.Messaging
         /// contains a pointer to the data packet.
         /// </summary>
         private Native.COPYDATASTRUCT dataStruct;
+        /// <summary>
+        /// Indicates whether the DataGram contains valid data. 
+        /// </summary>
+        internal bool IsValid
+        {
+            get
+            {
+                return !string.IsNullOrEmpty(Channel) && !string.IsNullOrEmpty(Message);
+            }
+        }
         /// <summary>
         /// Gets the channel name.
         /// </summary>
@@ -92,17 +96,11 @@ namespace TheCodeKing.Net.Messaging
                 BinaryFormatter b = new BinaryFormatter();
                 rawmessage = (string)b.Deserialize(stream);
             }
-            // expand data gram
-            if (!string.IsNullOrEmpty(rawmessage) && rawmessage.Contains(":"))
+            // use helper method to expand the raw message
+            using (DataGram dataGram = DataGram.ExpandFromRaw(rawmessage))
             {
-                string[] packet = rawmessage.Split(new char[] { ':' }, 2);
-                this.channel = packet[0];
-                this.message = packet[1];
-            }
-            else
-            {
-                this.channel = string.Empty;
-                this.message = rawmessage;
+                this.channel = dataGram.Channel;
+                this.message = dataGram.Message;
             }
         }
         /// <summary>
@@ -164,6 +162,23 @@ namespace TheCodeKing.Net.Messaging
                 this.dataStruct.lpData = IntPtr.Zero;
                 this.dataStruct.dwData = IntPtr.Zero;
                 this.dataStruct.cbData = 0;
+            }
+        }
+
+        internal static DataGram ExpandFromRaw(string rawmessage)
+        {
+            // if the message contains valid data
+            if (!string.IsNullOrEmpty(rawmessage) && rawmessage.Contains(":"))
+            {
+                // extract the channel name and message data
+                string[] parts = rawmessage.Split(new[] { ':' }, 2);
+                string message = parts[1];
+                string channel = parts[0];
+                return new DataGram(channel, message);
+            }
+            else
+            {
+                return new DataGram();
             }
         }
     }

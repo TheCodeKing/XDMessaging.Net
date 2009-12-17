@@ -55,14 +55,17 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Concrete\MailSlot\NetworkInfo.cs" />
+    <Compile Include="Concrete\IOStream\XDIOStreamListener.cs" />
     <Compile Include="Concrete\MailSlot\XDMailSlotBroadcast.cs" />
     <Compile Include="Concrete\MailSlot\Native.cs" />
     <Compile Include="Concrete\MailSlot\XDMailSlotListener.cs" />
+    <Compile Include="Concrete\MultBroadcast\NetworkRelayBroadcast.cs" />
+    <Compile Include="Concrete\MultBroadcast\XDMultiBroadcast.cs" />
+    <Compile Include="Concrete\MultBroadcast\NetworkRelayListener.cs" />
     <Compile Include="Interfaces\IXDBroadcast.cs" />
     <Compile Include="Interfaces\IXDListener.cs" />
     <Compile Include="XDBroadcast.cs" />
-    <Compile Include="Concrete\IOStream\XDIOStream.cs" />
+    <Compile Include="Concrete\IOStream\XDIOStreamBroadcast.cs" />
     <Compile Include="Concrete\WindowsMessaging\XDWindowsMessaging.cs" />
     <Compile Include="XDListener.cs">
     </Compile>

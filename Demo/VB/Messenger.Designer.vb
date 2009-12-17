@@ -35,6 +35,7 @@ Namespace TheCodeKing.Demo
             Me.inputTextBox = New System.Windows.Forms.TextBox()
             Me.sendBtn = New System.Windows.Forms.Button()
             Me.displayTextBox = New System.Windows.Forms.RichTextBox()
+            Me.propagateCheck = New System.Windows.Forms.CheckBox()
             Me.panel1.SuspendLayout()
             Me.groupBox1.SuspendLayout()
             Me.Mode.SuspendLayout()
@@ -42,14 +43,15 @@ Namespace TheCodeKing.Demo
             ' 
             ' panel1
             ' 
+            Me.panel1.Controls.Add(Me.propagateCheck)
             Me.panel1.Controls.Add(Me.groupBox1)
             Me.panel1.Controls.Add(Me.Mode)
             Me.panel1.Controls.Add(Me.inputTextBox)
             Me.panel1.Controls.Add(Me.sendBtn)
             Me.panel1.Dock = System.Windows.Forms.DockStyle.Bottom
-            Me.panel1.Location = New System.Drawing.Point(0, 261)
+            Me.panel1.Location = New System.Drawing.Point(0, 247)
             Me.panel1.Name = "panel1"
-            Me.panel1.Size = New System.Drawing.Size(289, 135)
+            Me.panel1.Size = New System.Drawing.Size(289, 157)
             Me.panel1.TabIndex = 2
             ' 
             ' groupBox1
@@ -172,16 +174,29 @@ Namespace TheCodeKing.Demo
             Me.displayTextBox.Location = New System.Drawing.Point(0, 0)
             Me.displayTextBox.Name = "displayTextBox"
             Me.displayTextBox.[ReadOnly] = True
-            Me.displayTextBox.Size = New System.Drawing.Size(289, 261)
+            Me.displayTextBox.Size = New System.Drawing.Size(289, 247)
             Me.displayTextBox.TabIndex = 4
             Me.displayTextBox.TabStop = False
             Me.displayTextBox.Text = ""
+            ' 
+            ' propagateCheck
+            ' 
+            Me.propagateCheck.AutoSize = True
+            Me.propagateCheck.Checked = True
+            Me.propagateCheck.CheckState = System.Windows.Forms.CheckState.Checked
+            Me.propagateCheck.Location = New System.Drawing.Point(13, 128)
+            Me.propagateCheck.Name = "propagateCheck"
+            Me.propagateCheck.Size = New System.Drawing.Size(269, 17)
+            Me.propagateCheck.TabIndex = 3
+            Me.propagateCheck.Text = "Propagate messages to local Workgroup or Domain"
+            Me.propagateCheck.UseVisualStyleBackColor = True
+            AddHandler Me.propagateCheck.CheckedChanged, AddressOf Me.propagateCheck_CheckedChanged
             ' 
             ' Messenger
             ' 
             Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0F, 13.0F)
             Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-            Me.ClientSize = New System.Drawing.Size(289, 396)
+            Me.ClientSize = New System.Drawing.Size(289, 404)
             Me.Controls.Add(Me.displayTextBox)
             Me.Controls.Add(Me.panel1)
             Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
@@ -211,6 +226,7 @@ Namespace TheCodeKing.Demo
         Private channel2Check As System.Windows.Forms.CheckBox
         Private mailRadio As System.Windows.Forms.RadioButton
         Private channel1Check As System.Windows.Forms.CheckBox
+        Private propagateCheck As System.Windows.Forms.CheckBox
 
     End Class
 End Namespace

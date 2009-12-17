@@ -1,4 +1,16 @@
-﻿using System;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2007, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expresed or implied.
+*
+*=============================================================================
+*/
+using System;
 using System.Collections.Generic;
 using System.Text;
 using System.Threading;
@@ -8,6 +20,7 @@ using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using System.Runtime.InteropServices;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
@@ -16,7 +29,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
     /// to the MailSlot for a particualt channel, such that only one listener will
     /// ever poll for messages on a single machine.
     /// </summary>
-    internal class XDMailSlotListener : IXDListener
+    internal sealed class XDMailSlotListener : IXDListener
     {
         /// <summary>
         /// Indicates whether the object has been disposed.
@@ -78,7 +91,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     catch (AbandonedMutexException) { } // mutex has been released by another process
                 }
                 // we are now the single thread responsible for checking the MailSlot for these channel
-                // open up the MailSlot
+                // open up the MailSlot, read timeout does not work after first read so we have to poll
                 IntPtr readHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, channelName), 0, 0, IntPtr.Zero);
 
                 // If this thread is still registered, then go ahead the begin checking, else exit
@@ -89,7 +102,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     if ((int)readHandle > 0)
                     {
                         // check whether the MailSlot has unread messages
-                        if (Native.GetMailslotInfo(readHandle, 0, 0, ref numWaitingMessages, IntPtr.Zero))
+                        int timeout = 0;
+                        int maxMesages = 0;
+                        int mextSize = 0;
+                        if (Native.GetMailslotInfo(readHandle, ref maxMesages, ref mextSize, ref numWaitingMessages, ref timeout))
                         {
                             // while it has unread messages, read them
                             while (numWaitingMessages > 0)
@@ -120,33 +136,24 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                                     catch (SerializationException) {} // if something goes wrong such as handle is closed,
                                                                       // we will not process this message
                                 }
-                                // if the message contains valid data that can be expanded
-                                if (!string.IsNullOrEmpty(rawmessage) && rawmessage.Contains(":"))
+                                using (DataGram dataGram = DataGram.ExpandFromRaw(rawmessage))
                                 {
-                                    // extract the channel name and message data
-                                    string[] parts = rawmessage.Split(new[] { ':' }, 2);
-                                    string message = parts[1];
-                                    string channel = parts[0];
-                                    // trigger the message received event
-                                    if (MessageReceived != null)
+                                    if (dataGram.IsValid)
                                     {
-                                        using (DataGram dataGram = new DataGram(channel, message))
-                                        {
-                                            OnMessageReceived(this, new XDMessageEventArgs(dataGram));
-                                        }
+                                        OnMessageReceived(dataGram);
                                     }
                                 }
                                 // move to next queued message
                                 numWaitingMessages--;
                             }
+                            try
+                            {
+                                Thread.Sleep(200);
+                            }
+                            catch (ThreadInterruptedException) { }
+                            catch (ThreadAbortException) { }
                         }
                     }
-                    try
-                    {
-                        // pause briefly so that the system does not lock up
-                        Thread.Sleep(100);
-                    } 
-                    catch(ThreadInterruptedException) {}
                 }
                 if ((int)readHandle > 0)
                 {
@@ -159,14 +166,13 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <summary>
         /// This method processes the message and triggers the MessageReceived event. 
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMessageReceived(object sender, XDMessageEventArgs e)
+        /// <param name="dataGram"></param>
+        private void OnMessageReceived(DataGram dataGram)
         {
-            if (MessageReceived != null && !string.IsNullOrEmpty(e.DataGram.Message))
+            if (MessageReceived != null)
             {
                 // trigger this async
-                MessageReceived.Invoke(this, new XDMessageEventArgs(e.DataGram));
+                MessageReceived.Invoke(this, new XDMessageEventArgs(dataGram));
             }
         }
         /// <summary>

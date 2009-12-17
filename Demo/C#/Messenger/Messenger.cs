@@ -6,12 +6,8 @@
 *  
 *	All rights reserved.
 *	The code and information is provided "as-is" without waranty of any kind,
-*	either expresed or implied. Please do not use commerically without permission.
+*	either expresed or implied.
 *
-*-----------------------------------------------------------------------------
-*	History:
-*		11/02/2007	Michael Carlisle				Version 1.0
-*		12/12/2009	Michael Carlisle				Version 2.0
 *=============================================================================
 */
 using System;
@@ -92,22 +88,19 @@ namespace TheCodeKing.Demo
         /// <param name="e"></param>
         private void OnMessageReceived(object sender, XDMessageEventArgs e)
         {
-            if (e.DataGram.Channel == "ChangeMode")
+            // If called from a seperate thread, rejoin so that be can update form elements.
+            if (InvokeRequired && !IsDisposed)
             {
-                InitializeMode((XDTransportMode)Enum.Parse(typeof(XDTransportMode), e.DataGram.Message), false);
-            }
-            else
-            {
-                // If called from a seperate thread, rejoin so that be can update form elements.
-                if (InvokeRequired && !IsDisposed)
+                try
                 {
                     // onClosing messages may fail if the form is being disposed.
                     Invoke((MethodInvoker)delegate() { UpdateDisplayText(e.DataGram); });
                 }
-                else
-                {
-                    UpdateDisplayText(e.DataGram);
-                }
+                catch (ObjectDisposedException) { }
+            }
+            else
+            {
+                UpdateDisplayText(e.DataGram);
             }
         }
 
@@ -259,11 +252,6 @@ namespace TheCodeKing.Demo
         /// <param name="mode">The new mode.</param>
         private void InitializeMode(XDTransportMode mode)
         {
-            InitializeMode(mode, true);
-        }
-
-        private void InitializeMode(XDTransportMode mode, bool notify)
-        {
             if (listener != null)
             {
                 // ensure we dispose any previous listeners, dispose should aways be
@@ -303,7 +291,7 @@ namespace TheCodeKing.Demo
 
             // create an instance of IXDBroadcast using the given mode, 
             // note IXDBroadcast does not implement IDisposable
-            broadcast = XDBroadcast.CreateBroadcast(mode);
+            broadcast = XDBroadcast.CreateBroadcast(mode, propagateCheck.Checked);
         }
 
         /// <summary>
@@ -338,6 +326,19 @@ namespace TheCodeKing.Demo
             {
                 UpdateDisplayText("MailSlot mode only allows one listener on a single channel at anyone time.\r\n", Color.Red);
             }
+        }
+
+        private void propagateCheck_CheckedChanged(object sender, EventArgs e)
+        {
+            if (propagateCheck.Checked)
+            {
+                UpdateDisplayText("Messages will be propagated to all machines on the same domain or workgroup.\r\n", Color.Red);
+            }
+            else
+            {
+                UpdateDisplayText("Message are restricted to the current machine.\r\n", Color.Red);
+            }
+            mode_CheckedChanged(sender, e);
         }
     }
 }

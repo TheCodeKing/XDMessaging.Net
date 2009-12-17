@@ -40,6 +40,7 @@ namespace TheCodeKing.Demo
             this.inputTextBox = new System.Windows.Forms.TextBox();
             this.sendBtn = new System.Windows.Forms.Button();
             this.displayTextBox = new System.Windows.Forms.RichTextBox();
+            this.propagateCheck = new System.Windows.Forms.CheckBox();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.Mode.SuspendLayout();
@@ -47,14 +48,15 @@ namespace TheCodeKing.Demo
             // 
             // panel1
             // 
+            this.panel1.Controls.Add(this.propagateCheck);
             this.panel1.Controls.Add(this.groupBox1);
             this.panel1.Controls.Add(this.Mode);
             this.panel1.Controls.Add(this.inputTextBox);
             this.panel1.Controls.Add(this.sendBtn);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 261);
+            this.panel1.Location = new System.Drawing.Point(0, 247);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(289, 135);
+            this.panel1.Size = new System.Drawing.Size(289, 157);
             this.panel1.TabIndex = 2;
             // 
             // groupBox1
@@ -177,16 +179,29 @@ namespace TheCodeKing.Demo
             this.displayTextBox.Location = new System.Drawing.Point(0, 0);
             this.displayTextBox.Name = "displayTextBox";
             this.displayTextBox.ReadOnly = true;
-            this.displayTextBox.Size = new System.Drawing.Size(289, 261);
+            this.displayTextBox.Size = new System.Drawing.Size(289, 247);
             this.displayTextBox.TabIndex = 4;
             this.displayTextBox.TabStop = false;
             this.displayTextBox.Text = "";
+            // 
+            // propagateCheck
+            // 
+            this.propagateCheck.AutoSize = true;
+            this.propagateCheck.Checked = true;
+            this.propagateCheck.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.propagateCheck.Location = new System.Drawing.Point(13, 128);
+            this.propagateCheck.Name = "propagateCheck";
+            this.propagateCheck.Size = new System.Drawing.Size(269, 17);
+            this.propagateCheck.TabIndex = 3;
+            this.propagateCheck.Text = "Propagate messages to local Workgroup or Domain";
+            this.propagateCheck.UseVisualStyleBackColor = true;
+            this.propagateCheck.CheckedChanged += new System.EventHandler(this.propagateCheck_CheckedChanged);
             // 
             // Messenger
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(289, 396);
+            this.ClientSize = new System.Drawing.Size(289, 404);
             this.Controls.Add(this.displayTextBox);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
@@ -216,6 +231,7 @@ namespace TheCodeKing.Demo
         private System.Windows.Forms.CheckBox channel2Check;
         private System.Windows.Forms.RadioButton mailRadio;
         private System.Windows.Forms.CheckBox channel1Check;
+        private System.Windows.Forms.CheckBox propagateCheck;
 
     }
 }

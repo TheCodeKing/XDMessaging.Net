@@ -6,12 +6,8 @@
 '*  
 '*	All rights reserved.
 '*	The code and information is provided "as-is" without waranty of any kind,
-'*	either expresed or implied. Please do not use commerically without permission.
+'*	either expresed or implied.
 '*
-'*-----------------------------------------------------------------------------
-'*	History:
-'*		11/02/2007	Michael Carlisle				Version 1.0
-'*		12/12/2009	Michael Carlisle				Version 2.0
 '*=============================================================================
 '
 
@@ -232,10 +228,6 @@ Namespace TheCodeKing.Demo
         ''' </summary>
         ''' <param name="mode">The new mode.</param>
         Private Sub InitializeMode(ByVal mode As XDTransportMode)
-            InitializeMode(mode, True)
-        End Sub
-
-        Private Sub InitializeMode(ByVal mode As XDTransportMode, ByVal notify As Boolean)
             If listener IsNot Nothing Then
                 ' ensure we dispose any previous listeners, dispose should aways be
                 ' called on IDisposable objects when we are done with it to avoid leaks
@@ -270,7 +262,7 @@ Namespace TheCodeKing.Demo
 
             ' create an instance of IXDBroadcast using the given mode, 
             ' note IXDBroadcast does not implement IDisposable
-            broadcast = XDBroadcast.CreateBroadcast(mode)
+            broadcast = XDBroadcast.CreateBroadcast(mode, propagateCheck.Checked)
         End Sub
 
         ''' <summary>
@@ -298,5 +290,15 @@ Namespace TheCodeKing.Demo
                 UpdateDisplayText("MailSlot mode only allows one listener on a single channel at anyone time." & vbCr & vbLf, Color.Red)
             End If
         End Sub
+
+        Private Sub propagateCheck_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs)
+            If propagateCheck.Checked Then
+                UpdateDisplayText("Messages will be propagated to all machines on the same domain or workgroup." & vbCr & vbLf, Color.Red)
+            Else
+                UpdateDisplayText("Message are restricted to the current machine." & vbCr & vbLf, Color.Red)
+            End If
+            mode_CheckedChanged(sender, e)
+        End Sub
     End Class
 End Namespace
+

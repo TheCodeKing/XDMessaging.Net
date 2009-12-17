@@ -8,12 +8,6 @@
 *	The code and information is provided "as-is" without waranty of any kind,
 *	either expresed or implied.
 *
-*-----------------------------------------------------------------------------
-*	History:
-*		11/02/2007	Michael Carlisle				Version 1.0
-*       08/09/2007  Michael Carlisle                Version 1.1
-*       12/12/2009  Michael Carlisle                Version 2.0
- *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
@@ -28,10 +22,30 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
     /// </summary>
     internal static class Native
     {
+        /// <summary>
+        /// The Win32 API for creating/openning a MailSlot for IPC communication.
+        /// </summary>
+        /// <param name="lpName">The MailSlot path.</param>
+        /// <param name="nMaxMessageSize">The maximum size of the message.</param>
+        /// <param name="lReadTimeout">The time a read operation can wait for a message to be written
+        /// to the mailslot before a time-out occurs, in milliseconds.</param>
+        /// <param name="lpSecurityAttributes">A pointer to a SECURITY_ATTRIBUTES structure.</param>
+        /// <returns></returns>
         [DllImport("kernel32.dll")]
         public static extern IntPtr CreateMailslot(string lpName, uint nMaxMessageSize,
-           uint lReadTimeout, IntPtr lpSecurityAttributes);
+           int lReadTimeout, IntPtr lpSecurityAttributes);
 
+        /// <summary>
+        /// The Win32 API for creating a handle to a MailSlot.
+        /// </summary>
+        /// <param name="fileName">The MailSlot path.</param>
+        /// <param name="fileAccess">The requested access to the MailSlot.</param>
+        /// <param name="fileShare">The requested sharing mode of the MailSlot.</param>
+        /// <param name="securityAttributes">A pointer to a SECURITY_ATTRIBUTES structure</param>
+        /// <param name="creationDisposition">An action to take on a file or device that exists or does not exist.</param>
+        /// <param name="flags">The file or device attributes and flags.</param>
+        /// <param name="template">A valid handle to a template file with the GENERIC_READ access right.</param>
+        /// <returns></returns>
         [DllImport("Kernel32.dll", SetLastError = true, CharSet = CharSet.Auto)]
         public static extern IntPtr CreateFile(
             string fileName,
@@ -42,6 +56,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             int flags,
             IntPtr template);
 
+        /// <summary>
+        /// The Win32 API used for reading data froma MailSlot.
+        /// </summary>
+        /// <param name="hFile">The MailSlot path.</param>
+        /// <param name="lpBuffer">A buffer that receives the data read from the MailSlot.</param>
+        /// <param name="nNumberOfBytesToRead">Indicates the number of bytes to read.</param>
+        /// <param name="lpNumberOfBytesRead">Indicates the number of bytes that were read.</param>
+        /// <param name="lpOverlapped">A pointer to an OVERLAPPED structure if openned with FILE_FLAG_OVERLAPPED</param>
+        /// <returns></returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool ReadFile(
             IntPtr hFile,
@@ -50,6 +73,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             out uint lpNumberOfBytesRead,
             IntPtr lpOverlapped);
 
+        /// <summary>
+        /// TheWin32 API used for writting to the MailSlot.
+        /// </summary>
+        /// <param name="hFile">The MailSlot path.</param>
+        /// <param name="lpBuffer">The buffer to write to the MailSlot.</param>
+        /// <param name="nNumberOfBytesToWrite">The number of bytes to write from the buffer.</param>
+        /// <param name="lpNumberOfBytesWritten">The number of bytes that were written.</param>
+        /// <param name="lpOverlapped">A pointer to an OVERLAPPED structure if openned with FILE_FLAG_OVERLAPPED</param>
+        /// <returns></returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool WriteFile(
                 IntPtr hFile,
@@ -58,26 +90,35 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 [In] ref uint lpNumberOfBytesWritten,
                 [In] ref NativeOverlapped lpOverlapped);
 
+        /// <summary>
+        /// The Win32 used for checking a MailSlot for new messages.
+        /// </summary>
+        /// <param name="hMailslot">The MailSlot path.</param>
+        /// <param name="lpMaxMessageSize">The maximum number of messages.</param>
+        /// <param name="lpNextSize">The next of the next message.</param>
+        /// <param name="lpMessageCount">The number of unread messages.</param>
+        /// <param name="lpReadTimeout">The read time out if no message is found.</param>
+        /// <returns></returns>
         [DllImport("kernel32.dll")]
-        public static extern bool GetMailslotInfo(IntPtr hMailslot, int lpMaxMessageSize,
-           int lpNextSize, ref int lpMessageCount, IntPtr lpReadTimeout);
+        public static extern bool GetMailslotInfo(IntPtr hMailslot, ref int lpMaxMessageSize,
+           ref int lpNextSize, ref int lpMessageCount, ref int lpReadTimeout);
 
+        /// <summary>
+        /// Set the read timeout value.
+        /// </summary>
+        /// <param name="hMailslot"></param>
+        /// <param name="lReadTimeout"></param>
+        /// <returns></returns>
+        [DllImport ( "kernel32.dll")] 
+        public static extern bool SetMailslotInfo(IntPtr hMailslot, uint lReadTimeout); 
+
+        /// <summary>
+        /// The Win32 API used to close the MailSlot handle.
+        /// </summary>
+        /// <param name="handle">The MailSLot handle to be closed.</param>
+        /// <returns></returns>
         [DllImport("kernel32", SetLastError = true)]
         public static extern bool CloseHandle(IntPtr handle);
-
-        public enum JoinStatus
-        {
-            Unknown = 0,
-            UnJoined = 1,
-            Workgroup = 2,
-            Domain = 3
-        }
-
-        [DllImport("netapi32.dll", CharSet = CharSet.Unicode, SetLastError = true)]
-        public static extern int NetGetJoinInformation(string computerName, ref IntPtr buffer, ref JoinStatus status);
-
-        [DllImport("netapi32.dll", SetLastError = true)]
-        public static extern int NetApiBufferFree(IntPtr buffer);
     }
 
 }

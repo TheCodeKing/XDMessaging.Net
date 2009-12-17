@@ -8,12 +8,6 @@
 *	The code and information is provided "as-is" without waranty of any kind,
 *	either expresed or implied.
 *
-*-----------------------------------------------------------------------------
-*	History:
-*		11/02/2007	Michael Carlisle				Version 1.0
-*       08/09/2007  Michael Carlisle                Version 1.1
-*       12/12/2009  Michael Carlisle                Version 2.0
- *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
@@ -21,6 +15,8 @@ using System.Windows.Forms;
 using TheCodeKing.Net.Messaging.Concrete.IOStream;
 using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 using System.Diagnostics;
+using TheCodeKing.Net.Messaging.Concrete.MultBroadcast;
+using TheCodeKing.Net.Messaging.Concrete;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -34,6 +30,7 @@ namespace TheCodeKing.Net.Messaging
     {
         // Flag as to whether dispose has been called
         private bool disposed = false;
+        private NetworkRelayListener networkRelay;
 
         /// <summary>
         /// Creates a concrete IXDListener which uses the XDTransportMode.WindowsMessaging implementaion. This method
@@ -60,6 +57,9 @@ namespace TheCodeKing.Net.Messaging
             p.Caption = string.Concat("TheCodeKing.Net.XDServices.",Guid.NewGuid().ToString());
             p.Parent = IntPtr.Zero;
             base.CreateHandle(p);
+
+            this.networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.WindowsMessaging), 
+                                                            XDListener.CreateListener(XDTransportMode.MailSlot));
         }
 
         /// <summary>
@@ -85,7 +85,7 @@ namespace TheCodeKing.Net.Messaging
             switch (transport)
             {
                 case XDTransportMode.IOStream:
-                    return new XDIOStream();
+                    return new XDIOStreamListener();
                 case XDTransportMode.MailSlot:
                     return new TheCodeKing.Net.Messaging.Concrete.MailSlot.XDMailSlotListener();
                 default:
@@ -140,7 +140,7 @@ namespace TheCodeKing.Net.Messaging
                 // data will still be retained in the object passed to the event
                 using (DataGram dataGram = DataGram.FromPointer(msg.LParam))
                 {
-                    if (MessageReceived != null && !string.IsNullOrEmpty(dataGram.Message))
+                    if (MessageReceived != null && dataGram.IsValid)
                     {
                         MessageReceived.Invoke(this, new XDMessageEventArgs(dataGram));
                     }
@@ -188,6 +188,12 @@ namespace TheCodeKing.Net.Messaging
                 disposed = true;
                 if (disposeManaged)
                 {
+                    if (networkRelay != null)
+                    {
+                        networkRelay.Dispose();
+                        networkRelay = null;
+                    }
+
                     if (MessageReceived != null)
                     {
                         // remove all handlers

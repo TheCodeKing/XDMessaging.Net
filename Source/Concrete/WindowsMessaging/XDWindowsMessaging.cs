@@ -8,12 +8,6 @@
 *	The code and information is provided "as-is" without waranty of any kind,
 *	either expresed or implied.
 *
-*-----------------------------------------------------------------------------
-*	History:
-*		11/02/2007	Michael Carlisle				Version 1.0
-*       08/09/2007  Michael Carlisle                Version 1.1
-*       12/12/2009  Michael Carlisle                Version 2.0
- *                  Added XDIOStream implementation which can be used from Windows Services.
 *=============================================================================
 */
 using System;
@@ -27,7 +21,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
     /// The implementation of IXDBroadcast used to broadcast messages acorss appDomain and process boundaries
     /// using the XDTransportMode.WindowsMessaging implementation. Non-form based application are not supported.
     /// </summary>
-    internal class XDWindowsMessaging : IXDBroadcast
+    internal sealed class XDWindowsMessaging : IXDBroadcast
     {
         public void SendToChannel(string channelName, string message)
         {
@@ -39,7 +33,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
             {
                 throw new ArgumentNullException(message, "The messsage packet cannot be null");
             }
-
+            if (string.IsNullOrEmpty(channelName))
+            {
+                throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
+            }
             // create a DataGram instance, and ensure memory is freed
             using (DataGram dataGram = new DataGram(channelName, message))
             {

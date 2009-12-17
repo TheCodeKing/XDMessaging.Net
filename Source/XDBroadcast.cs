@@ -21,6 +21,7 @@ using System.Collections.Generic;
 using System.Text;
 using TheCodeKing.Net.Messaging.Concrete.IOStream;
 using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
+using TheCodeKing.Net.Messaging.Concrete.MailSlot;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -42,6 +43,8 @@ namespace TheCodeKing.Net.Messaging
             {
                 case XDTransportMode.IOStream:
                     return new XDIOStream();
+                case XDTransportMode.MailSlot:
+                    return new XDMailSlotBroadcast();
                 default:
                     return new XDWindowsMessaging();
             }

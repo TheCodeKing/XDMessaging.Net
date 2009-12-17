@@ -31,8 +31,10 @@ namespace TheCodeKing.Demo
             this.panel1 = new System.Windows.Forms.Panel();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.statusCheckBox = new System.Windows.Forms.CheckBox();
-            this.msgCheckBox = new System.Windows.Forms.CheckBox();
+            this.channel1Check = new System.Windows.Forms.CheckBox();
+            this.channel2Check = new System.Windows.Forms.CheckBox();
             this.Mode = new System.Windows.Forms.GroupBox();
+            this.mailRadio = new System.Windows.Forms.RadioButton();
             this.ioStreamRadio = new System.Windows.Forms.RadioButton();
             this.wmRadio = new System.Windows.Forms.RadioButton();
             this.inputTextBox = new System.Windows.Forms.TextBox();
@@ -50,19 +52,20 @@ namespace TheCodeKing.Demo
             this.panel1.Controls.Add(this.inputTextBox);
             this.panel1.Controls.Add(this.sendBtn);
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
-            this.panel1.Location = new System.Drawing.Point(0, 222);
+            this.panel1.Location = new System.Drawing.Point(0, 261);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(289, 115);
+            this.panel1.Size = new System.Drawing.Size(289, 135);
             this.panel1.TabIndex = 2;
             // 
             // groupBox1
             // 
             this.groupBox1.Controls.Add(this.statusCheckBox);
-            this.groupBox1.Controls.Add(this.msgCheckBox);
+            this.groupBox1.Controls.Add(this.channel1Check);
+            this.groupBox1.Controls.Add(this.channel2Check);
             this.groupBox1.Location = new System.Drawing.Point(12, 35);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(130, 68);
-            this.groupBox1.TabIndex = 8;
+            this.groupBox1.Size = new System.Drawing.Size(130, 90);
+            this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Channels";
             // 
@@ -70,36 +73,60 @@ namespace TheCodeKing.Demo
             // 
             this.statusCheckBox.Checked = true;
             this.statusCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.statusCheckBox.Location = new System.Drawing.Point(15, 40);
+            this.statusCheckBox.Location = new System.Drawing.Point(15, 63);
             this.statusCheckBox.Name = "statusCheckBox";
             this.statusCheckBox.Size = new System.Drawing.Size(61, 18);
-            this.statusCheckBox.TabIndex = 12;
+            this.statusCheckBox.TabIndex = 5;
             this.statusCheckBox.Text = "Status";
             this.statusCheckBox.UseVisualStyleBackColor = true;
-            this.statusCheckBox.Click += new System.EventHandler(this.statusCheckBox_CheckedChanged);
+            this.statusCheckBox.Click += new System.EventHandler(this.statusChannel_CheckedChanged);
             // 
-            // msgCheckBox
+            // channel1Check
             // 
-            this.msgCheckBox.Checked = true;
-            this.msgCheckBox.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.msgCheckBox.Location = new System.Drawing.Point(15, 19);
-            this.msgCheckBox.Name = "msgCheckBox";
-            this.msgCheckBox.Size = new System.Drawing.Size(94, 17);
-            this.msgCheckBox.TabIndex = 11;
-            this.msgCheckBox.Text = "UserMessage";
-            this.msgCheckBox.UseVisualStyleBackColor = true;
-            this.msgCheckBox.Click += new System.EventHandler(this.msgCheckBox_CheckedChanged);
+            this.channel1Check.Checked = true;
+            this.channel1Check.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.channel1Check.Location = new System.Drawing.Point(15, 18);
+            this.channel1Check.Name = "channel1Check";
+            this.channel1Check.Size = new System.Drawing.Size(94, 17);
+            this.channel1Check.TabIndex = 3;
+            this.channel1Check.Text = "Channel 1";
+            this.channel1Check.UseVisualStyleBackColor = true;
+            this.channel1Check.Click += new System.EventHandler(this.channel1_CheckedChanged);
+            // 
+            // channel2Check
+            // 
+            this.channel2Check.Location = new System.Drawing.Point(15, 41);
+            this.channel2Check.Name = "channel2Check";
+            this.channel2Check.Size = new System.Drawing.Size(94, 17);
+            this.channel2Check.TabIndex = 4;
+            this.channel2Check.Text = "Channel 2";
+            this.channel2Check.UseVisualStyleBackColor = true;
+            this.channel2Check.Click += new System.EventHandler(this.channel2_CheckedChanged);
             // 
             // Mode
             // 
+            this.Mode.Controls.Add(this.mailRadio);
             this.Mode.Controls.Add(this.ioStreamRadio);
             this.Mode.Controls.Add(this.wmRadio);
             this.Mode.Location = new System.Drawing.Point(148, 35);
             this.Mode.Name = "Mode";
-            this.Mode.Size = new System.Drawing.Size(130, 68);
-            this.Mode.TabIndex = 7;
+            this.Mode.Size = new System.Drawing.Size(130, 90);
+            this.Mode.TabIndex = 0;
             this.Mode.TabStop = false;
             this.Mode.Text = "Mode";
+            // 
+            // mailRadio
+            // 
+            this.mailRadio.AutoSize = true;
+            this.mailRadio.Location = new System.Drawing.Point(15, 64);
+            this.mailRadio.Name = "mailRadio";
+            this.mailRadio.Size = new System.Drawing.Size(65, 17);
+            this.mailRadio.TabIndex = 8;
+            this.mailRadio.TabStop = true;
+            this.mailRadio.Text = "Mail Slot";
+            this.mailRadio.UseVisualStyleBackColor = true;
+            this.mailRadio.MouseClick += new System.Windows.Forms.MouseEventHandler(this.mailRadio_MouseClick);
+            this.mailRadio.CheckedChanged += new System.EventHandler(this.mode_CheckedChanged);
             // 
             // ioStreamRadio
             // 
@@ -107,7 +134,7 @@ namespace TheCodeKing.Demo
             this.ioStreamRadio.Location = new System.Drawing.Point(15, 41);
             this.ioStreamRadio.Name = "ioStreamRadio";
             this.ioStreamRadio.Size = new System.Drawing.Size(72, 17);
-            this.ioStreamRadio.TabIndex = 8;
+            this.ioStreamRadio.TabIndex = 7;
             this.ioStreamRadio.TabStop = true;
             this.ioStreamRadio.Text = "IO Stream";
             this.ioStreamRadio.UseVisualStyleBackColor = true;
@@ -120,7 +147,7 @@ namespace TheCodeKing.Demo
             this.wmRadio.Location = new System.Drawing.Point(15, 18);
             this.wmRadio.Name = "wmRadio";
             this.wmRadio.Size = new System.Drawing.Size(67, 17);
-            this.wmRadio.TabIndex = 7;
+            this.wmRadio.TabIndex = 6;
             this.wmRadio.TabStop = true;
             this.wmRadio.Text = "Win Msg";
             this.wmRadio.UseVisualStyleBackColor = true;
@@ -150,7 +177,7 @@ namespace TheCodeKing.Demo
             this.displayTextBox.Location = new System.Drawing.Point(0, 0);
             this.displayTextBox.Name = "displayTextBox";
             this.displayTextBox.ReadOnly = true;
-            this.displayTextBox.Size = new System.Drawing.Size(289, 222);
+            this.displayTextBox.Size = new System.Drawing.Size(289, 261);
             this.displayTextBox.TabIndex = 4;
             this.displayTextBox.TabStop = false;
             this.displayTextBox.Text = "";
@@ -159,7 +186,7 @@ namespace TheCodeKing.Demo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(289, 337);
+            this.ClientSize = new System.Drawing.Size(289, 396);
             this.Controls.Add(this.displayTextBox);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;
@@ -186,7 +213,9 @@ namespace TheCodeKing.Demo
         private System.Windows.Forms.RadioButton wmRadio;
         private System.Windows.Forms.GroupBox groupBox1;
         private System.Windows.Forms.CheckBox statusCheckBox;
-        private System.Windows.Forms.CheckBox msgCheckBox;
+        private System.Windows.Forms.CheckBox channel2Check;
+        private System.Windows.Forms.RadioButton mailRadio;
+        private System.Windows.Forms.CheckBox channel1Check;
 
     }
 }

@@ -26,8 +26,10 @@ Namespace TheCodeKing.Demo
             Me.panel1 = New System.Windows.Forms.Panel()
             Me.groupBox1 = New System.Windows.Forms.GroupBox()
             Me.statusCheckBox = New System.Windows.Forms.CheckBox()
-            Me.msgCheckBox = New System.Windows.Forms.CheckBox()
+            Me.channel1Check = New System.Windows.Forms.CheckBox()
+            Me.channel2Check = New System.Windows.Forms.CheckBox()
             Me.Mode = New System.Windows.Forms.GroupBox()
+            Me.mailRadio = New System.Windows.Forms.RadioButton()
             Me.ioStreamRadio = New System.Windows.Forms.RadioButton()
             Me.wmRadio = New System.Windows.Forms.RadioButton()
             Me.inputTextBox = New System.Windows.Forms.TextBox()
@@ -45,19 +47,20 @@ Namespace TheCodeKing.Demo
             Me.panel1.Controls.Add(Me.inputTextBox)
             Me.panel1.Controls.Add(Me.sendBtn)
             Me.panel1.Dock = System.Windows.Forms.DockStyle.Bottom
-            Me.panel1.Location = New System.Drawing.Point(0, 222)
+            Me.panel1.Location = New System.Drawing.Point(0, 261)
             Me.panel1.Name = "panel1"
-            Me.panel1.Size = New System.Drawing.Size(289, 115)
+            Me.panel1.Size = New System.Drawing.Size(289, 135)
             Me.panel1.TabIndex = 2
             ' 
             ' groupBox1
             ' 
             Me.groupBox1.Controls.Add(Me.statusCheckBox)
-            Me.groupBox1.Controls.Add(Me.msgCheckBox)
+            Me.groupBox1.Controls.Add(Me.channel1Check)
+            Me.groupBox1.Controls.Add(Me.channel2Check)
             Me.groupBox1.Location = New System.Drawing.Point(12, 35)
             Me.groupBox1.Name = "groupBox1"
-            Me.groupBox1.Size = New System.Drawing.Size(130, 68)
-            Me.groupBox1.TabIndex = 8
+            Me.groupBox1.Size = New System.Drawing.Size(130, 90)
+            Me.groupBox1.TabIndex = 0
             Me.groupBox1.TabStop = False
             Me.groupBox1.Text = "Channels"
             ' 
@@ -65,36 +68,60 @@ Namespace TheCodeKing.Demo
             ' 
             Me.statusCheckBox.Checked = True
             Me.statusCheckBox.CheckState = System.Windows.Forms.CheckState.Checked
-            Me.statusCheckBox.Location = New System.Drawing.Point(15, 40)
+            Me.statusCheckBox.Location = New System.Drawing.Point(15, 63)
             Me.statusCheckBox.Name = "statusCheckBox"
             Me.statusCheckBox.Size = New System.Drawing.Size(61, 18)
-            Me.statusCheckBox.TabIndex = 12
+            Me.statusCheckBox.TabIndex = 5
             Me.statusCheckBox.Text = "Status"
             Me.statusCheckBox.UseVisualStyleBackColor = True
-            AddHandler Me.statusCheckBox.Click, AddressOf Me.statusCheckBox_CheckedChanged
+            AddHandler Me.statusCheckBox.Click, AddressOf Me.statusChannel_CheckedChanged
             ' 
-            ' msgCheckBox
+            ' channel1Check
             ' 
-            Me.msgCheckBox.Checked = True
-            Me.msgCheckBox.CheckState = System.Windows.Forms.CheckState.Checked
-            Me.msgCheckBox.Location = New System.Drawing.Point(15, 19)
-            Me.msgCheckBox.Name = "msgCheckBox"
-            Me.msgCheckBox.Size = New System.Drawing.Size(94, 17)
-            Me.msgCheckBox.TabIndex = 11
-            Me.msgCheckBox.Text = "UserMessage"
-            Me.msgCheckBox.UseVisualStyleBackColor = True
-            AddHandler Me.msgCheckBox.Click, AddressOf Me.msgCheckBox_CheckedChanged
+            Me.channel1Check.Checked = True
+            Me.channel1Check.CheckState = System.Windows.Forms.CheckState.Checked
+            Me.channel1Check.Location = New System.Drawing.Point(15, 18)
+            Me.channel1Check.Name = "channel1Check"
+            Me.channel1Check.Size = New System.Drawing.Size(94, 17)
+            Me.channel1Check.TabIndex = 3
+            Me.channel1Check.Text = "Channel 1"
+            Me.channel1Check.UseVisualStyleBackColor = True
+            AddHandler Me.channel1Check.Click, AddressOf Me.channel1_CheckedChanged
+            ' 
+            ' channel2Check
+            ' 
+            Me.channel2Check.Location = New System.Drawing.Point(15, 41)
+            Me.channel2Check.Name = "channel2Check"
+            Me.channel2Check.Size = New System.Drawing.Size(94, 17)
+            Me.channel2Check.TabIndex = 4
+            Me.channel2Check.Text = "Channel 2"
+            Me.channel2Check.UseVisualStyleBackColor = True
+            AddHandler Me.channel2Check.Click, AddressOf Me.channel2_CheckedChanged
             ' 
             ' Mode
             ' 
+            Me.Mode.Controls.Add(Me.mailRadio)
             Me.Mode.Controls.Add(Me.ioStreamRadio)
             Me.Mode.Controls.Add(Me.wmRadio)
             Me.Mode.Location = New System.Drawing.Point(148, 35)
             Me.Mode.Name = "Mode"
-            Me.Mode.Size = New System.Drawing.Size(130, 68)
-            Me.Mode.TabIndex = 7
+            Me.Mode.Size = New System.Drawing.Size(130, 90)
+            Me.Mode.TabIndex = 0
             Me.Mode.TabStop = False
             Me.Mode.Text = "Mode"
+            ' 
+            ' mailRadio
+            ' 
+            Me.mailRadio.AutoSize = True
+            Me.mailRadio.Location = New System.Drawing.Point(15, 64)
+            Me.mailRadio.Name = "mailRadio"
+            Me.mailRadio.Size = New System.Drawing.Size(65, 17)
+            Me.mailRadio.TabIndex = 8
+            Me.mailRadio.TabStop = True
+            Me.mailRadio.Text = "Mail Slot"
+            Me.mailRadio.UseVisualStyleBackColor = True
+            AddHandler Me.mailRadio.MouseClick, AddressOf Me.mailRadio_MouseClick
+            AddHandler Me.mailRadio.CheckedChanged, AddressOf Me.mode_CheckedChanged
             ' 
             ' ioStreamRadio
             ' 
@@ -102,7 +129,7 @@ Namespace TheCodeKing.Demo
             Me.ioStreamRadio.Location = New System.Drawing.Point(15, 41)
             Me.ioStreamRadio.Name = "ioStreamRadio"
             Me.ioStreamRadio.Size = New System.Drawing.Size(72, 17)
-            Me.ioStreamRadio.TabIndex = 8
+            Me.ioStreamRadio.TabIndex = 7
             Me.ioStreamRadio.TabStop = True
             Me.ioStreamRadio.Text = "IO Stream"
             Me.ioStreamRadio.UseVisualStyleBackColor = True
@@ -115,7 +142,7 @@ Namespace TheCodeKing.Demo
             Me.wmRadio.Location = New System.Drawing.Point(15, 18)
             Me.wmRadio.Name = "wmRadio"
             Me.wmRadio.Size = New System.Drawing.Size(67, 17)
-            Me.wmRadio.TabIndex = 7
+            Me.wmRadio.TabIndex = 6
             Me.wmRadio.TabStop = True
             Me.wmRadio.Text = "Win Msg"
             Me.wmRadio.UseVisualStyleBackColor = True
@@ -145,7 +172,7 @@ Namespace TheCodeKing.Demo
             Me.displayTextBox.Location = New System.Drawing.Point(0, 0)
             Me.displayTextBox.Name = "displayTextBox"
             Me.displayTextBox.[ReadOnly] = True
-            Me.displayTextBox.Size = New System.Drawing.Size(289, 222)
+            Me.displayTextBox.Size = New System.Drawing.Size(289, 261)
             Me.displayTextBox.TabIndex = 4
             Me.displayTextBox.TabStop = False
             Me.displayTextBox.Text = ""
@@ -154,7 +181,7 @@ Namespace TheCodeKing.Demo
             ' 
             Me.AutoScaleDimensions = New System.Drawing.SizeF(6.0F, 13.0F)
             Me.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font
-            Me.ClientSize = New System.Drawing.Size(289, 337)
+            Me.ClientSize = New System.Drawing.Size(289, 396)
             Me.Controls.Add(Me.displayTextBox)
             Me.Controls.Add(Me.panel1)
             Me.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow
@@ -181,7 +208,9 @@ Namespace TheCodeKing.Demo
         Private wmRadio As System.Windows.Forms.RadioButton
         Private groupBox1 As System.Windows.Forms.GroupBox
         Private statusCheckBox As System.Windows.Forms.CheckBox
-        Private msgCheckBox As System.Windows.Forms.CheckBox
+        Private channel2Check As System.Windows.Forms.CheckBox
+        Private mailRadio As System.Windows.Forms.RadioButton
+        Private channel1Check As System.Windows.Forms.CheckBox
 
     End Class
 End Namespace

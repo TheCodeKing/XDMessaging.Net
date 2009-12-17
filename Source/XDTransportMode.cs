@@ -36,6 +36,7 @@ namespace TheCodeKing.Net.Messaging
         /// Uses file watchers to trigger events and pass data between processes. This mode can 
         /// be used within non-form based applications such as Windows Services.
         /// </summary>
-        IOStream
+        IOStream,
+        MailSlot
     }
 }

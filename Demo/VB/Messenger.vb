@@ -64,6 +64,11 @@ Namespace TheCodeKing.Demo
         Protected Overloads Overrides Sub OnLoad(ByVal e As EventArgs)
             MyBase.OnLoad(e)
 
+            Dim tooltips As New ToolTip()
+            tooltips.SetToolTip(sendBtn, "Broadcast message on Channel 1" & vbCr & vbLf & "and Channel2")
+            tooltips.SetToolTip(groupBox1, "Choose which channels" & vbCr & vbLf & "this instance will" & vbCr & vbLf & "listen on")
+            tooltips.SetToolTip(Mode, "Choose which mode" & vbCr & vbLf & "to use for sending" & vbCr & vbLf & "and receiving")
+
             UpdateDisplayText("Launch multiple instances of this application to demo interprocess communication." & vbCr & vbLf, Color.Gray)
 
             ' set the handle id in the form title
@@ -72,7 +77,7 @@ Namespace TheCodeKing.Demo
             InitializeMode(XDTransportMode.WindowsMessaging)
 
             ' broadcast on the status channel that we have loaded
-            broadcast.SendToChannel("Status", String.Format("Window {0} created!", Me.Handle))
+            broadcast.SendToChannel("Status", String.Format("{0} has joined", Me.Handle))
         End Sub
 
         ''' <summary>
@@ -82,7 +87,7 @@ Namespace TheCodeKing.Demo
         ''' <param name="e"></param>
         Protected Overloads Overrides Sub OnClosing(ByVal e As CancelEventArgs)
             MyBase.OnClosing(e)
-            broadcast.SendToChannel("Status", String.Format("Window {0} closing!", Me.Handle))
+            broadcast.SendToChannel("Status", String.Format("{0} is shutting down", Me.Handle))
         End Sub
         ''' <summary>
         ''' The delegate which processes all cross AppDomain messages and writes them to screen.
@@ -122,14 +127,16 @@ Namespace TheCodeKing.Demo
         ''' <summary>
         ''' A helper method used to update the Windows Form.
         ''' </summary>
-        ''' <param name="message">The message to write to the display</param>
-        ''' <param name="textColor">The colour of the text to display</param>
+        ''' <param name="message">The message to be displayed on the form.</param>
+        ''' <param name="textColor">The colour text to use for the message.</param>
         Private Sub UpdateDisplayText(ByVal message As String, ByVal textColor As Color)
-            Me.displayTextBox.AppendText(message)
-            Me.displayTextBox.[Select](Me.displayTextBox.Text.Length - message.Length + 1, Me.displayTextBox.Text.Length)
-            Me.displayTextBox.SelectionColor = textColor
-            Me.displayTextBox.[Select](Me.displayTextBox.Text.Length, Me.displayTextBox.Text.Length)
-            Me.displayTextBox.ScrollToCaret()
+            If Not IsDisposed Then
+                Me.displayTextBox.AppendText(message)
+                Me.displayTextBox.[Select](Me.displayTextBox.Text.Length - message.Length + 1, Me.displayTextBox.Text.Length)
+                Me.displayTextBox.SelectionColor = textColor
+                Me.displayTextBox.[Select](Me.displayTextBox.Text.Length, Me.displayTextBox.Text.Length)
+                Me.displayTextBox.ScrollToCaret()
+            End If
         End Sub
 
         ''' <summary>
@@ -162,7 +169,9 @@ Namespace TheCodeKing.Demo
         ''' </summary>
         Private Sub SendMessage()
             If Me.inputTextBox.Text.Length > 0 Then
-                broadcast.SendToChannel("UserMessage", String.Format("{0}: {1}", Me.Handle, Me.inputTextBox.Text))
+                ' send to all channels
+                broadcast.SendToChannel("Channel1", String.Format("{0} says {1}", Me.Handle, Me.inputTextBox.Text))
+                broadcast.SendToChannel("Channel2", String.Format("{0} says {1}", Me.Handle, Me.inputTextBox.Text))
                 Me.inputTextBox.Text = ""
             End If
         End Sub
@@ -174,13 +183,30 @@ Namespace TheCodeKing.Demo
         ''' </summary>
         ''' <param name="sender"></param>
         ''' <param name="e"></param>
-        Private Sub msgCheckBox_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs)
-            If msgCheckBox.Checked Then
-                listener.RegisterChannel("UserMessage")
-                broadcast.SendToChannel("Status", String.Format("{0}: Registering for UserMessage.", Me.Handle))
+        Private Sub channel1_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs)
+            If channel1Check.Checked Then
+                listener.RegisterChannel("Channel1")
+                broadcast.SendToChannel("Status", String.Format("{0} is registering Channel1.", Me.Handle))
             Else
-                listener.UnRegisterChannel("UserMessage")
-                broadcast.SendToChannel("Status", String.Format("{0}: UnRegistering for UserMessage.", Me.Handle))
+                listener.UnRegisterChannel("Channel1")
+                broadcast.SendToChannel("Status", String.Format("{0} is unregistering Channel1.", Me.Handle))
+            End If
+        End Sub
+
+        ''' <summary>
+        ''' Adds or removes the Message channel from the messaging API. This effects whether messages 
+        ''' sent on this channel will be received by the application. Status messages are broadcast 
+        ''' on the Status channel whenever this setting is changed. 
+        ''' </summary>
+        ''' <param name="sender"></param>
+        ''' <param name="e"></param>
+        Private Sub channel2_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs)
+            If channel2Check.Checked Then
+                listener.RegisterChannel("Channel2")
+                broadcast.SendToChannel("Status", String.Format("{0} is registering Channel2.", Me.Handle))
+            Else
+                listener.UnRegisterChannel("Channel2")
+                broadcast.SendToChannel("Status", String.Format("{0} is unregistering Channel2.", Me.Handle))
             End If
         End Sub
 
@@ -191,15 +217,16 @@ Namespace TheCodeKing.Demo
         ''' </summary>
         ''' <param name="sender"></param>
         ''' <param name="e"></param>
-        Private Sub statusCheckBox_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs)
+        Private Sub statusChannel_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs)
             If statusCheckBox.Checked Then
                 listener.RegisterChannel("Status")
-                broadcast.SendToChannel("Status", String.Format("{0}: Registering for Status.", Me.Handle))
+                broadcast.SendToChannel("Status", String.Format("{0} is registering Status.", Me.Handle))
             Else
                 listener.UnRegisterChannel("Status")
-                broadcast.SendToChannel("Status", String.Format("{0}: UnRegistering for Status.", Me.Handle))
+                broadcast.SendToChannel("Status", String.Format("{0} is unregistering Status.", Me.Handle))
             End If
         End Sub
+
         ''' <summary>
         ''' Initialize the broadcast and listener mode.
         ''' </summary>
@@ -225,18 +252,27 @@ Namespace TheCodeKing.Demo
             If statusCheckBox.Checked Then
                 listener.RegisterChannel("Status")
             End If
-            If msgCheckBox.Checked Then
-                listener.RegisterChannel("UserMessage")
+
+            ' register if checkbox is checked
+            If channel1Check.Checked Then
+                listener.RegisterChannel("Channel1")
             End If
 
+            ' register if checkbox is checked
+            If channel2Check.Checked Then
+                listener.RegisterChannel("Channel2")
+            End If
+
+            ' if we already have a broadcast instance
             If broadcast IsNot Nothing Then
-                broadcast.SendToChannel("Status", String.Format("{0}: Mode changing to {1}", Me.Handle, mode))
+                broadcast.SendToChannel("Status", String.Format("{0} is changing mode to {1}", Me.Handle, mode))
             End If
 
             ' create an instance of IXDBroadcast using the given mode, 
             ' note IXDBroadcast does not implement IDisposable
             broadcast = XDBroadcast.CreateBroadcast(mode)
         End Sub
+
         ''' <summary>
         ''' On form changed mode.
         ''' </summary>
@@ -245,8 +281,21 @@ Namespace TheCodeKing.Demo
         Private Sub mode_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs)
             If wmRadio.Checked Then
                 InitializeMode(XDTransportMode.WindowsMessaging)
-            Else
+            ElseIf ioStreamRadio.Checked Then
                 InitializeMode(XDTransportMode.IOStream)
+            Else
+                InitializeMode(XDTransportMode.MailSlot)
+            End If
+        End Sub
+
+        ''' <summary>
+        ''' If the MailSlot checkbox is checked, display info about single-instance limitation.
+        ''' </summary>
+        ''' <param name="sender"></param>
+        ''' <param name="e"></param>
+        Private Sub mailRadio_MouseClick(ByVal sender As Object, ByVal e As MouseEventArgs)
+            If mailRadio.Checked Then
+                UpdateDisplayText("MailSlot mode only allows one listener on a single channel at anyone time." & vbCr & vbLf, Color.Red)
             End If
         End Sub
     End Class

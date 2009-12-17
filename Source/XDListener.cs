@@ -53,10 +53,10 @@ namespace TheCodeKing.Net.Messaging
         {
             // create a top-level native window
             CreateParams p = new CreateParams();
-            p.Width = 10;
-            p.Height = 10;
-            p.X = 100;
-            p.Y = 100;
+            p.Width = 0;
+            p.Height = 0;
+            p.X = 0;
+            p.Y = 0;
             p.Caption = string.Concat("TheCodeKing.Net.XDServices.",Guid.NewGuid().ToString());
             p.Parent = IntPtr.Zero;
             base.CreateHandle(p);
@@ -86,6 +86,8 @@ namespace TheCodeKing.Net.Messaging
             {
                 case XDTransportMode.IOStream:
                     return new XDIOStream();
+                case XDTransportMode.MailSlot:
+                    return new TheCodeKing.Net.Messaging.Concrete.MailSlot.XDMailSlotListener();
                 default:
                     return new XDListener(true);
             }

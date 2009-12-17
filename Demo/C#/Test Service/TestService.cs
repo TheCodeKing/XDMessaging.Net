@@ -55,7 +55,8 @@ namespace Test_Service
             listener = XDListener.CreateListener(XDTransportMode.IOStream);
             listener.MessageReceived += new XDListener.XDMessageHandler(OnMessageReceived);
             listener.RegisterChannel("Status");
-            listener.RegisterChannel("UserMessage");
+            listener.RegisterChannel("Channel1");
+            listener.RegisterChannel("Channel2");
         }
 
         /// <summary>

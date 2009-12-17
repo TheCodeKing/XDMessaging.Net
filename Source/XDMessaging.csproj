@@ -50,10 +50,15 @@
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.DirectoryServices" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Concrete\MailSlot\NetworkInfo.cs" />
+    <Compile Include="Concrete\MailSlot\XDMailSlotBroadcast.cs" />
+    <Compile Include="Concrete\MailSlot\Native.cs" />
+    <Compile Include="Concrete\MailSlot\XDMailSlotListener.cs" />
     <Compile Include="Interfaces\IXDBroadcast.cs" />
     <Compile Include="Interfaces\IXDListener.cs" />
     <Compile Include="XDBroadcast.cs" />

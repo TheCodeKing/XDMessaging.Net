@@ -59,6 +59,11 @@ namespace TheCodeKing.Demo
         {
             base.OnLoad(e);
 
+            ToolTip tooltips = new ToolTip();
+            tooltips.SetToolTip(sendBtn, "Broadcast message on Channel 1\r\nand Channel2");
+            tooltips.SetToolTip(groupBox1, "Choose which channels\r\nthis instance will\r\nlisten on");
+            tooltips.SetToolTip(Mode, "Choose which mode\r\nto use for sending\r\nand receiving");
+
             UpdateDisplayText("Launch multiple instances of this application to demo interprocess communication.\r\n", Color.Gray);
 
             // set the handle id in the form title
@@ -67,7 +72,7 @@ namespace TheCodeKing.Demo
             InitializeMode(XDTransportMode.WindowsMessaging);
 
             // broadcast on the status channel that we have loaded
-            broadcast.SendToChannel("Status", string.Format("Window {0} created!", this.Handle));
+            broadcast.SendToChannel("Status", string.Format("{0} has joined", this.Handle));
        }
 
         /// <summary>
@@ -78,7 +83,7 @@ namespace TheCodeKing.Demo
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
-            broadcast.SendToChannel("Status", string.Format("Window {0} closing!", this.Handle));
+            broadcast.SendToChannel("Status", string.Format("{0} is shutting down", this.Handle));
         }
         /// <summary>
         /// The delegate which processes all cross AppDomain messages and writes them to screen.
@@ -94,14 +99,10 @@ namespace TheCodeKing.Demo
             else
             {
                 // If called from a seperate thread, rejoin so that be can update form elements.
-                if (InvokeRequired)
+                if (InvokeRequired && !IsDisposed)
                 {
-                    try
-                    {
-                        // onClosing messages may fail if the form is being disposed.
-                        Invoke((MethodInvoker)delegate() { UpdateDisplayText(e.DataGram); });
-                    }
-                    catch { }
+                    // onClosing messages may fail if the form is being disposed.
+                    Invoke((MethodInvoker)delegate() { UpdateDisplayText(e.DataGram); });
                 }
                 else
                 {
@@ -137,11 +138,14 @@ namespace TheCodeKing.Demo
         /// <param name="textColor">The colour text to use for the message.</param>
         private void UpdateDisplayText(string message, Color textColor)
         {
-            this.displayTextBox.AppendText(message);
-            this.displayTextBox.Select(this.displayTextBox.Text.Length - message.Length + 1, this.displayTextBox.Text.Length);
-            this.displayTextBox.SelectionColor = textColor;
-            this.displayTextBox.Select(this.displayTextBox.Text.Length, this.displayTextBox.Text.Length);
-            this.displayTextBox.ScrollToCaret();
+            if (!IsDisposed)
+            {
+                this.displayTextBox.AppendText(message);
+                this.displayTextBox.Select(this.displayTextBox.Text.Length - message.Length + 1, this.displayTextBox.Text.Length);
+                this.displayTextBox.SelectionColor = textColor;
+                this.displayTextBox.Select(this.displayTextBox.Text.Length, this.displayTextBox.Text.Length);
+                this.displayTextBox.ScrollToCaret();
+            }
         }
 
         /// <summary>
@@ -179,8 +183,10 @@ namespace TheCodeKing.Demo
         {
             if (this.inputTextBox.Text.Length > 0)
             {
-                broadcast.SendToChannel("UserMessage", string.Format("{0}: {1}", this.Handle, this.inputTextBox.Text));
-                this.inputTextBox.Text = "";
+               // send to all channels
+               broadcast.SendToChannel("Channel1", string.Format("{0} says {1}", this.Handle, this.inputTextBox.Text));
+               broadcast.SendToChannel("Channel2", string.Format("{0} says {1}", this.Handle, this.inputTextBox.Text));
+               this.inputTextBox.Text = "";
             }
         }
 
@@ -191,17 +197,38 @@ namespace TheCodeKing.Demo
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void msgCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void channel1_CheckedChanged(object sender, EventArgs e)
         {
-            if (msgCheckBox.Checked)
+            if (channel1Check.Checked)
             {
-                listener.RegisterChannel("UserMessage");
-                broadcast.SendToChannel("Status", string.Format("{0}: Registering for UserMessage.", this.Handle));
+                listener.RegisterChannel("Channel1");
+                broadcast.SendToChannel("Status", string.Format("{0} is registering Channel1.", this.Handle));
             }
             else
             {
-                listener.UnRegisterChannel("UserMessage");
-                broadcast.SendToChannel("Status", string.Format("{0}: UnRegistering for UserMessage.", this.Handle));
+                listener.UnRegisterChannel("Channel1");
+                broadcast.SendToChannel("Status", string.Format("{0} is unregistering Channel1.", this.Handle));
+            }
+        }
+
+        /// <summary>
+        /// Adds or removes the Message channel from the messaging API. This effects whether messages 
+        /// sent on this channel will be received by the application. Status messages are broadcast 
+        /// on the Status channel whenever this setting is changed. 
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void channel2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (channel2Check.Checked)
+            {
+                listener.RegisterChannel("Channel2");
+                broadcast.SendToChannel("Status", string.Format("{0} is registering Channel2.", this.Handle));
+            }
+            else
+            {
+                listener.UnRegisterChannel("Channel2");
+                broadcast.SendToChannel("Status", string.Format("{0} is unregistering Channel2.", this.Handle));
             }
         }
 
@@ -212,17 +239,17 @@ namespace TheCodeKing.Demo
         /// </summary>
         /// <param name="sender"></param>
         /// <param name="e"></param>
-        private void statusCheckBox_CheckedChanged(object sender, EventArgs e)
+        private void statusChannel_CheckedChanged(object sender, EventArgs e)
         {
             if (statusCheckBox.Checked)
             {
                 listener.RegisterChannel("Status");
-                broadcast.SendToChannel("Status", string.Format("{0}: Registering for Status.", this.Handle));
+                broadcast.SendToChannel("Status", string.Format("{0} is registering Status.", this.Handle));
             }
             else
             {
                 listener.UnRegisterChannel("Status");
-                broadcast.SendToChannel("Status", string.Format("{0}: UnRegistering for Status.", this.Handle));
+                broadcast.SendToChannel("Status", string.Format("{0} is unregistering Status.", this.Handle));
             }
         }
 
@@ -255,14 +282,23 @@ namespace TheCodeKing.Demo
             {
                 listener.RegisterChannel("Status");
             }
-            if (msgCheckBox.Checked)
+
+            // register if checkbox is checked
+            if (channel1Check.Checked)
             {
-                listener.RegisterChannel("UserMessage");
+                listener.RegisterChannel("Channel1");
             }
 
+            // register if checkbox is checked
+            if (channel2Check.Checked)
+            {
+                listener.RegisterChannel("Channel2");
+            }
+
+            // if we already have a broadcast instance
             if (broadcast != null)
             {
-                broadcast.SendToChannel("Status", string.Format("{0}: Mode changing to {1}", this.Handle, mode));
+                broadcast.SendToChannel("Status", string.Format("{0} is changing mode to {1}", this.Handle, mode));
             }
 
             // create an instance of IXDBroadcast using the given mode, 
@@ -281,9 +317,26 @@ namespace TheCodeKing.Demo
             {
                 InitializeMode(XDTransportMode.WindowsMessaging);
             }
-            else
+            else if (ioStreamRadio.Checked)
             {
                 InitializeMode(XDTransportMode.IOStream);
+            }
+            else
+            {
+                InitializeMode(XDTransportMode.MailSlot);
+            }
+        }
+
+        /// <summary>
+        /// If the MailSlot checkbox is checked, display info about single-instance limitation.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private void mailRadio_MouseClick(object sender, MouseEventArgs e)
+        {
+            if (mailRadio.Checked)
+            {
+                UpdateDisplayText("MailSlot mode only allows one listener on a single channel at anyone time.\r\n", Color.Red);
             }
         }
     }

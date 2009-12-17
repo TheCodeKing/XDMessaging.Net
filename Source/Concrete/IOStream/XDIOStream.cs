@@ -95,7 +95,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             using (StreamWriter writer = File.CreateText(filePath))
             {
                 // write out the channel name and message, this allows for invalid
-                // charators in the channel name.
+                // characters in the channel name.
                 writer.Write(string.Concat(channelName, ":", message));
                 writer.Flush();
             }

@@ -102,7 +102,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         private void SafeNetworkPropagation(string channelName, string message)
         {
             // if mailslot cannot be written to, handle these gracefully
-            // dropping the message (will retry up to 10 times before failure)
+            // dropping the message
             try
             {
                 // broadcast system message over network

@@ -324,7 +324,7 @@ namespace TheCodeKing.Demo
         {
             if (mailRadio.Checked)
             {
-                UpdateDisplayText("MailSlot mode only allows one listener on a single channel at anyone time.\r\n", Color.Red);
+                UpdateDisplayText("MailSlot mode only allows one listener on a single channel at any one time.\r\n", Color.Red);
             }
         }
 

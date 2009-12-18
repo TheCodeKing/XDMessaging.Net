@@ -287,7 +287,7 @@ Namespace TheCodeKing.Demo
         ''' <param name="e"></param>
         Private Sub mailRadio_MouseClick(ByVal sender As Object, ByVal e As MouseEventArgs)
             If mailRadio.Checked Then
-                UpdateDisplayText("MailSlot mode only allows one listener on a single channel at anyone time." & vbCr & vbLf, Color.Red)
+                UpdateDisplayText("MailSlot mode only allows one listener on a single channel at any one time." & vbCr & vbLf, Color.Red)
             End If
         End Sub
 

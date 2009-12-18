@@ -13,7 +13,7 @@
 using System;
 using System.Collections.Generic;
 using System.Text;
-using TheCodeKing.Net.Messaging.Concrete.MultBroadcast;
+using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 
 namespace TheCodeKing.Net.Messaging.Concrete
 {

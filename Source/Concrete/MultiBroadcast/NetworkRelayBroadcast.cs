@@ -14,8 +14,10 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 using TheCodeKing.Net.Messaging.Concrete.MailSlot;
+using System.IO;
+using System.Threading;
 
-namespace TheCodeKing.Net.Messaging.Concrete.MultBroadcast
+namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 {
     /// <summary>
     /// This implementation is used to broadcast messages from other implementations across
@@ -36,7 +38,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultBroadcast
         /// The base channel name used for propagating messages.
         /// </summary>
         internal const string NetworkPropagateChannel = "System.PropagateBroadcast";
-
+        /// <summary>
+        /// The MailSlot name used for network propagation.
+        /// </summary>
+        private readonly string mailSlotName;
         /// <summary>
         /// The default constructor used to wrap a native broadcast implementation.
         /// </summary>
@@ -56,6 +61,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultBroadcast
             {
                 throw new ArgumentException("Cannot be of type XDMailSlotBroadcast.", "nativeBroadcast");
             }
+            this.mailSlotName = GetPropagateNetworkMailSlotName(nativeBroadcast);
             // the native broadcast that this implementation wrappers
             this.nativeBroadcast = nativeBroadcast;
             // the MailSlot broadcast implementation is used to send over the network
@@ -83,9 +89,28 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultBroadcast
             }
             nativeBroadcast.SendToChannel(channelName, message);
 
-            // broadcast system message over network
-            networkBroadcast.SendToChannel(GetPropagateNetworkMailSlotName(nativeBroadcast), string.Concat(Environment.MachineName, ":" + channelName + ":", message));
+            // start the network propagation
+            ThreadPool.QueueUserWorkItem(delegate(object state) { SafeNetworkPropagation(channelName, message); });
         }
+
+        /// <summary>
+        /// Attempts to propagate the message across the network using MailSlots. This may fail
+        /// under load in which case the message is dropped.
+        /// </summary>
+        /// <param name="channelName"></param>
+        /// <param name="message"></param>
+        private void SafeNetworkPropagation(string channelName, string message)
+        {
+            // if mailslot cannot be written to, handle these gracefully
+            // dropping the message (will retry up to 10 times before failure)
+            try
+            {
+                // broadcast system message over network
+                networkBroadcast.SendToChannel(mailSlotName, string.Concat(Environment.MachineName, ":" + channelName + ":", message));
+            }
+            catch (IOException) { }
+        }
+
         /// <summary>
         /// Gets the unique network propagation MailSlot name.
         /// </summary>

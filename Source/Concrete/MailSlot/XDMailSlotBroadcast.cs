@@ -106,9 +106,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 
                 // write the message to the MailSlot
                 uint bytesWriten = 0;
-                if (!Native.WriteFile(writeHandle, bytes, (uint)bytes.Length, ref bytesWriten, ref overlap))
+                int retryCount = 0;
+                while (!Native.WriteFile(writeHandle, bytes, (uint)bytes.Length, ref bytesWriten, ref overlap))
                 {
-                    throw new IOException("Unable to write to mailslot. Try again later.");
+                    // if MailSlot fails, retry up to 10 times
+                    if (retryCount > 10)
+                    {
+                        throw new IOException("Unable to write to mailslot. Try again later.");
+                    }
+                    retryCount++;
                 }
             }
             else

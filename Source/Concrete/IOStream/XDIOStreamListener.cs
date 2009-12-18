@@ -17,7 +17,7 @@ using System.IO;
 using System.Threading;
 using System.Diagnostics;
 using System.Windows.Forms;
-using TheCodeKing.Net.Messaging.Concrete.MultBroadcast;
+using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 
 namespace TheCodeKing.Net.Messaging.Concrete.IOStream
 {

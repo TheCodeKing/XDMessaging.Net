@@ -14,7 +14,7 @@ using System;
 using System.Collections.Generic;
 using System.Text;
 
-namespace TheCodeKing.Net.Messaging.Concrete.MultBroadcast
+namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 {
     /// <summary>
     /// An implementation of IXDBroadcast that encapsulates multiple broadcast instances

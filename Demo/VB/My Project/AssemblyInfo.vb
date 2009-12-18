@@ -12,7 +12,7 @@ Imports System.Runtime.InteropServices
 <Assembly: AssemblyDescription("A demo application for the XDMessaging Library.")> 
 <Assembly: AssemblyCompany("")> 
 <Assembly: AssemblyProduct("TheCodeKing.Messenger")> 
-<Assembly: AssemblyCopyright("Copyright ©  2007")> 
+<Assembly: AssemblyCopyright("Copyright ©  2009")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>

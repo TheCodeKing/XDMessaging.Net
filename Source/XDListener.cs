@@ -15,7 +15,7 @@ using System.Windows.Forms;
 using TheCodeKing.Net.Messaging.Concrete.IOStream;
 using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 using System.Diagnostics;
-using TheCodeKing.Net.Messaging.Concrete.MultBroadcast;
+using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 using TheCodeKing.Net.Messaging.Concrete;
 
 namespace TheCodeKing.Net.Messaging

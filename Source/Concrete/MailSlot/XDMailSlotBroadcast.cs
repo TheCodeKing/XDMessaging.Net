@@ -6,7 +6,7 @@
 *  
 *	All rights reserved.
 *	The code and information is provided "as-is" without waranty of any kind,
-*	either expresed or implied.
+*	either expressed or implied.
 *
 *=============================================================================
 */
@@ -19,6 +19,7 @@ using System.Diagnostics;
 using System.Runtime.Serialization.Formatters.Binary;
 using System.Windows.Forms;
 using System.DirectoryServices.ActiveDirectory;
+using System.Runtime.InteropServices;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
@@ -125,14 +126,16 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                             {
                                 if (!Native.WriteFile(writeHandle, bytes, (uint)bytesRead, ref bytesWritten, ref overlap))
                                 {
-                                    throw new IOException("Unable to write to mailslot. Try again later.");
+                                    int errorCode = Marshal.GetLastWin32Error();
+                                    throw new IOException("Unable to write to mailslot. Try again later.", errorCode);
                                 }
                             }
                         }
                     }
                     else
                     {
-                        throw new IOException("Unable to open mailslot. Try again later.");
+                        int errorCode = Marshal.GetLastWin32Error();
+                        throw new IOException("Unable to open mailslot. Try again later.", errorCode);
                     }
                 }
                 finally

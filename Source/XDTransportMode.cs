@@ -6,7 +6,7 @@
 *  
 *	All rights reserved.
 *	The code and information is provided "as-is" without waranty of any kind,
-*	either expresed or implied.
+*	either expressed or implied.
 *
 *=============================================================================
 */

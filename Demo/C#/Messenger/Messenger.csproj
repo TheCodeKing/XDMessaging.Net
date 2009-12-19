@@ -55,7 +55,7 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging, Version=1.1.0.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="XDMessaging, Version=2.0.2.1, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\..\bin\XDMessaging.dll</HintPath>
     </Reference>
@@ -112,7 +112,6 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>
-    </PostBuildEvent>
+    <PostBuildEvent>xcopy /Y "$(TargetPath)" "$(SolutionDir)..\..\Bin\"</PostBuildEvent>
   </PropertyGroup>
 </Project>

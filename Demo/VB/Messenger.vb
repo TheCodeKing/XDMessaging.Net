@@ -6,7 +6,7 @@
 '*  
 '*	All rights reserved.
 '*	The code and information is provided "as-is" without waranty of any kind,
-'*	either expresed or implied.
+'*	either expressed or implied.
 '*
 '*=============================================================================
 '
@@ -19,6 +19,8 @@ Imports System.Drawing
 Imports System.Text
 Imports System.Windows.Forms
 Imports TheCodeKing.Net.Messaging
+Imports System.Threading
+Imports System.IO
 
 Namespace TheCodeKing.Demo
     ''' <summary>
@@ -31,23 +33,23 @@ Namespace TheCodeKing.Demo
         ''' <summary>
         ''' The instance used to listen to broadcast messages.
         ''' </summary>
-        Private listener As IXDListener
+            Private listener As IXDListener
 
-        ''' <summary>
-        ''' The instance used to broadcast messages on a particular channel.
-        ''' </summary>
-        Private broadcast As IXDBroadcast
+            ''' <summary>
+            ''' The instance used to broadcast messages on a particular channel.
+            ''' </summary>
+            Private broadcast As IXDBroadcast
 
-        ''' <summary>
-        ''' Delegate used for invoke callback.
-        ''' </summary>
-        ''' <param name="dataGram"></param>
-        ''' <remarks></remarks>
+            ''' <summary>
+            ''' Delegate used for invoke callback.
+            ''' </summary>
+            ''' <param name="dataGram"></param>
+            ''' <remarks></remarks>
         Private Delegate Sub UpdateDisplay(ByVal dataGram As DataGram)
 
-        ''' <summary>
-        ''' Default constructor.
-        ''' </summary>
+            ''' <summary>
+            ''' Default constructor.
+            ''' </summary>
         Public Sub New()
             InitializeComponent()
         End Sub

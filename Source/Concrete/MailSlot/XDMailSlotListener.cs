@@ -94,17 +94,21 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 // open up the MailSlot, read timeout does not work after first read so we have to poll
                 IntPtr readHandle = IntPtr.Zero;
 
-                try
+                try 
                 {
-                    readHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, channelName), 0, 0, IntPtr.Zero);
-
                     // If this thread is still registered, then go ahead the begin checking, else exit
                     while (activeThreads.ContainsKey(channelName))
                     {
-                        byte[] buffer = new byte[512];
-                        int numWaitingMessages = 0;
+                        if ((int)readHandle <= 0)
+                        {
+                            // try to open mailslot
+                            readHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, channelName), 0, 0, IntPtr.Zero);
+                        }
+
+                        // if mailslot was openned
                         if ((int)readHandle > 0)
                         {
+                            int numWaitingMessages = 0;
                             // check whether the MailSlot has unread messages
                             int timeout = 0;
                             int maxMesages = 0;
@@ -114,50 +118,23 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                                 // while it has unread messages, read them
                                 while (numWaitingMessages > 0)
                                 {
-                                    string rawmessage = null;
-                                    uint bytesRead = 0;
-                                    // deserialize the data back into a string
-                                    BinaryFormatter b = new BinaryFormatter();
-                                    using (MemoryStream stream = new MemoryStream())
-                                    {
-                                        do
-                                        {
-                                            // whilst there is still data to read, add it to the buffer
-                                            if (Native.ReadFile(readHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
-                                            {
-                                                stream.Write(buffer, 0, (int)bytesRead);
-                                            }
-                                        }
-                                        while (bytesRead > 0);
-
-                                        stream.Flush();
-                                        // reset the stream cursor back to the beginning
-                                        stream.Seek(0, SeekOrigin.Begin);
-                                        try
-                                        {
-                                            rawmessage = (string)b.Deserialize(stream);
-                                        }
-                                        catch (SerializationException) { } // if something goes wrong such as handle is closed,
-                                        // we will not process this message
-                                    }
-                                    using (DataGram dataGram = DataGram.ExpandFromRaw(rawmessage))
-                                    {
-                                        if (dataGram.IsValid)
-                                        {
-                                            OnMessageReceived(dataGram);
-                                        }
-                                    }
+                                    ReadMessage(readHandle);
                                     // move to next queued message
                                     numWaitingMessages--;
                                 }
-                                try
-                                {
-                                    Thread.Sleep(200);
-                                }
-                                catch (ThreadInterruptedException) { }
-                                catch (ThreadAbortException) { }
+                            }
+                            else
+                            {
+                                int errorCode = Marshal.GetLastWin32Error();
+                                throw new IOException(string.Format("{0} Unable to get mailslot info. Try again later.", errorCode));
                             }
                         }
+                        try
+                        {
+                            Thread.Sleep(200);
+                        }
+                        catch (ThreadInterruptedException) { }
+                        catch (ThreadAbortException) { }
                     }
                 }
                 finally
@@ -167,6 +144,44 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                         // close the file handle
                         Native.CloseHandle(readHandle);
                     }
+                }
+            }
+        }
+
+        private void ReadMessage(IntPtr readHandle)
+        {
+            byte[] buffer = new byte[512];
+            string rawmessage = null;
+            uint bytesRead = 0;
+            // deserialize the data back into a string
+            BinaryFormatter b = new BinaryFormatter();
+            using (MemoryStream stream = new MemoryStream())
+            {
+                do
+                {
+                    // whilst there is still data to read, add it to the buffer
+                    if (Native.ReadFile(readHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
+                    {
+                        stream.Write(buffer, 0, (int)bytesRead);
+                    }
+                }
+                while (bytesRead > 0);
+
+                stream.Flush();
+                // reset the stream cursor back to the beginning
+                stream.Seek(0, SeekOrigin.Begin);
+                try
+                {
+                    rawmessage = (string)b.Deserialize(stream);
+                }
+                catch (SerializationException) { } // if something goes wrong such as handle is closed,
+                // we will not process this message
+            }
+            using (DataGram dataGram = DataGram.ExpandFromRaw(rawmessage))
+            {
+                if (dataGram.IsValid)
+                {
+                    OnMessageReceived(dataGram);
                 }
             }
         }

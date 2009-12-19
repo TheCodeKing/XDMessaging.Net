@@ -31,7 +31,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// to the mailslot before a time-out occurs, in milliseconds.</param>
         /// <param name="lpSecurityAttributes">A pointer to a SECURITY_ATTRIBUTES structure.</param>
         /// <returns></returns>
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr CreateMailslot(string lpName, uint nMaxMessageSize,
            int lReadTimeout, IntPtr lpSecurityAttributes);
 
@@ -99,18 +99,9 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <param name="lpMessageCount">The number of unread messages.</param>
         /// <param name="lpReadTimeout">The read time out if no message is found.</param>
         /// <returns></returns>
-        [DllImport("kernel32.dll")]
+        [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GetMailslotInfo(IntPtr hMailslot, ref int lpMaxMessageSize,
            ref int lpNextSize, ref int lpMessageCount, ref int lpReadTimeout);
-
-        /// <summary>
-        /// Set the read timeout value.
-        /// </summary>
-        /// <param name="hMailslot"></param>
-        /// <param name="lReadTimeout"></param>
-        /// <returns></returns>
-        [DllImport ( "kernel32.dll")] 
-        public static extern bool SetMailslotInfo(IntPtr hMailslot, uint lReadTimeout); 
 
         /// <summary>
         /// The Win32 API used to close the MailSlot handle.

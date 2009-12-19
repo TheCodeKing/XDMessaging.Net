@@ -127,7 +127,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                                 if (!Native.WriteFile(writeHandle, bytes, (uint)bytesRead, ref bytesWritten, ref overlap))
                                 {
                                     int errorCode = Marshal.GetLastWin32Error();
-                                    throw new IOException("Unable to write to mailslot. Try again later.", errorCode);
+                                    throw new IOException(string.Format("{0} Unable to write to mailslot. Try again later.", errorCode));
                                 }
                             }
                         }
@@ -135,7 +135,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     else
                     {
                         int errorCode = Marshal.GetLastWin32Error();
-                        throw new IOException("Unable to open mailslot. Try again later.", errorCode);
+                        throw new IOException(string.Format("{0} Unable to open mailslot. Try again later.", errorCode));
                     }
                 }
                 finally

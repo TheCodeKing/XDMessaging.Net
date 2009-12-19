@@ -26,6 +26,7 @@ namespace TheCodeKing.Demo
         [STAThread]
         static void Main()
         {
+            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
             Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
 
             Application.EnableVisualStyles();
@@ -33,13 +34,37 @@ namespace TheCodeKing.Demo
             Application.Run(new Messenger());
         }
 
+        /// <summary>
+        /// Exception handler.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
+        private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
+        {
+            LogException((Exception)e.ExceptionObject);
+        }
+
+        /// <summary>
+        /// Exception handler.
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="e"></param>
         private static void Application_ThreadException(object sender, ThreadExceptionEventArgs e)
+        {
+            LogException(e.Exception);
+        }
+
+        /// <summary>
+        /// Log exceptions to error log.
+        /// </summary>
+        /// <param name="e"></param>
+        private static void LogException(Exception e)
         {
             using (StreamWriter log = File.CreateText(Path.Combine(Environment.CurrentDirectory, "XDMessaging.log")))
             {
-                log.WriteLine(e.Exception);
+                log.WriteLine(e);
             }
-            MessageBox.Show("Something when wrong.\r\nSee XDMessaging.log for details.", "Oops", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Something when wrong.\r\nSee XDMessaging.log for details.\r\n", "Oops", MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             Application.Exit();
         }

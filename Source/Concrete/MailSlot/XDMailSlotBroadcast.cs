@@ -124,7 +124,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                             stream.Seek(0, SeekOrigin.Begin);
                             while ((bytesRead = stream.Read(bytes, 0, bytes.Length)) > 0)
                             {
-                                while (!Native.WriteFile(writeHandle, bytes, (uint)bytesRead, ref bytesWritten, ref overlap))
+                                while(!Native.WriteFile(writeHandle, bytes, (uint)bytesRead, ref bytesWritten, ref overlap))
                                 {
                                     // IO fail, keep retrying
                                 }
@@ -136,14 +136,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                         int errorCode = Marshal.GetLastWin32Error();
                         throw new IOException(string.Format("{0} Unable to open mailslot. Try again later.", errorCode));
                     }
-                    try
-                    {
-                        // this tick is because MailSlot cannot handle
-                        // hign throughput and would otherwise drop messages
-                        Thread.Sleep(1);
-                    }
-                    catch (ThreadInterruptedException) { }
-                    catch (AbandonedMutexException) { }
                 }
                 finally
                 {

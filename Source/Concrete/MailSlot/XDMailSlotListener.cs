@@ -92,53 +92,32 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 }
                 // we are now the single thread responsible for checking the MailSlot for these channel
                 // open up the MailSlot, read timeout does not work after first read so we have to poll
-                IntPtr readHandle = IntPtr.Zero;
+                IntPtr readHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, channelName), 0, Native.MAILSLOT_WAIT_FOREVER, IntPtr.Zero);
 
-                try 
+                try
                 {
-                    // If this thread is still registered, then go ahead the begin checking, else exit
+                    int bytesToRead=512, maxMessageSize=0, messageCount=0, readTimeout=0;
+   
+                    // for as long as thread is alive is should act as the MailSlot reader
                     while (activeThreads.ContainsKey(channelName))
                     {
-                        if ((int)readHandle <= 0)
+                        byte[] buffer = new byte[bytesToRead];
+                        uint bytesRead = 0;
+                        // this blocks until a message is received, the message cannot be buffered with overlap structure
+                        // so the bytes array must be larger than the current item in order to read the complete message
+                        while (Native.ReadFile(readHandle, buffer, (uint)bytesToRead, out bytesRead, IntPtr.Zero))
                         {
-                            // try to open mailslot
-                            readHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, channelName), 0, 0, IntPtr.Zero);
+                            ProcessMessage(buffer, bytesRead);
+                            // reset buffer size
+                            bytesToRead = 512;
                         }
-
-                        // if mailslot was opened
-                        if ((int)readHandle > 0)
-                        {
-                            int numWaitingMessages = 0;
-                            // check whether the MailSlot has unread messages
-                            int timeout = 0;
-                            int maxMesages = 0;
-                            int nextSize = 0;
-                            if (Native.GetMailslotInfo(readHandle, ref maxMesages, ref nextSize, ref numWaitingMessages, ref timeout))
-                            {
-                                // while it has unread messages, read them
-                                while (numWaitingMessages > 0)
-                                {
-                                    ReadMessage(readHandle);
-                                    // move to next queued message
-                                    numWaitingMessages--;
-                                }
-                            }
-                            else
-                            {
-                                int errorCode = Marshal.GetLastWin32Error();
-                                throw new IOException(string.Format("{0} Unable to get mailslot info. Try again later.", errorCode));
-                            }
-                        }
-                        try
-                        {
-                            Thread.Sleep(200);
-                        }
-                        catch (ThreadInterruptedException) { }
-                        catch (ThreadAbortException) { }
+                        // insufficent buffer size, we need to the increase buffer size to read the current item
+                        Native.GetMailslotInfo(readHandle, ref maxMessageSize, ref bytesToRead, ref messageCount, ref readTimeout);
                     }
                 }
                 finally
                 {
+                    // close handle when we exit the thread
                     if ((int)readHandle > 0)
                     {
                         // close the file handle
@@ -147,37 +126,29 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 }
             }
         }
-
-        private void ReadMessage(IntPtr readHandle)
+        /// <summary>
+        /// Extracts the message for the buffer and raises the MessageReceived event.
+        /// </summary>
+        /// <param name="buffer"></param>
+        /// <param name="bytesRead"></param>
+        private void ProcessMessage(byte[] buffer, uint bytesRead)
         {
-            byte[] buffer = new byte[512];
-            string rawmessage = null;
-            uint bytesRead = 0;
-            // deserialize the data back into a string
             BinaryFormatter b = new BinaryFormatter();
+            string rawMessage = string.Empty;
             using (MemoryStream stream = new MemoryStream())
             {
-                do
-                {
-                    // whilst there is still data to read, add it to the buffer
-                    if (Native.ReadFile(readHandle, buffer, (uint)buffer.Length, out bytesRead, IntPtr.Zero))
-                    {
-                        stream.Write(buffer, 0, (int)bytesRead);
-                    }
-                }
-                while (bytesRead > 0);
-
+                stream.Write(buffer, 0, (int)bytesRead);
                 stream.Flush();
                 // reset the stream cursor back to the beginning
                 stream.Seek(0, SeekOrigin.Begin);
                 try
                 {
-                    rawmessage = (string)b.Deserialize(stream);
+                    rawMessage = (string)b.Deserialize(stream);
                 }
                 catch (SerializationException) { } // if something goes wrong such as handle is closed,
-                // we will not process this message
+                                                   // we will not process this message
             }
-            using (DataGram dataGram = DataGram.ExpandFromRaw(rawmessage))
+            using (DataGram dataGram = DataGram.ExpandFromRaw(rawMessage))
             {
                 if (dataGram.IsValid)
                 {
@@ -335,7 +306,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                             }
                         }
                     }
-
                 }
             }
         }

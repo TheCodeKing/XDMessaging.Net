@@ -23,6 +23,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
     internal static class Native
     {
         /// <summary>
+        /// Wait forever until mail arrives.
+        /// </summary>
+        public const int MAILSLOT_WAIT_FOREVER = -1;
+
+        /// <summary>
         /// The Win32 API for creating/openning a MailSlot for IPC communication.
         /// </summary>
         /// <param name="lpName">The MailSlot path.</param>

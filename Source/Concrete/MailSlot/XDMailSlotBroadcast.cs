@@ -97,7 +97,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     catch (ThreadInterruptedException) { }
                     catch (AbandonedMutexException) { }
                 }
-                // get a handle to the MailSlot
+
                 IntPtr writeHandle = IntPtr.Zero;
                 try
                 {
@@ -124,10 +124,9 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                             stream.Seek(0, SeekOrigin.Begin);
                             while ((bytesRead = stream.Read(bytes, 0, bytes.Length)) > 0)
                             {
-                                if (!Native.WriteFile(writeHandle, bytes, (uint)bytesRead, ref bytesWritten, ref overlap))
+                                while (!Native.WriteFile(writeHandle, bytes, (uint)bytesRead, ref bytesWritten, ref overlap))
                                 {
-                                    int errorCode = Marshal.GetLastWin32Error();
-                                    throw new IOException(string.Format("{0} Unable to write to mailslot. Try again later.", errorCode));
+                                    // IO fail, keep retrying
                                 }
                             }
                         }
@@ -137,6 +136,14 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                         int errorCode = Marshal.GetLastWin32Error();
                         throw new IOException(string.Format("{0} Unable to open mailslot. Try again later.", errorCode));
                     }
+                    try
+                    {
+                        // this tick is because MailSlot cannot handle
+                        // hign throughput and would otherwise drop messages
+                        Thread.Sleep(1);
+                    }
+                    catch (ThreadInterruptedException) { }
+                    catch (AbandonedMutexException) { }
                 }
                 finally
                 {

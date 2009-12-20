@@ -105,7 +105,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                             readHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, channelName), 0, 0, IntPtr.Zero);
                         }
 
-                        // if mailslot was openned
+                        // if mailslot was opened
                         if ((int)readHandle > 0)
                         {
                             int numWaitingMessages = 0;

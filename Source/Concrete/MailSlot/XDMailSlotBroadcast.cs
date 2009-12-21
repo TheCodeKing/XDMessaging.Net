@@ -84,67 +84,31 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             }
 
             //synchronize writes to mailslot
-            bool created = false;
             string mailSlotId = string.Concat(mailSlotIdentifier, channelName);
-            using (Mutex mutex = new Mutex(true, mailSlotId.Replace(@"\", "."), out created))
+
+            IntPtr writeHandle = IntPtr.Zero;
+            writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0, IntPtr.Zero);
+            if ((int)writeHandle>0)
             {
-                if (!created)
-                {
-                    try
-                    {
-                        mutex.WaitOne();
-                    }
-                    catch (ThreadInterruptedException) { }
-                    catch (AbandonedMutexException) { }
-                }
+                // format the message
+                string raw = string.Format("{0}:{1}", channelName, message);
 
-                IntPtr writeHandle = IntPtr.Zero;
-                try
+                // serialize the data
+                byte[] bytes;
+                uint bytesWritten=0;
+                BinaryFormatter b = new BinaryFormatter();
+                using (MemoryStream stream = new MemoryStream())
                 {
-                    writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0, IntPtr.Zero);
-                    if ((int)writeHandle > 0)
-                    {
-                        // format the message
-                        string raw = string.Format("{0}:{1}", channelName, message);
-
-                        // serialize the data
-                        byte[] bytes;
-                        NativeOverlapped overlap = new System.Threading.NativeOverlapped();
-                        BinaryFormatter b = new BinaryFormatter();
-                        using (MemoryStream stream = new MemoryStream())
-                        {
-                            b.Serialize(stream, raw);
-                            stream.Flush();
-                            int dataSize = (int)stream.Length;
-
-                            // create byte array
-                            bytes = new byte[256];
-                            int bytesRead = 0;
-                            uint bytesWritten = 0;
-                            stream.Seek(0, SeekOrigin.Begin);
-                            while ((bytesRead = stream.Read(bytes, 0, bytes.Length)) > 0)
-                            {
-                                while(!Native.WriteFile(writeHandle, bytes, (uint)bytesRead, ref bytesWritten, ref overlap))
-                                {
-                                    // IO fail, keep retrying
-                                }
-                            }
-                        }
-                    }
-                    else
-                    {
-                        int errorCode = Marshal.GetLastWin32Error();
-                        throw new IOException(string.Format("{0} Unable to open mailslot. Try again later.", errorCode));
-                    }
+                    b.Serialize(stream, raw);
+                    // create byte array
+                    bytes = stream.GetBuffer();
                 }
-                finally
-                {
-                    // close the handle
-                    if ((int)writeHandle > 0)
-                    {
-                        Native.CloseHandle(writeHandle);
-                    }
-                }
+                Native.WriteFile(writeHandle, bytes, (uint)bytes.Length, ref bytesWritten, IntPtr.Zero);
+            }
+            else
+            {
+                int errorCode = Marshal.GetLastWin32Error();
+                throw new IOException(string.Format("{0} Unable to open mailslot. Try again later.", errorCode));
             }
         }
     }

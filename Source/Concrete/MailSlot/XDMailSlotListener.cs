@@ -21,13 +21,14 @@ using System.IO;
 using System.Diagnostics;
 using System.Runtime.Serialization;
 using System.Runtime.InteropServices;
+using System.ComponentModel;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
     /// <summary>
     /// Implementation of IXDListener. This uses a Mutex to synchronize access
-    /// to the MailSlot for a particualt channel, such that only one listener will
-    /// ever poll for messages on a single machine.
+    /// to the MailSlot for a particular channel, such that only one listener will
+    /// pickup messages on a single machine per channel.
     /// </summary>
     internal sealed class XDMailSlotListener : IXDListener
     {
@@ -43,15 +44,16 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// The unique name of the Mutex used for locking access to the MailSlot for a named
         /// channel.
         /// </summary>
-        private const string MutexNetworkDispatcher = "TheCodeKing.Net.XDServices.XDMailSlot.Listener";
+        private const string MutexNetworkDispatcher = @"Global\TheCodeKing.Net.Listener";
         /// <summary>
         /// The base name of the MailSlot on the current machine.
         /// </summary>
         private static readonly string mailSlotIdentifier = string.Concat(@"\\.", XDMailSlotBroadcast.SlotLocation);
         /// <summary>
-        /// A list of Thread instances used for reading the MailSlot.
+        /// A hash tabel of Thread instances used for reading the MailSlot
+        /// for specific channels.
         /// </summary>
-        private Dictionary<string, Thread> activeThreads;
+        private Dictionary<string, MailSlotThreadInfo> activeThreads;
         /// <summary>
         /// The delegate used to dispatch the MessageReceived event.
         /// </summary>
@@ -62,7 +64,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// </summary>
         internal XDMailSlotListener()
         {
-            this.activeThreads = new Dictionary<string, Thread>(StringComparer.InvariantCultureIgnoreCase);
+            this.activeThreads = new Dictionary<string, MailSlotThreadInfo>(StringComparer.InvariantCultureIgnoreCase);
         }
 
         /// <summary>
@@ -72,56 +74,87 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <param name="state"></param>
         private void MailSlotChecker(object state)
         {
-            string channelName = (string)state;
-            bool createdNew = true;
-            // get a mutex name for the current channel
-            string mutextKey = string.Concat(MutexNetworkDispatcher, ".", channelName);
-            // Obtain the mutex, createdNew indicates whether this thread is the owner.
-            using (Mutex mutex = new Mutex(true, mutextKey, out createdNew))
+            MailSlotThreadInfo info = (MailSlotThreadInfo)state;
+            bool isOwner = false;
+            string mutextKey = string.Concat(MutexNetworkDispatcher, ".", info.ChannelName);
+            using (Mutex mutex = new Mutex(true, mutextKey, out isOwner))
             {
-                // if this thread does not own the mutx wait for it to become
-                // available
-                if (!createdNew)
+                // if doesn't own mutex then wait
+                if (!isOwner)
                 {
                     try
                     {
                         mutex.WaitOne();
+                        isOwner = true;
                     }
-                    catch (ThreadInterruptedException) { } // thread shutting down
-                    catch (AbandonedMutexException) { } // mutex has been released by another process
+                    catch (ThreadInterruptedException) { } // shut down thread
+                    catch (AbandonedMutexException)
+                    {
+                        // This thread is now the owner
+                        isOwner = true;
+                    }
                 }
-                // we are now the single thread responsible for checking the MailSlot for these channel
-                // open up the MailSlot, read timeout does not work after first read so we have to poll
-                IntPtr readHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, channelName), 0, Native.MAILSLOT_WAIT_FOREVER, IntPtr.Zero);
 
-                try
+                if (isOwner)
                 {
-                    int bytesToRead=512, maxMessageSize=0, messageCount=0, readTimeout=0;
-   
-                    // for as long as thread is alive is should act as the MailSlot reader
-                    while (activeThreads.ContainsKey(channelName))
-                    {
-                        byte[] buffer = new byte[bytesToRead];
-                        uint bytesRead = 0;
-                        // this blocks until a message is received, the message cannot be buffered with overlap structure
-                        // so the bytes array must be larger than the current item in order to read the complete message
-                        while (Native.ReadFile(readHandle, buffer, (uint)bytesToRead, out bytesRead, IntPtr.Zero))
-                        {
-                            ProcessMessage(buffer, bytesRead);
-                            // reset buffer size
-                            bytesToRead = 512;
-                        }
-                        // insufficent buffer size, we need to the increase buffer size to read the current item
-                        Native.GetMailslotInfo(readHandle, ref maxMessageSize, ref bytesToRead, ref messageCount, ref readTimeout);
-                    }
+                    // enter message read loop
+                    ProcessMessages(info);
+
+                    // if this thread owns mutex then release it
+                    mutex.ReleaseMutex();
                 }
-                finally
+            }
+        }
+
+        /// <summary>
+        /// This helper method puts the thread into a read message
+        /// loop.
+        /// </summary>
+        /// <param name="info"></param>
+        private void ProcessMessages(MailSlotThreadInfo info)
+        {
+            int bytesToRead = 512, maxMessageSize = 0, messageCount = 0, readTimeout = 0;
+            // for as long as thread is alive and the channel is registered then act as the MailSlot reader
+            while (!disposed && activeThreads.ContainsKey(info.ChannelName))
+            {
+                // if the channel mailslot is not open try to open it
+                if (!info.HasValidFileHandle)
                 {
-                    // close handle when we exit the thread
-                    if ((int)readHandle > 0)
+                    info.FileHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, info.ChannelName), 0, Native.MAILSLOT_WAIT_FOREVER, IntPtr.Zero);
+                }
+
+                // if there is a valid read handle try to read messages
+                if (info.HasValidFileHandle)
+                {
+                    byte[] buffer = new byte[bytesToRead];
+                    uint bytesRead = 0;
+                    // this blocks until a message is received, the message cannot be buffered with overlap structure
+                    // so the bytes array must be larger than the current item in order to read the complete message
+                    while (Native.ReadFile(info.FileHandle, buffer, (uint)bytesToRead, out bytesRead, IntPtr.Zero))
                     {
-                        // close the file handle
-                        Native.CloseHandle(readHandle);
+                        ProcessMessage(buffer, bytesRead);
+                        // reset buffer size
+                        bytesToRead = 512;
+                    }
+                    int code = Marshal.GetLastWin32Error();
+                    switch (code)
+                    {
+                        case Native.ERROR_INSUFFICIENT_BUFFER:
+                            // insufficent buffer size, we need to the increase buffer size to read the current item
+                            Native.GetMailslotInfo(info.FileHandle, ref maxMessageSize, ref bytesToRead, ref messageCount, ref readTimeout);
+                            break;
+                        case Native.ERROR_INVALID_HANDLE:
+                            // close handle if invalid
+                            if (info.HasValidFileHandle)
+                            {
+                                Native.CloseHandle(info.FileHandle);
+                                info.FileHandle = IntPtr.Zero;
+                            }
+                            break;
+                        case Native.ERROR_HANDLE_EOF:
+                            // read handle has been closed
+                            info.FileHandle = IntPtr.Zero;
+                            break;
                     }
                 }
             }
@@ -177,7 +210,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <param name="channelName"></param>
         public void RegisterChannel(string channelName)
         {
-            Thread channelThread;
+            MailSlotThreadInfo channelThread;
             if (!activeThreads.TryGetValue(channelName, out channelThread))
             {
                 // only lock if changing
@@ -200,33 +233,40 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <param name="channelName"></param>
         public void UnRegisterChannel(string channelName)
         {
-            Thread channelThread;
-            if (activeThreads.TryGetValue(channelName, out channelThread))
+            MailSlotThreadInfo info = null;
+            if (activeThreads.TryGetValue(channelName, out info))
             {
                 // only lock if changing
                 lock (lockObj)
                 {
                     // double check has not been modified before lock
-                    if (activeThreads.TryGetValue(channelName, out channelThread))
+                    if (activeThreads.TryGetValue(channelName, out info))
                     {
-                        // removing the channel, shuts down the thread
+                        // removing form hash shuts down the thread loop
                         activeThreads.Remove(channelName);
-                        if (channelThread.IsAlive)
+                    }
+                }
+                if (info!=null)
+                {
+                    // close any read handles
+                    if (info.HasValidFileHandle)
+                    {
+                        Native.CloseHandle(info.FileHandle);
+                    }
+                    if (info.Thread.IsAlive)
+                    {
+                        // interrupt incase of asleep thread
+                        info.Thread.Interrupt();
+                    }
+                    if (info.Thread.IsAlive)
+                    {
+                        // attempt to join thread
+                        if (!info.Thread.Join(500))
                         {
-                            // interrupt incase of asleep thread
-                            channelThread.Interrupt();
-                        }
-                        if (channelThread.IsAlive)
-                        {
-                            // attempt to join
-                            if (!channelThread.Join(200))
-                            {
-                                // if no response within timeout, force abort
-                                channelThread.Abort();
-                            }
+                            // if no response within timeout, force abort
+                            info.Thread.Abort();
                         }
                     }
-
                 }
             }
         }
@@ -235,14 +275,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// </summary>
         /// <param name="channelName">The channel name.</param>
         /// <returns></returns>
-        private Thread StartNewThread(string channelName)
+        private MailSlotThreadInfo StartNewThread(string channelName)
         {
             // create and start the thread at low priority
             Thread thread = new Thread(new ParameterizedThreadStart(MailSlotChecker));
             thread.Priority = ThreadPriority.Lowest;
             thread.IsBackground = true;
-            thread.Start(channelName);
-            return thread;
+            MailSlotThreadInfo info = new MailSlotThreadInfo(channelName, thread);
+            thread.Start(info);
+            return info;
         }
         /// <summary>
         /// Deconstructor, cleans unmanaged resources only
@@ -282,26 +323,32 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     if (activeThreads != null)
                     {
                         // grab a reference to the current list of threads
-                        var values = new List<Thread>(activeThreads.Values);
+                        var values = new List<MailSlotThreadInfo>(activeThreads.Values);
        
                         // removing the channels, will cause threads to terminate
                         activeThreads.Clear();
                         // shut down listener threads
-                        foreach (Thread channelThread in values)
+                        foreach (MailSlotThreadInfo info in values)
                         {
+                            // close any read handles
+                            if (info.HasValidFileHandle)
+                            {
+                                Native.CloseHandle(info.FileHandle);
+                            }
+
                             // ensure threads shut down 
-                            if (channelThread.IsAlive)
+                            if (info.Thread.IsAlive)
                             {
                                 // interrupt incase of asleep thread
-                                channelThread.Interrupt();
+                                info.Thread.Interrupt();
                             }
                             // try to join thread
-                            if (channelThread.IsAlive)
+                            if (info.Thread.IsAlive)
                             {
-                                if (!channelThread.Join(200))
+                                if (!info.Thread.Join(500))
                                 {
                                     // last resort abort thread
-                                    channelThread.Abort();
+                                    info.Thread.Abort();
                                 }
                             }
                         }

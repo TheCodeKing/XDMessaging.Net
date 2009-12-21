@@ -56,6 +56,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Concrete\IOStream\XDIOStreamListener.cs" />
+    <Compile Include="Concrete\MailSlot\MailSlotThreadInfo.cs" />
     <Compile Include="Concrete\MailSlot\XDMailSlotBroadcast.cs" />
     <Compile Include="Concrete\MailSlot\Native.cs" />
     <Compile Include="Concrete\MailSlot\XDMailSlotListener.cs" />

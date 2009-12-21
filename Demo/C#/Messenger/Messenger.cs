@@ -19,6 +19,7 @@ using System.Text;
 using System.Windows.Forms;
 using TheCodeKing.Net.Messaging;
 using System.Threading;
+using System.Diagnostics;
 
 namespace TheCodeKing.Demo
 {
@@ -302,6 +303,14 @@ namespace TheCodeKing.Demo
         /// <param name="e"></param>
         private void mode_CheckedChanged(object sender, EventArgs e)
         {
+            if (((RadioButton)sender).Checked)
+            {
+                SetMode();
+            }
+        }
+
+        private void SetMode()
+        {
             if (wmRadio.Checked)
             {
                 InitializeMode(XDTransportMode.WindowsMessaging);
@@ -339,7 +348,7 @@ namespace TheCodeKing.Demo
             {
                 UpdateDisplayText("Message are restricted to the current machine.\r\n", Color.Red);
             }
-            mode_CheckedChanged(sender, e);
+            SetMode();
         }
     }
 }

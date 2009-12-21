@@ -29,6 +29,7 @@ namespace TheCodeKing.Demo
         private void InitializeComponent()
         {
             this.panel1 = new System.Windows.Forms.Panel();
+            this.propagateCheck = new System.Windows.Forms.CheckBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
             this.statusCheckBox = new System.Windows.Forms.CheckBox();
             this.channel1Check = new System.Windows.Forms.CheckBox();
@@ -40,7 +41,6 @@ namespace TheCodeKing.Demo
             this.inputTextBox = new System.Windows.Forms.TextBox();
             this.sendBtn = new System.Windows.Forms.Button();
             this.displayTextBox = new System.Windows.Forms.RichTextBox();
-            this.propagateCheck = new System.Windows.Forms.CheckBox();
             this.panel1.SuspendLayout();
             this.groupBox1.SuspendLayout();
             this.Mode.SuspendLayout();
@@ -58,6 +58,19 @@ namespace TheCodeKing.Demo
             this.panel1.Name = "panel1";
             this.panel1.Size = new System.Drawing.Size(289, 157);
             this.panel1.TabIndex = 2;
+            // 
+            // propagateCheck
+            // 
+            this.propagateCheck.AutoSize = true;
+            this.propagateCheck.Checked = true;
+            this.propagateCheck.CheckState = System.Windows.Forms.CheckState.Checked;
+            this.propagateCheck.Location = new System.Drawing.Point(13, 128);
+            this.propagateCheck.Name = "propagateCheck";
+            this.propagateCheck.Size = new System.Drawing.Size(269, 17);
+            this.propagateCheck.TabIndex = 3;
+            this.propagateCheck.Text = "Propagate messages to local Workgroup or Domain";
+            this.propagateCheck.UseVisualStyleBackColor = true;
+            this.propagateCheck.CheckedChanged += new System.EventHandler(this.propagateCheck_CheckedChanged);
             // 
             // groupBox1
             // 
@@ -183,19 +196,6 @@ namespace TheCodeKing.Demo
             this.displayTextBox.TabIndex = 4;
             this.displayTextBox.TabStop = false;
             this.displayTextBox.Text = "";
-            // 
-            // propagateCheck
-            // 
-            this.propagateCheck.AutoSize = true;
-            this.propagateCheck.Checked = true;
-            this.propagateCheck.CheckState = System.Windows.Forms.CheckState.Checked;
-            this.propagateCheck.Location = new System.Drawing.Point(13, 128);
-            this.propagateCheck.Name = "propagateCheck";
-            this.propagateCheck.Size = new System.Drawing.Size(269, 17);
-            this.propagateCheck.TabIndex = 3;
-            this.propagateCheck.Text = "Propagate messages to local Workgroup or Domain";
-            this.propagateCheck.UseVisualStyleBackColor = true;
-            this.propagateCheck.CheckedChanged += new System.EventHandler(this.propagateCheck_CheckedChanged);
             // 
             // Messenger
             // 

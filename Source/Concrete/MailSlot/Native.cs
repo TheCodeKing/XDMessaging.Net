@@ -26,6 +26,18 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// Wait forever until mail arrives.
         /// </summary>
         public const int MAILSLOT_WAIT_FOREVER = -1;
+        /// <summary>
+        /// The read handle is invalid.
+        /// </summary>
+        public const int ERROR_INVALID_HANDLE = 6;
+        /// <summary>
+        /// The read buffer is not large enough for the current message.
+        /// </summary>
+        public const int ERROR_INSUFFICIENT_BUFFER = 122;
+        /// <summary>
+        /// Mailslot has closed, there is no more data to read.
+        /// </summary>
+        public const int ERROR_HANDLE_EOF = 38;
 
         /// <summary>
         /// The Win32 API for creating/openning a MailSlot for IPC communication.
@@ -93,7 +105,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 byte[] lpBuffer,
                 uint nNumberOfBytesToWrite,
                 [In] ref uint lpNumberOfBytesWritten,
-                [In] ref NativeOverlapped lpOverlapped);
+                IntPtr lpOverlapped);
 
         /// <summary>
         /// The Win32 used for checking a MailSlot for new messages.

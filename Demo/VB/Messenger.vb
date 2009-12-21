@@ -20,7 +20,7 @@ Imports System.Text
 Imports System.Windows.Forms
 Imports TheCodeKing.Net.Messaging
 Imports System.Threading
-Imports System.IO
+Imports System.Diagnostics
 
 Namespace TheCodeKing.Demo
     ''' <summary>
@@ -33,23 +33,23 @@ Namespace TheCodeKing.Demo
         ''' <summary>
         ''' The instance used to listen to broadcast messages.
         ''' </summary>
-            Private listener As IXDListener
+        Private listener As IXDListener
 
-            ''' <summary>
-            ''' The instance used to broadcast messages on a particular channel.
-            ''' </summary>
-            Private broadcast As IXDBroadcast
+        ''' <summary>
+        ''' The instance used to broadcast messages on a particular channel.
+        ''' </summary>
+        Private broadcast As IXDBroadcast
 
-            ''' <summary>
-            ''' Delegate used for invoke callback.
-            ''' </summary>
-            ''' <param name="dataGram"></param>
-            ''' <remarks></remarks>
+        ''' <summary>
+        ''' Delegate used for invoke callback.
+        ''' </summary>
+        ''' <param name="dataGram"></param>
+        ''' <remarks></remarks>
         Private Delegate Sub UpdateDisplay(ByVal dataGram As DataGram)
 
-            ''' <summary>
-            ''' Default constructor.
-            ''' </summary>
+        ''' <summary>
+        ''' Default constructor.
+        ''' </summary>
         Public Sub New()
             InitializeComponent()
         End Sub
@@ -273,6 +273,12 @@ Namespace TheCodeKing.Demo
         ''' <param name="sender"></param>
         ''' <param name="e"></param>
         Private Sub mode_CheckedChanged(ByVal sender As Object, ByVal e As EventArgs)
+            If DirectCast(sender, RadioButton).Checked Then
+                SetMode()
+            End If
+        End Sub
+
+        Private Sub SetMode()
             If wmRadio.Checked Then
                 InitializeMode(XDTransportMode.WindowsMessaging)
             ElseIf ioStreamRadio.Checked Then
@@ -299,8 +305,11 @@ Namespace TheCodeKing.Demo
             Else
                 UpdateDisplayText("Message are restricted to the current machine." & vbCr & vbLf, Color.Red)
             End If
-            mode_CheckedChanged(sender, e)
+            SetMode()
         End Sub
     End Class
 End Namespace
+
+
+
 

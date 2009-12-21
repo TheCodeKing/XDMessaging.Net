@@ -31,7 +31,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         /// <summary>
         /// Unique mutex key to synchronize the clean up tasks across processes.
         /// </summary>
-        private const string MutexCleanUpKey = "TheCodeKing.Net.XDServices.IOStream.Cleaner";
+        private const string mutexCleanUpKey = @"Global\XDIOStreamBroadcast.Cleanup";
         /// <summary>
         /// Get a list of charactors that must be stripped from a channel name folder.
         /// </summary>
@@ -106,7 +106,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
 
             // use a mutex to ensure only one listener system wide is running
             bool createdNew = true;
-            using (Mutex mutex = new Mutex(true, MutexCleanUpKey, out createdNew))
+            string mutexName = string.Concat(mutexCleanUpKey, ".", directory.Name);
+            using (Mutex mutex = new Mutex(true, mutexName, out createdNew))
             {
                 // we this thread owns the Mutex then clean up otherwise exit.
                 if (createdNew)
@@ -118,6 +119,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                     }
                     catch (ThreadInterruptedException) { }
                     CleanUpMessages(directory);
+                    // release the mutex
+                    mutex.ReleaseMutex();
                 }
             }
             if (createdNew)

@@ -104,6 +104,9 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     bytes = stream.GetBuffer();
                 }
                 Native.WriteFile(writeHandle, bytes, (uint)bytes.Length, ref bytesWritten, IntPtr.Zero);
+
+                // close the file handle
+                Native.CloseHandle(writeHandle);
             }
             else
             {

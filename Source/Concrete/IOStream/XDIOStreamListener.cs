@@ -32,14 +32,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         // Flag as to whether dispose has been called
         private bool disposed = false;
         /// <summary>
-        /// Unique mutex key to synchronize the clean up tasks across processes.
-        /// </summary>
-        private const string MutexCleanUpKey = "TheCodeKing.Net.XDServices.IOStream.Cleaner";
-        /// <summary>
-        /// The timeout period after which messages are deleted. 
-        /// </summary>
-        private const int fileTimeoutMilliseconds = 5000;
-        /// <summary>
         /// A list of FileSystemWatcher instances used for each registered channel.
         /// </summary>
         private Dictionary<string, FileSystemWatcher> watcherList;

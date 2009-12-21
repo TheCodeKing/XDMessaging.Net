@@ -44,13 +44,13 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// The unique name of the Mutex used for locking access to the MailSlot for a named
         /// channel.
         /// </summary>
-        private const string MutexNetworkDispatcher = @"Global\TheCodeKing.Net.Listener";
+        private const string mutexNetworkDispatcher = @"Global\XDMailSlotListener";
         /// <summary>
         /// The base name of the MailSlot on the current machine.
         /// </summary>
         private static readonly string mailSlotIdentifier = string.Concat(@"\\.", XDMailSlotBroadcast.SlotLocation);
         /// <summary>
-        /// A hash tabel of Thread instances used for reading the MailSlot
+        /// A hash table of Thread instances used for reading the MailSlot
         /// for specific channels.
         /// </summary>
         private Dictionary<string, MailSlotThreadInfo> activeThreads;
@@ -76,7 +76,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         {
             MailSlotThreadInfo info = (MailSlotThreadInfo)state;
             bool isOwner = false;
-            string mutextKey = string.Concat(MutexNetworkDispatcher, ".", info.ChannelName);
+            string mutextKey = string.Concat(mutexNetworkDispatcher, ".", info.ChannelName);
             using (Mutex mutex = new Mutex(true, mutextKey, out isOwner))
             {
                 // if doesn't own mutex then wait

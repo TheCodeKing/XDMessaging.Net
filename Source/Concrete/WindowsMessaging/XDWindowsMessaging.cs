@@ -51,7 +51,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                 {
                     IntPtr outPtr = IntPtr.Zero;
                     // For each listening window, send the message data. Return if hang or unresponsive within 1 sec.
-                    Native.SendMessageTimeout(hWnd, Native.WM_COPYDATA, (int)IntPtr.Zero, ref dataStruct, Native.SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 10000, out outPtr);
+                    Native.SendMessageTimeout(hWnd, Native.WM_COPYDATA, IntPtr.Zero, ref dataStruct, Native.SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 10000, out outPtr);
                 }
             }
         }

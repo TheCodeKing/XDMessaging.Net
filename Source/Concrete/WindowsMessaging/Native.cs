@@ -24,7 +24,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <summary>
         /// The WM_COPYDATA constant.
         /// </summary>
-        public const int WM_COPYDATA = 0x4A;
+        public const uint WM_COPYDATA = 0x4A;
         /// <summary>
         /// The struct used to marshal data between applications using
         /// the windows messaging API.
@@ -65,12 +65,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
             SMTO_NOTIMEOUTIFNOTHUNG = 0x0008
         }
         /// <summary>
-        /// Returns a pointer to the Desktop window.
-        /// </summary>
-        /// <returns>Pointer to the desktop window.</returns>
-        [DllImport("user32.dll", EntryPoint = "GetDesktopWindow")]
-        public static extern IntPtr GetDesktopWindow();
-        /// <summary>
         /// Sends a native windows message to a specified window.
         /// </summary>
         /// <param name="hwnd">The window to which the message should be sent.</param>
@@ -84,7 +78,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         [DllImport("user32", CharSet = CharSet.Auto)]
         public extern static int SendMessageTimeout(
                     IntPtr hwnd,
-                    int wMsg, int wParam,
+                    uint wMsg,
+                    IntPtr wParam,
                     ref COPYDATASTRUCT lParam,
                     SendMessageTimeoutFlags flags,
                     uint timeout,
@@ -96,14 +91,14 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <param name="hwnd">A pointer to a window that was found.</param>
         /// <param name="lParam">The lParam passed by the EnumChildWindows API.</param>
         /// <returns></returns>
-        public delegate int EnumWindowsProc(IntPtr hwnd, int lParam);
+        public delegate int EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
         /// <summary>
         /// The API used to enumerate topvlevel windows.
         /// </summary>
         /// <param name="lpEnumFunc">The delegate called when a window is located.</param>
         /// <param name="lParam">The lParam passed to the deleage.</param>
         /// <returns></returns>
-        [DllImport("user32.dll")]
+        [DllImport("user32", CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
         /// <summary>

@@ -49,6 +49,10 @@ namespace TheCodeKing.Net.Messaging
             }
         }
         /// <summary>
+        /// Indicates whether this instance allocated the memory used by the dataStruct instance.
+        /// </summary>
+        private bool allocatedMemory;
+        /// <summary>
         /// Gets the channel name.
         /// </summary>
         public string Channel
@@ -75,6 +79,7 @@ namespace TheCodeKing.Net.Messaging
         /// <param name="message">The string message to send.</param>
         public DataGram(string channel, string message)
         {
+            this.allocatedMemory = false;
             this.dataStruct = new Native.COPYDATASTRUCT();
             this.channel = channel;
             this.message = message;
@@ -87,6 +92,7 @@ namespace TheCodeKing.Net.Messaging
         /// expand the DataGram.</param>
         private DataGram(IntPtr lpParam)
         {
+            this.allocatedMemory = false;
             this.dataStruct = (Native.COPYDATASTRUCT)Marshal.PtrToStructure(lpParam, typeof(Native.COPYDATASTRUCT));
             byte[] bytes = new byte[this.dataStruct.cbData];
             Marshal.Copy(this.dataStruct.lpData, bytes, 0, this.dataStruct.cbData);
@@ -128,6 +134,8 @@ namespace TheCodeKing.Net.Messaging
                 stream.Read(bytes, 0, dataSize);
             }
             IntPtr ptrData = Marshal.AllocCoTaskMem(bytes.Length);
+            // flag that this instance dispose method needs to clean up the memory
+            allocatedMemory = true;
             Marshal.Copy(bytes, 0, ptrData, bytes.Length);
 
             this.dataStruct.cbData = bytes.Length;
@@ -158,7 +166,12 @@ namespace TheCodeKing.Net.Messaging
             /// clean up unmanaged resources
             if (this.dataStruct.lpData != IntPtr.Zero)
             {
-                Marshal.FreeCoTaskMem(this.dataStruct.lpData);
+                // only free memory if this instance created it (broadcast instance)
+                // don't free if we are just reading shared memory
+                if (allocatedMemory)
+                {
+                    Marshal.FreeCoTaskMem(this.dataStruct.lpData);
+                }
                 this.dataStruct.lpData = IntPtr.Zero;
                 this.dataStruct.dwData = IntPtr.Zero;
                 this.dataStruct.cbData = 0;

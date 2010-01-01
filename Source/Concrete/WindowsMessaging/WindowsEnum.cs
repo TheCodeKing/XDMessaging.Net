@@ -71,7 +71,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <param name="hWnd">The window being enumerated</param>
         /// <param name="lParam">The lParam passed by the windows API.</param>
         /// <returns></returns>
-        private int OnWindowEnum(IntPtr hWnd, int lParam)
+        private int OnWindowEnum(IntPtr hWnd, IntPtr lParam)
         {
             bool include = true;
             if (filterHandler != null)

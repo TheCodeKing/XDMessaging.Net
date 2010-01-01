@@ -58,7 +58,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// The delegate used to dispatch the MessageReceived event.
         /// </summary>
         public event XDListener.XDMessageHandler MessageReceived;
-
+        /// <summary>
+        /// Records the last unique message id received.
+        /// </summary>
+        private string lastMessageId;
         /// <summary>
         /// The default constructor.
         /// </summary>
@@ -135,6 +138,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                         ProcessMessage(buffer, bytesRead);
                         // reset buffer size
                         bytesToRead = 512;
+                        buffer = new byte[bytesToRead];
                     }
                     int code = Marshal.GetLastWin32Error();
                     switch (code)
@@ -181,11 +185,22 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 catch (SerializationException) { } // if something goes wrong such as handle is closed,
                                                    // we will not process this message
             }
-            using (DataGram dataGram = DataGram.ExpandFromRaw(rawMessage))
+            // mailslot message format is id:channel:message
+            using (DataGram dataGramId = DataGram.ExpandFromRaw(rawMessage))
             {
-                if (dataGram.IsValid)
+                // only dispatch event if this is a new message
+                // this filters out mailslot duplicates which are sent once per protocol
+                if (dataGramId.IsValid && dataGramId.Channel != lastMessageId)
                 {
-                    OnMessageReceived(dataGram);
+                    // remember we have seen this message
+                    lastMessageId = dataGramId.Channel;
+                    using (DataGram dataGram = DataGram.ExpandFromRaw(dataGramId.Message))
+                    {
+                        if (dataGram.IsValid)
+                        {
+                            OnMessageReceived(dataGram);
+                        }
+                    }
                 }
             }
         }

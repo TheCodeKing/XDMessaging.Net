@@ -90,8 +90,9 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0, IntPtr.Zero);
             if ((int)writeHandle>0)
             {
-                // format the message
-                string raw = string.Format("{0}:{1}", channelName, message);
+                // format the message, and add a unique id to avoid duplicates in listener instances
+                // this is because mailslot is sent once for every protocol (TCP/IP NetBEU)
+                string raw = string.Format("{0}:{1}:{2}", Guid.NewGuid().ToString(), channelName, message);
 
                 // serialize the data
                 byte[] bytes;

@@ -18,7 +18,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
     /// The implementation of IXDBroadcast used to broadcast messages acorss appDomain and process boundaries
     /// using the XDTransportMode.WindowsMessaging implementation. Non-form based application are not supported.
     /// </summary>
-    internal sealed class XDWindowsMessaging : IXDBroadcast
+    internal sealed class XDWinMsgBroadcast : IXDBroadcast
     {
         #region IXDBroadcast Members
 
@@ -44,7 +44,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                 // Use a filter with the EnumWindows class to get a list of windows containing
                 // a property name that matches the destination channel. These are the listening
                 // applications.
-                var filter = new WindowEnumFilter(XDListener.GetChannelKey(channelName));
+                var filter = new WindowEnumFilter(XDWinMsgListener.GetChannelKey(channelName));
                 var winEnum = new WindowsEnum(filter.WindowFilterHandler);
                 foreach (var hWnd in winEnum.Enumerate())
                 {

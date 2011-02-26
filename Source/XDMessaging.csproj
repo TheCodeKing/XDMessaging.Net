@@ -69,11 +69,12 @@
     <Compile Include="Concrete\MultiBroadcast\NetworkRelayBroadcast.cs" />
     <Compile Include="Concrete\MultiBroadcast\XDMultiBroadcast.cs" />
     <Compile Include="Concrete\MultiBroadcast\NetworkRelayListener.cs" />
+    <Compile Include="Concrete\WindowsMessaging\XDWinMsgListener.cs" />
     <Compile Include="Interfaces\IXDBroadcast.cs" />
     <Compile Include="Interfaces\IXDListener.cs" />
     <Compile Include="XDBroadcast.cs" />
     <Compile Include="Concrete\IOStream\XDIOStreamBroadcast.cs" />
-    <Compile Include="Concrete\WindowsMessaging\XDWindowsMessaging.cs" />
+    <Compile Include="Concrete\WindowsMessaging\XDWinMsgBroadcast.cs" />
     <Compile Include="XDListener.cs">
     </Compile>
     <Compile Include="DataGram.cs" />

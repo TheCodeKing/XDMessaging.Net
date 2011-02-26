@@ -69,7 +69,7 @@ namespace TheCodeKing.Net.Messaging
                     case XDTransportMode.MailSlot:
                         return new XDMailSlotBroadcast(false);
                     default:
-                        return new XDWindowsMessaging();
+                        return new XDWinMsgBroadcast();
                 }
             }
 

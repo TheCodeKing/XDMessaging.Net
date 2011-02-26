@@ -23,6 +23,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
     /// </summary>
     internal sealed class WindowsEnum
     {
+        #region Delegates
+
         /// <summary>
         /// The delegate used for processing the windows enumeration results.
         /// </summary>
@@ -30,28 +32,35 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <param name="include">A reference to a bool, which may be set to true/false in 
         /// order to determine whether it should be included in the enumeration output.</param>
         public delegate void WindowFilterHandler(IntPtr hWnd, ref bool include);
+
+        #endregion
+
+        /// <summary>
+        /// The delegate allocated to the instance for processing the enumerated windows.
+        /// </summary>
+        private readonly WindowFilterHandler filterHandler;
+
         /// <summary>
         /// A list used to store the windows pointers during enumeration.
         /// </summary>
         private List<IntPtr> winEnumList;
-        /// <summary>
-        /// The delegate allocated to the instance for processing the enumerated windows.
-        /// </summary>
-        private WindowFilterHandler filterHandler;
+
         /// <summary>
         /// The constructor which takes a filter delegate for filtering enumeration results.
         /// </summary>
         /// <param name="filterHandler">A delegate which may filter the results.</param>
-        public WindowsEnum(WindowFilterHandler filterHandler):this()
+        public WindowsEnum(WindowFilterHandler filterHandler) : this()
         {
-            this.filterHandler=filterHandler;
+            this.filterHandler = filterHandler;
         }
+
         /// <summary>
         /// A constructor used when there is no requirement to filter the enumeration results. 
         /// </summary>
         public WindowsEnum()
         {
         }
+
         /// <summary>
         /// Enumerates the child windows of a parent and returns a list of pointers. If a filter
         /// delegate is specified this is used to determine whether the windows are included in 
@@ -60,10 +69,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <returns>A filtered list of child windows.</returns>
         public List<IntPtr> Enumerate()
         {
-            this.winEnumList = new List<IntPtr>();
+            winEnumList = new List<IntPtr>();
             Native.EnumWindows(OnWindowEnum, IntPtr.Zero);
-            return this.winEnumList;
+            return winEnumList;
         }
+
         /// <summary>
         /// A delegate used by the native API to process the enumerated windows from the 
         /// Enumerate method call.
@@ -80,7 +90,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
             }
             if (include)
             {
-                this.winEnumList.Add(hWnd);
+                winEnumList.Add(hWnd);
             }
             return 1;
         }

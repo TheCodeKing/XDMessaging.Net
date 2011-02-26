@@ -11,8 +11,6 @@
 *=============================================================================
 */
 using System;
-using System.Diagnostics;
-using System.Collections.Generic;
 
 namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
@@ -26,7 +24,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <summary>
         /// The property to search for when filtering the windows.
         /// </summary>
-        private string property;
+        private readonly string property;
+
         /// <summary>
         /// The constructor which takes the property name used for filtering
         /// results.
@@ -36,6 +35,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         {
             this.property = property;
         }
+
         /// <summary>
         /// The delegate used to filter windows during emuneration. Only windows 
         /// that contain a named property are added to the enum.

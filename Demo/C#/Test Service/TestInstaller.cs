@@ -10,13 +10,9 @@
 *
 *=============================================================================
 */
-using System;
-using System.Collections;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.Configuration.Install;
 using System.ServiceProcess;
-using Microsoft.Win32;
 
 namespace Test_Service
 {
@@ -30,17 +26,17 @@ namespace Test_Service
         {
             InitializeComponent();
 
-            ServiceInstaller si = new ServiceInstaller();
+            var si = new ServiceInstaller();
             si.ServiceName = "Test Service";
             si.DisplayName = "Test Service";
             si.StartType = ServiceStartMode.Manual;
-            this.Installers.Add(si);
+            Installers.Add(si);
 
-            ServiceProcessInstaller spi = new ServiceProcessInstaller();
-            spi.Account = System.ServiceProcess.ServiceAccount.LocalSystem;
+            var spi = new ServiceProcessInstaller();
+            spi.Account = ServiceAccount.LocalSystem;
             spi.Password = null;
             spi.Username = null;
-            this.Installers.Add(spi);
+            Installers.Add(spi);
         }
     }
 }

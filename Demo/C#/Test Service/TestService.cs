@@ -10,16 +10,9 @@
 *
 *=============================================================================
 */
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
 using System.Diagnostics;
 using System.ServiceProcess;
-using System.Text;
 using TheCodeKing.Net.Messaging;
-using System.Windows.Forms;
-using System.Threading;
 
 namespace Test_Service
 {
@@ -30,14 +23,14 @@ namespace Test_Service
     public partial class TestService : ServiceBase
     {
         /// <summary>
-        /// The instance used to listen to broadcast messages.
-        /// </summary>
-        private IXDListener listener;
-
-        /// <summary>
         /// The instance used to broadcast messages on a particular channel.
         /// </summary>
-        private IXDBroadcast broadcast;
+        private readonly IXDBroadcast broadcast;
+
+        /// <summary>
+        /// The instance used to listen to broadcast messages.
+        /// </summary>
+        private readonly IXDListener listener;
 
         /// <summary>
         /// Default constructor.
@@ -45,12 +38,12 @@ namespace Test_Service
         public TestService()
         {
             InitializeComponent();
-            this.ServiceName = "Test Service";
+            ServiceName = "Test Service";
 
             //only the following mode is supported in windows services
             broadcast = XDBroadcast.CreateBroadcast(XDTransportMode.IOStream);
             listener = XDListener.CreateListener(XDTransportMode.IOStream);
-            listener.MessageReceived += new XDListener.XDMessageHandler(OnMessageReceived);
+            listener.MessageReceived += OnMessageReceived;
             listener.RegisterChannel("Status");
             listener.RegisterChannel("Channel1");
             listener.RegisterChannel("Channel2");
@@ -83,7 +76,7 @@ namespace Test_Service
         private void OnMessageReceived(object sender, XDMessageEventArgs e)
         {
             // view these debug messages using SysInternals Dbgview.
-            Debug.WriteLine("Test Service: "+e.DataGram.Channel+" "+e.DataGram.Message);
+            Debug.WriteLine("Test Service: " + e.DataGram.Channel + " " + e.DataGram.Message);
         }
     }
 }

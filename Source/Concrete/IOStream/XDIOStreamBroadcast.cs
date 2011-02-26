@@ -11,13 +11,10 @@
 *=============================================================================
 */
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.IO;
+using System.Security.AccessControl;
+using System.Security.Principal;
 using System.Threading;
-using System.Diagnostics;
-using System.Windows.Forms;
-using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 
 namespace TheCodeKing.Net.Messaging.Concrete.IOStream
 {
@@ -32,33 +29,32 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         /// Unique mutex key to synchronize the clean up tasks across processes.
         /// </summary>
         private const string mutexCleanUpKey = @"Global\XDIOStreamBroadcast.Cleanup";
-        /// <summary>
-        /// Get a list of charactors that must be stripped from a channel name folder.
-        /// </summary>
-        private static readonly char[] invalidChannelChars = Path.GetInvalidFileNameChars();
-        /// <summary>
-        /// The temporary folder where messages will be stored.
-        /// </summary>
-        private static readonly string temporaryFolder;
+
         /// <summary>
         /// The timeout period after which messages are deleted. 
         /// </summary>
         private const int fileTimeoutMilliseconds = 5000;
 
         /// <summary>
+        /// Get a list of charactors that must be stripped from a channel name folder.
+        /// </summary>
+        private static readonly char[] invalidChannelChars = Path.GetInvalidFileNameChars();
+
+        /// <summary>
+        /// The temporary folder where messages will be stored.
+        /// </summary>
+        private static readonly string temporaryFolder;
+
+        /// <summary>
         /// Static constructor gets the path to the temporary directory.
         /// </summary>
         static XDIOStreamBroadcast()
         {
-            temporaryFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "XDMessaging");
+            temporaryFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
+                                           "XDMessaging");
         }
 
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        internal XDIOStreamBroadcast()
-        {
-        }
+        #region IXDBroadcast Members
 
         /// <summary>
         /// The implementation of IXDBroadcast, used to broadcast a new message to other processes. This creates a unique
@@ -95,19 +91,25 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             // return as fast as we can, leaving a clean up task
             ThreadPool.QueueUserWorkItem(CleanUpMessages, new FileInfo(filePath).Directory);
         }
+
+        #endregion
+
         /// <summary>
         /// This method is called within a seperate thread and deletes messages that are older than
         /// the pre-defined expiry time.
         /// </summary>
         /// <param name="state"></param>
-        private void CleanUpMessages(object state)
+        private static void CleanUpMessages(object state)
         {
-            DirectoryInfo directory = state as DirectoryInfo;
+            var directory = (DirectoryInfo)state;
 
             // use a mutex to ensure only one listener system wide is running
-            bool createdNew = true;
+            bool createdNew;
             string mutexName = string.Concat(mutexCleanUpKey, ".", directory.Name);
-            using (Mutex mutex = new Mutex(true, mutexName, out createdNew))
+            var accessControl = new MutexSecurity();
+            var sid = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+            accessControl.SetAccessRule(new MutexAccessRule(sid, MutexRights.FullControl, AccessControlType.Allow));
+            using (var mutex = new Mutex(true, mutexName, out createdNew, accessControl))
             {
                 // we this thread owns the Mutex then clean up otherwise exit.
                 if (createdNew)
@@ -117,7 +119,9 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                     {
                         Thread.Sleep(fileTimeoutMilliseconds);
                     }
-                    catch (ThreadInterruptedException) { }
+                    catch (ThreadInterruptedException)
+                    {
+                    }
                     CleanUpMessages(directory);
                     // release the mutex
                     mutex.ReleaseMutex();
@@ -143,7 +147,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                 // check directory not deleted, don't use cached version (directory.Exists)
                 if (Directory.Exists(directory.FullName))
                 {
-                    foreach (FileInfo file in directory.GetFiles("*.msg"))
+                    foreach (var file in directory.GetFiles("*.msg"))
                     {
                         // attempt to clean up all expired messages in the channel directory
                         if (file.CreationTimeUtc <= DateTime.UtcNow.AddMilliseconds(-fileTimeoutMilliseconds))
@@ -154,15 +158,23 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                                 {
                                     file.Delete();
                                 }
-                                catch (IOException) { } // the file could have been deleted by another broadcaster, retry later.
-                                catch (UnauthorizedAccessException) { } // if the file is still in use retry again later.
+                                catch (IOException)
+                                {
+                                } // the file could have been deleted by another broadcaster, retry later.
+                                catch (UnauthorizedAccessException)
+                                {
+                                } // if the file is still in use retry again later.
                             }
                         }
                     }
                 }
             }
-            catch (IOException) { } // the file could have been deleted by another broadcaster, retry later.
-            catch (UnauthorizedAccessException) { } // if the file is still in use retry again later.
+            catch (IOException)
+            {
+            } // the file could have been deleted by another broadcaster, retry later.
+            catch (UnauthorizedAccessException)
+            {
+            } // if the file is still in use retry again later.
         }
 
         /// <summary>
@@ -187,17 +199,20 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             catch (PathTooLongException e)
             {
                 throw new ArgumentException(string.Format("Unable to bind to channel as the name '{0}' is too long." +
-                    " Try a shorter channel name.", channelName), e);
+                                                          " Try a shorter channel name.", channelName), e);
             }
             catch (UnauthorizedAccessException ue)
             {
-                throw new UnauthorizedAccessException(string.Format("Unable to bind to channel '{0}' as access is denied." +
-                    " Ensure the process has read/write access to the directory '{1}'.", channelName, folder), ue);
+                throw new UnauthorizedAccessException(
+                    string.Format("Unable to bind to channel '{0}' as access is denied." +
+                                  " Ensure the process has read/write access to the directory '{1}'.", channelName,
+                                  folder), ue);
             }
             catch (IOException ie)
             {
                 throw new IOException(string.Format("There was an unexpected IO error binding to channel '{0}'." +
-                    " Ensure the process is unable to read/write to directory '{1}'.", channelName, folder), ie);
+                                                    " Ensure the process is unable to read/write to directory '{1}'.",
+                                                    channelName, folder), ie);
             }
         }
 
@@ -209,7 +224,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         /// <returns>The string channel key.</returns>
         internal static string GetChannelKey(string channelName)
         {
-            foreach (char c in invalidChannelChars)
+            foreach (var c in invalidChannelChars)
             {
                 if (channelName.Contains(c.ToString()))
                 {

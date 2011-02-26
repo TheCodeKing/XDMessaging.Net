@@ -23,17 +23,8 @@ namespace TheCodeKing.Net.Messaging
         /// <summary>
         /// Stores the DataGram containing message and channel data.
         /// </summary>
-        private DataGram dataGram;
-        /// <summary>
-        /// Gets the DataGram associated with this instance.
-        /// </summary>
-        public DataGram DataGram
-        {
-            get
-            {
-                return dataGram;
-            }
-        }
+        private readonly DataGram dataGram;
+
         /// <summary>
         /// Constructor used to create a new instance from a DataGram struct.
         /// </summary>
@@ -41,6 +32,14 @@ namespace TheCodeKing.Net.Messaging
         internal XDMessageEventArgs(DataGram dataGram)
         {
             this.dataGram = dataGram;
+        }
+
+        /// <summary>
+        /// Gets the DataGram associated with this instance.
+        /// </summary>
+        public DataGram DataGram
+        {
+            get { return dataGram; }
         }
     }
 }

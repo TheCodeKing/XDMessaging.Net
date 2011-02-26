@@ -13,10 +13,9 @@
 using System;
 using System.Windows.Forms;
 using TheCodeKing.Net.Messaging.Concrete.IOStream;
-using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
-using System.Diagnostics;
+using TheCodeKing.Net.Messaging.Concrete.MailSlot;
 using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
-using TheCodeKing.Net.Messaging.Concrete;
+using Native = TheCodeKing.Net.Messaging.Concrete.WindowsMessaging.Native;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -29,7 +28,19 @@ namespace TheCodeKing.Net.Messaging
     public sealed class XDListener : NativeWindow, IXDListener
     {
         // Flag as to whether dispose has been called
-        private bool disposed = false;
+
+        #region Delegates
+
+        /// <summary>
+        /// The delegate used for handling cross AppDomain communications.
+        /// </summary>
+        /// <param name="sender">The event sender.</param>
+        /// <param name="e">The event args containing the DataGram data.</param>
+        public delegate void XDMessageHandler(object sender, XDMessageEventArgs e);
+
+        #endregion
+
+        private bool disposed;
         private NetworkRelayListener networkRelay;
 
         /// <summary>
@@ -38,7 +49,7 @@ namespace TheCodeKing.Net.Messaging
         /// </summary>
         [Obsolete("Use the static CreateListener method to create a particular implementation of IXDListener.")]
         public XDListener()
-            :this(true)
+            : this(true)
         {
         }
 
@@ -49,49 +60,25 @@ namespace TheCodeKing.Net.Messaging
         internal XDListener(bool nonObsolete)
         {
             // create a top-level native window
-            CreateParams p = new CreateParams();
+            var p = new CreateParams();
             p.Width = 0;
             p.Height = 0;
             p.X = 0;
             p.Y = 0;
-            p.Caption = string.Concat("TheCodeKing.Net.XDServices.",Guid.NewGuid().ToString());
+            p.Caption = string.Concat("TheCodeKing.Net.XDServices.", Guid.NewGuid().ToString());
             p.Parent = IntPtr.Zero;
             base.CreateHandle(p);
 
-            this.networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.WindowsMessaging), 
-                                                            XDListener.CreateListener(XDTransportMode.MailSlot));
+            networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.WindowsMessaging),
+                                                    CreateListener(XDTransportMode.MailSlot));
         }
 
-        /// <summary>
-        /// The delegate used for handling cross AppDomain communications.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args containing the DataGram data.</param>
-        public delegate void XDMessageHandler(object sender, XDMessageEventArgs e);
+        #region IXDListener Members
 
         /// <summary>
         /// The event fired when messages are received.
         /// </summary>
         public event XDMessageHandler MessageReceived;
-
-        /// <summary>
-        /// Creates an concrete implementation of IXDListener to listen for messages using
-        /// either a specific XDTransportMode.
-        /// </summary>
-        /// <param name="transport"></param>
-        /// <returns></returns>
-        public static IXDListener CreateListener(XDTransportMode transport)
-        {
-            switch (transport)
-            {
-                case XDTransportMode.IOStream:
-                    return new XDIOStreamListener();
-                case XDTransportMode.MailSlot:
-                    return new TheCodeKing.Net.Messaging.Concrete.MailSlot.XDMailSlotListener();
-                default:
-                    return new XDListener(true);
-            }
-        }
 
         /// <summary>
         /// Registers the instance to recieve messages from a named channel.
@@ -107,8 +94,9 @@ namespace TheCodeKing.Net.Messaging
             {
                 throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
             }
-            Native.SetProp(this.Handle, GetChannelKey(channelName), (int)this.Handle);
+            Native.SetProp(Handle, GetChannelKey(channelName), (int) Handle);
         }
+
         /// <summary>
         /// Unregisters the channel name with the instance, so that messages from this 
         /// channel will no longer be received.
@@ -124,8 +112,39 @@ namespace TheCodeKing.Net.Messaging
             {
                 throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
             }
-            Native.RemoveProp(this.Handle, GetChannelKey(channelName));
+            Native.RemoveProp(Handle, GetChannelKey(channelName));
         }
+
+        /// <summary>
+        /// Dispose implementation, which ensures the native window is destroyed
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Creates an concrete implementation of IXDListener to listen for messages using
+        /// either a specific XDTransportMode.
+        /// </summary>
+        /// <param name="transport"></param>
+        /// <returns></returns>
+        public static IXDListener CreateListener(XDTransportMode transport)
+        {
+            switch (transport)
+            {
+                case XDTransportMode.IOStream:
+                    return new XDIOStreamListener();
+                case XDTransportMode.MailSlot:
+                    return new XDMailSlotListener();
+                default:
+                    return new XDListener(true);
+            }
+        }
+
         /// <summary>
         /// The native window message filter used to catch our custom WM_COPYDATA
         /// messages containing cross AppDomain messages. All other messages are ignored.
@@ -170,14 +189,6 @@ namespace TheCodeKing.Net.Messaging
         }
 
         /// <summary>
-        /// Dispose implementation, which ensures the native window is destroyed
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
-        /// <summary>
         /// Dispose implementation which ensures the native window is destroyed, and
         /// managed resources detached.
         /// </summary>
@@ -203,10 +214,10 @@ namespace TheCodeKing.Net.Messaging
                             MessageReceived -= msg;
                         }
                     }
-                    if (this.Handle != IntPtr.Zero)
+                    if (Handle != IntPtr.Zero)
                     {
-                        this.DestroyHandle();
-                        this.Dispose();
+                        DestroyHandle();
+                        Dispose();
                     }
                 }
             }

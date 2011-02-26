@@ -9,16 +9,16 @@ Imports System.Runtime.InteropServices
 ' Review the values of the assembly attributes
 
 <Assembly: AssemblyTitle("Messenger")> 
-<Assembly: AssemblyDescription("A demo application for the XDMessaging Library.")> 
-<Assembly: AssemblyCompany("")> 
-<Assembly: AssemblyProduct("TheCodeKing.Messenger")> 
-<Assembly: AssemblyCopyright("Copyright ©  2009")> 
+<Assembly: AssemblyDescription("")> 
+<Assembly: AssemblyCompany("Microsoft")> 
+<Assembly: AssemblyProduct("Messenger")> 
+<Assembly: AssemblyCopyright("Copyright © Microsoft 2011")> 
 <Assembly: AssemblyTrademark("")> 
 
 <Assembly: ComVisible(False)>
 
 'The following GUID is for the ID of the typelib if this project is exposed to COM
-<Assembly: Guid("e3dd7a42-d229-4a5c-8c71-a3c75d477de1")> 
+<Assembly: Guid("cf47c17a-b75c-4e71-a84d-da23424f4d0b")> 
 
 ' Version information for an assembly consists of the following four values:
 '

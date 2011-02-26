@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 11.00
+# Visual Studio 2010
+Project("{F184B08F-C81C-45F6-A57F-5ABD9991F28F}") = "Messenger", "Messenger\Messenger.vbproj", "{402E861D-3344-47AF-8A23-0E73CF65ED28}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|Mixed Platforms = Debug|Mixed Platforms
+		Debug|x86 = Debug|x86
+		Release|Any CPU = Release|Any CPU
+		Release|Mixed Platforms = Release|Mixed Platforms
+		Release|x86 = Release|x86
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Debug|Any CPU.ActiveCfg = Debug|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Debug|Mixed Platforms.ActiveCfg = Debug|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Debug|Mixed Platforms.Build.0 = Debug|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Debug|x86.ActiveCfg = Debug|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Debug|x86.Build.0 = Debug|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Release|Any CPU.ActiveCfg = Release|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Release|Mixed Platforms.ActiveCfg = Release|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Release|Mixed Platforms.Build.0 = Release|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Release|x86.ActiveCfg = Release|x86
+		{402E861D-3344-47AF-8A23-0E73CF65ED28}.Release|x86.Build.0 = Release|x86
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

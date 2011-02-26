@@ -11,8 +11,6 @@
 *=============================================================================
 */
 using System;
-using System.Collections.Generic;
-using System.Text;
 using System.Threading;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
@@ -24,51 +22,38 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
     internal sealed class MailSlotThreadInfo
     {
         /// <summary>
+        /// Default constructor.
+        /// </summary>
+        /// <param name="channelName"></param>
+        /// <param name="thread"></param>
+        public MailSlotThreadInfo(string channelName, Thread thread)
+        {
+            Thread = thread;
+            FileHandle = IntPtr.Zero;
+            ChannelName = channelName;
+        }
+
+        /// <summary>
         /// The file handle used by the current handle.
         /// </summary>
-        public IntPtr FileHandle
-        {
-            get;
-            set;
-        }
+        public IntPtr FileHandle { get; set; }
+
         /// <summary>
         /// The current thread.
         /// </summary>
-        public Thread Thread
-        {
-            get;
-            set;
-        }
+        public Thread Thread { get; set; }
+
         /// <summary>
         /// The channel name for this thread.
         /// </summary>
-        public string ChannelName
-        {
-            get;
-            private set;
-        }
+        public string ChannelName { get; private set; }
 
         /// <summary>
         /// Indicates whether the current file handle is valid.
         /// </summary>
         public bool HasValidFileHandle
         {
-            get
-            {
-                return ((int)FileHandle) > 0;
-            }
+            get { return ((int) FileHandle) > 0; }
         }
-
-        /// <summary>
-        /// Default constructor.
-        /// </summary>
-        /// <param name="thread"></param>
-        public MailSlotThreadInfo(string channelName, Thread thread)
-        {
-            this.Thread = thread;
-            this.FileHandle = IntPtr.Zero;
-            this.ChannelName = channelName;
-        }
-
     }
 }

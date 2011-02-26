@@ -11,11 +11,8 @@
 *=============================================================================
 */
 using System;
-using System.Collections.Generic;
-using System.Text;
-using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 
-namespace TheCodeKing.Net.Messaging.Concrete
+namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 {
     /// <summary>
     /// The implementation used to listen for and relay network messages for all
@@ -26,15 +23,12 @@ namespace TheCodeKing.Net.Messaging.Concrete
         /// <summary>
         /// The instance used to broadcast network messages on the local machine.
         /// </summary>
-        private IXDBroadcast nativeBroadcast;
+        private readonly IXDBroadcast nativeBroadcast;
+
         /// <summary>
         /// The instance of MailSlot used to receive network messages from other machines.
         /// </summary>
         private IXDListener propagateListener;
-        /// <summary>
-        /// The base Network propagation channel name.
-        /// </summary>
-        private const string NetworkPropagateChannel = "System.PropagateBroadcast";
 
         /// <summary>
         /// Default constructor.
@@ -55,8 +49,24 @@ namespace TheCodeKing.Net.Messaging.Concrete
             this.propagateListener = propagateListener;
             // listen on the network channel for this mode
             this.propagateListener.RegisterChannel(NetworkRelayBroadcast.GetPropagateNetworkMailSlotName(nativeBroadcast));
-            this.propagateListener.MessageReceived += new XDListener.XDMessageHandler(OnMessageReceived);
+            this.propagateListener.MessageReceived += OnMessageReceived;
         }
+
+        #region IDisposable Members
+
+        /// <summary>
+        /// Implementation of IDisposable used to clean up the listener instance.
+        /// </summary>
+        public void Dispose()
+        {
+            if (propagateListener != null)
+            {
+                propagateListener.Dispose();
+                propagateListener = null;
+            }
+        }
+
+        #endregion
 
         /// <summary>
         /// Handles messages received from other machines on the network and dispatches them locally.
@@ -88,17 +98,5 @@ namespace TheCodeKing.Net.Messaging.Concrete
                 }
             }
         }
-        /// <summary>
-        /// Implementation of IDisposable used to clean up the listener instance.
-        /// </summary>
-        public void Dispose()
-        {
-            if (propagateListener != null)
-            {
-                propagateListener.Dispose();
-                propagateListener = null;
-            }
-        }
-
     }
 }

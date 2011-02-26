@@ -10,9 +10,7 @@
 *
 *=============================================================================
 */
-using System;
 using System.Collections.Generic;
-using System.Text;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 {
@@ -25,7 +23,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         /// <summary>
         /// The list of IXDBraodcast instances used to broadcast from this instance.
         /// </summary>
-        private IEnumerable<IXDBroadcast> broadcastInstances;
+        private readonly IEnumerable<IXDBroadcast> broadcastInstances;
 
         /// <summary>
         /// The constructor which takes an IEnumerable list of IXDBroadcast instances.
@@ -35,6 +33,9 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         {
             this.broadcastInstances = broadcastInstances;
         }
+
+        #region IXDBroadcast Members
+
         /// <summary>
         /// The implementation of IXDBroadcast used to send messages in 
         /// multiple modes.
@@ -43,10 +44,12 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         /// <param name="message"></param>
         public void SendToChannel(string channel, string message)
         {
-            foreach (IXDBroadcast broadcast in broadcastInstances)
+            foreach (var broadcast in broadcastInstances)
             {
                 broadcast.SendToChannel(channel, message);
             }
         }
+
+        #endregion
     }
 }

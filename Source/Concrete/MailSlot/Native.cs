@@ -11,9 +11,8 @@
 *=============================================================================
 */
 using System;
-using System.Runtime.InteropServices;
 using System.IO;
-using System.Threading;
+using System.Runtime.InteropServices;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
@@ -26,14 +25,17 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// Wait forever until mail arrives.
         /// </summary>
         public const int MAILSLOT_WAIT_FOREVER = -1;
+
         /// <summary>
         /// The read handle is invalid.
         /// </summary>
         public const int ERROR_INVALID_HANDLE = 6;
+
         /// <summary>
         /// The read buffer is not large enough for the current message.
         /// </summary>
         public const int ERROR_INSUFFICIENT_BUFFER = 122;
+
         /// <summary>
         /// Mailslot has closed, there is no more data to read.
         /// </summary>
@@ -50,7 +52,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <returns></returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern IntPtr CreateMailslot(string lpName, uint nMaxMessageSize,
-           int lReadTimeout, IntPtr lpSecurityAttributes);
+                                                   int lReadTimeout, IntPtr lpSecurityAttributes);
 
         /// <summary>
         /// The Win32 API for creating a handle to a MailSlot.
@@ -101,11 +103,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <returns></returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool WriteFile(
-                IntPtr hFile,
-                byte[] lpBuffer,
-                uint nNumberOfBytesToWrite,
-                [In] ref uint lpNumberOfBytesWritten,
-                IntPtr lpOverlapped);
+            IntPtr hFile,
+            byte[] lpBuffer,
+            uint nNumberOfBytesToWrite,
+            [In] ref uint lpNumberOfBytesWritten,
+            IntPtr lpOverlapped);
 
         /// <summary>
         /// The Win32 used for checking a MailSlot for new messages.
@@ -118,7 +120,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <returns></returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool GetMailslotInfo(IntPtr hMailslot, ref int lpMaxMessageSize,
-           ref int lpNextSize, ref int lpMessageCount, ref int lpReadTimeout);
+                                                  ref int lpNextSize, ref int lpMessageCount, ref int lpReadTimeout);
 
         /// <summary>
         /// The Win32 API used to close the MailSlot handle.
@@ -128,5 +130,4 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         [DllImport("kernel32", SetLastError = true)]
         public static extern bool CloseHandle(IntPtr handle);
     }
-
 }

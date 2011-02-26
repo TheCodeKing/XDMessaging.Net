@@ -12,16 +12,13 @@
 */
 using System;
 using System.Collections.Generic;
-using System.Text;
-using System.Threading;
-using System.Windows.Forms;
-using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
-using System.Runtime.Serialization.Formatters.Binary;
 using System.IO;
-using System.Diagnostics;
-using System.Runtime.Serialization;
 using System.Runtime.InteropServices;
-using System.ComponentModel;
+using System.Runtime.Serialization;
+using System.Runtime.Serialization.Formatters.Binary;
+using System.Security.AccessControl;
+using System.Security.Principal;
+using System.Threading;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
@@ -33,42 +30,131 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
     internal sealed class XDMailSlotListener : IXDListener
     {
         /// <summary>
-        /// Indicates whether the object has been disposed.
-        /// </summary>
-        private bool disposed;
-        /// <summary>
-        /// Lock object used for synchronizing access to the activeThreads list.
-        /// </summary>
-        private object lockObj = new object();
-        /// <summary>
         /// The unique name of the Mutex used for locking access to the MailSlot for a named
         /// channel.
         /// </summary>
         private const string mutexNetworkDispatcher = @"Global\XDMailSlotListener";
+
         /// <summary>
         /// The base name of the MailSlot on the current machine.
         /// </summary>
         private static readonly string mailSlotIdentifier = string.Concat(@"\\.", XDMailSlotBroadcast.SlotLocation);
+
         /// <summary>
         /// A hash table of Thread instances used for reading the MailSlot
         /// for specific channels.
         /// </summary>
-        private Dictionary<string, MailSlotThreadInfo> activeThreads;
+        private readonly Dictionary<string, MailSlotThreadInfo> activeThreads;
+
         /// <summary>
-        /// The delegate used to dispatch the MessageReceived event.
+        /// Lock object used for synchronizing access to the activeThreads list.
         /// </summary>
-        public event XDListener.XDMessageHandler MessageReceived;
+        private readonly object lockObj = new object();
+
+        /// <summary>
+        /// Indicates whether the object has been disposed.
+        /// </summary>
+        private bool disposed;
+
         /// <summary>
         /// Records the last unique message id received.
         /// </summary>
         private string lastMessageId;
+
         /// <summary>
         /// The default constructor.
         /// </summary>
         internal XDMailSlotListener()
         {
-            this.activeThreads = new Dictionary<string, MailSlotThreadInfo>(StringComparer.InvariantCultureIgnoreCase);
+            activeThreads = new Dictionary<string, MailSlotThreadInfo>(StringComparer.InvariantCultureIgnoreCase);
         }
+
+        #region IXDListener Members
+
+        /// <summary>
+        /// The delegate used to dispatch the MessageReceived event.
+        /// </summary>
+        public event XDListener.XDMessageHandler MessageReceived;
+
+        /// <summary>
+        /// Create a new listener thread which will try and obtain the mutex. If it can't
+        /// because another process is already polling this channel then it will wait until 
+        /// it can gain an exclusive lock.
+        /// </summary>
+        /// <param name="channelName"></param>
+        public void RegisterChannel(string channelName)
+        {
+            MailSlotThreadInfo channelThread;
+            if (!activeThreads.TryGetValue(channelName, out channelThread))
+            {
+                // only lock if changing
+                lock (lockObj)
+                {
+                    // double check has not been modified before lock
+                    if (!activeThreads.TryGetValue(channelName, out channelThread))
+                    {
+                        channelThread = StartNewThread(channelName);
+                        activeThreads[channelName] = channelThread;
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Unregisters the current instance from the given channel. No more messages will be 
+        /// processed, and another process will be allowed to obtain the listener lock.
+        /// </summary>
+        /// <param name="channelName"></param>
+        public void UnRegisterChannel(string channelName)
+        {
+            MailSlotThreadInfo info;
+            if (activeThreads.TryGetValue(channelName, out info))
+            {
+                // only lock if changing
+                lock (lockObj)
+                {
+                    // double check has not been modified before lock
+                    if (activeThreads.TryGetValue(channelName, out info))
+                    {
+                        // removing form hash shuts down the thread loop
+                        activeThreads.Remove(channelName);
+                    }
+                }
+                if (info != null)
+                {
+                    // close any read handles
+                    if (info.HasValidFileHandle)
+                    {
+                        Native.CloseHandle(info.FileHandle);
+                    }
+                    if (info.Thread.IsAlive)
+                    {
+                        // interrupt incase of asleep thread
+                        info.Thread.Interrupt();
+                    }
+                    if (info.Thread.IsAlive)
+                    {
+                        // attempt to join thread
+                        if (!info.Thread.Join(500))
+                        {
+                            // if no response within timeout, force abort
+                            info.Thread.Abort();
+                        }
+                    }
+                }
+            }
+        }
+
+        /// <summary>
+        /// Dispose implementation which ensures all resources are destroyed.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
 
         /// <summary>
         /// The worker thread entry point for polling the MailSlot. Threads will queue until a Mutex becomes
@@ -77,10 +163,13 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <param name="state"></param>
         private void MailSlotChecker(object state)
         {
-            MailSlotThreadInfo info = (MailSlotThreadInfo)state;
+            var info = (MailSlotThreadInfo) state;
             bool isOwner = false;
             string mutextKey = string.Concat(mutexNetworkDispatcher, ".", info.ChannelName);
-            using (Mutex mutex = new Mutex(true, mutextKey, out isOwner))
+            var accessControl = new MutexSecurity();
+            var sid = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
+            accessControl.SetAccessRule(new MutexAccessRule(sid, MutexRights.FullControl, AccessControlType.Allow));
+            using (var mutex = new Mutex(true, mutextKey, out isOwner, accessControl))
             {
                 // if doesn't own mutex then wait
                 if (!isOwner)
@@ -90,7 +179,13 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                         mutex.WaitOne();
                         isOwner = true;
                     }
-                    catch (ThreadInterruptedException) { } // shut down thread
+                    catch (ThreadInterruptedException)
+                    {
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                    }
+                    // shut down thread
                     catch (AbandonedMutexException)
                     {
                         // This thread is now the owner
@@ -123,17 +218,18 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 // if the channel mailslot is not open try to open it
                 if (!info.HasValidFileHandle)
                 {
-                    info.FileHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, info.ChannelName), 0, Native.MAILSLOT_WAIT_FOREVER, IntPtr.Zero);
+                    info.FileHandle = Native.CreateMailslot(string.Concat(mailSlotIdentifier, info.ChannelName), 0,
+                                                            Native.MAILSLOT_WAIT_FOREVER, IntPtr.Zero);
                 }
 
                 // if there is a valid read handle try to read messages
                 if (info.HasValidFileHandle)
                 {
-                    byte[] buffer = new byte[bytesToRead];
-                    uint bytesRead = 0;
+                    var buffer = new byte[bytesToRead];
+                    uint bytesRead;
                     // this blocks until a message is received, the message cannot be buffered with overlap structure
                     // so the bytes array must be larger than the current item in order to read the complete message
-                    while (Native.ReadFile(info.FileHandle, buffer, (uint)bytesToRead, out bytesRead, IntPtr.Zero))
+                    while (Native.ReadFile(info.FileHandle, buffer, (uint) bytesToRead, out bytesRead, IntPtr.Zero))
                     {
                         ProcessMessage(buffer, bytesRead);
                         // reset buffer size
@@ -145,7 +241,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     {
                         case Native.ERROR_INSUFFICIENT_BUFFER:
                             // insufficent buffer size, we need to the increase buffer size to read the current item
-                            Native.GetMailslotInfo(info.FileHandle, ref maxMessageSize, ref bytesToRead, ref messageCount, ref readTimeout);
+                            Native.GetMailslotInfo(info.FileHandle, ref maxMessageSize, ref bytesToRead,
+                                                   ref messageCount, ref readTimeout);
                             break;
                         case Native.ERROR_INVALID_HANDLE:
                             // close handle if invalid
@@ -163,6 +260,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 }
             }
         }
+
         /// <summary>
         /// Extracts the message for the buffer and raises the MessageReceived event.
         /// </summary>
@@ -170,20 +268,22 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <param name="bytesRead"></param>
         private void ProcessMessage(byte[] buffer, uint bytesRead)
         {
-            BinaryFormatter b = new BinaryFormatter();
+            var b = new BinaryFormatter();
             string rawMessage = string.Empty;
-            using (MemoryStream stream = new MemoryStream())
+            using (var stream = new MemoryStream())
             {
-                stream.Write(buffer, 0, (int)bytesRead);
+                stream.Write(buffer, 0, (int) bytesRead);
                 stream.Flush();
                 // reset the stream cursor back to the beginning
                 stream.Seek(0, SeekOrigin.Begin);
                 try
                 {
-                    rawMessage = (string)b.Deserialize(stream);
+                    rawMessage = (string) b.Deserialize(stream);
                 }
-                catch (SerializationException) { } // if something goes wrong such as handle is closed,
-                                                   // we will not process this message
+                catch (SerializationException)
+                {
+                } // if something goes wrong such as handle is closed,
+                // we will not process this message
             }
             // mailslot message format is id:channel:message
             using (DataGram dataGramId = DataGram.ExpandFromRaw(rawMessage))
@@ -217,74 +317,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 MessageReceived.Invoke(this, new XDMessageEventArgs(dataGram));
             }
         }
-        /// <summary>
-        /// Create a new listener thread which will try and obtain the mutex. If it can't
-        /// because another process is already polling this channel then it will wait until 
-        /// it can gain an exclusive lock.
-        /// </summary>
-        /// <param name="channelName"></param>
-        public void RegisterChannel(string channelName)
-        {
-            MailSlotThreadInfo channelThread;
-            if (!activeThreads.TryGetValue(channelName, out channelThread))
-            {
-                // only lock if changing
-                lock (lockObj)
-                {
-                    // double check has not been modified before lock
-                    if (!activeThreads.TryGetValue(channelName, out channelThread))
-                    {
-                        channelThread = StartNewThread(channelName);
-                        activeThreads[channelName] = channelThread;
-                    }
 
-                }
-            }
-        }
-        /// <summary>
-        /// Unregisters the current instance from the given channel. No more messages will be 
-        /// processed, and another process will be allowed to obtain the listener lock.
-        /// </summary>
-        /// <param name="channelName"></param>
-        public void UnRegisterChannel(string channelName)
-        {
-            MailSlotThreadInfo info = null;
-            if (activeThreads.TryGetValue(channelName, out info))
-            {
-                // only lock if changing
-                lock (lockObj)
-                {
-                    // double check has not been modified before lock
-                    if (activeThreads.TryGetValue(channelName, out info))
-                    {
-                        // removing form hash shuts down the thread loop
-                        activeThreads.Remove(channelName);
-                    }
-                }
-                if (info!=null)
-                {
-                    // close any read handles
-                    if (info.HasValidFileHandle)
-                    {
-                        Native.CloseHandle(info.FileHandle);
-                    }
-                    if (info.Thread.IsAlive)
-                    {
-                        // interrupt incase of asleep thread
-                        info.Thread.Interrupt();
-                    }
-                    if (info.Thread.IsAlive)
-                    {
-                        // attempt to join thread
-                        if (!info.Thread.Join(500))
-                        {
-                            // if no response within timeout, force abort
-                            info.Thread.Abort();
-                        }
-                    }
-                }
-            }
-        }
         /// <summary>
         /// Helper method starts up a new listener thread for a given channel.
         /// </summary>
@@ -293,13 +326,14 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         private MailSlotThreadInfo StartNewThread(string channelName)
         {
             // create and start the thread at low priority
-            Thread thread = new Thread(new ParameterizedThreadStart(MailSlotChecker));
+            var thread = new Thread(MailSlotChecker);
             thread.Priority = ThreadPriority.Lowest;
             thread.IsBackground = true;
-            MailSlotThreadInfo info = new MailSlotThreadInfo(channelName, thread);
+            var info = new MailSlotThreadInfo(channelName, thread);
             thread.Start(info);
             return info;
         }
+
         /// <summary>
         /// Deconstructor, cleans unmanaged resources only
         /// </summary>
@@ -308,14 +342,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             Dispose(false);
         }
 
-        /// <summary>
-        /// Dispose implementation which ensures all resources are destroyed.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
         /// <summary>
         /// Dispose implementation, which ensures the native window is destroyed
         /// </summary>
@@ -330,7 +356,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     {
                         // remove all handlers
                         Delegate[] del = MessageReceived.GetInvocationList();
-                        foreach (TheCodeKing.Net.Messaging.XDListener.XDMessageHandler msg in del)
+                        foreach (XDListener.XDMessageHandler msg in del)
                         {
                             MessageReceived -= msg;
                         }
@@ -339,11 +365,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     {
                         // grab a reference to the current list of threads
                         var values = new List<MailSlotThreadInfo>(activeThreads.Values);
-       
+
                         // removing the channels, will cause threads to terminate
                         activeThreads.Clear();
                         // shut down listener threads
-                        foreach (MailSlotThreadInfo info in values)
+                        foreach (var info in values)
                         {
                             // close any read handles
                             if (info.HasValidFileHandle)

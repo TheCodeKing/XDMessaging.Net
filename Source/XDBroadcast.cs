@@ -12,11 +12,10 @@
 */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using TheCodeKing.Net.Messaging.Concrete.IOStream;
-using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 using TheCodeKing.Net.Messaging.Concrete.MailSlot;
 using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
+using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -44,13 +43,11 @@ namespace TheCodeKing.Net.Messaging
             if (propagateNetwork)
             {
                 // create a wrapper to broadcast that will also send messages over network
-                return new NetworkRelayBroadcast(broadcast, XDBroadcast.CreateBroadcast(XDTransportMode.MailSlot, true));
+                return new NetworkRelayBroadcast(broadcast, CreateBroadcast(XDTransportMode.MailSlot, true));
             }
-            else
-            {
-                return broadcast;
-            }
+            return broadcast;
         }
+
         /// <summary>
         /// Creates a concrete instance of IXDBroadcast used to broadcast messages to 
         /// other processes in one or more modes.
@@ -75,32 +72,18 @@ namespace TheCodeKing.Net.Messaging
                         return new XDWindowsMessaging();
                 }
             }
-            else
-            {
-                // ensure only one of each type added
-                Dictionary<XDTransportMode, IXDBroadcast> singleItems = new Dictionary<XDTransportMode, IXDBroadcast>();
-                foreach (XDTransportMode mode in modes)
-                {
-                    // only add one of each mode
-                    if (!singleItems.ContainsKey(mode))
-                    {
-                        singleItems.Add(mode, XDBroadcast.CreateBroadcast(mode));
-                    }
-                }
-                return new XDMultiBroadcast(singleItems.Values);
-            }
-        }
 
-        /// <summary>
-        /// This method is deprecated, and uses the WindowsMessaging XDTransportMode implementation of IXDBroadcast. 
-        /// </summary>
-        /// <param name="channel">The channel name to broadcast on.</param>
-        /// <param name="message">The string message data.</param>
-        [Obsolete("Create a concrete implementation of IXDBroadcast using CreateBroadcast(XDTransportMode mode), and call SendToChannel on the instance.")]
-        public static void SendToChannel(string channel, string message)
-        {
-            XDWindowsMessaging windowsMessaging = new XDWindowsMessaging();
-            windowsMessaging.SendToChannel(channel, message);
+            // ensure only one of each type added
+            var singleItems = new Dictionary<XDTransportMode, IXDBroadcast>();
+            foreach (var mode in modes)
+            {
+                // only add one of each mode
+                if (!singleItems.ContainsKey(mode))
+                {
+                    singleItems.Add(mode, CreateBroadcast(mode));
+                }
+            }
+            return new XDMultiBroadcast(singleItems.Values);
         }
     }
 }

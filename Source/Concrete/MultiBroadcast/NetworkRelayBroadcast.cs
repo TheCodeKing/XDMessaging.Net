@@ -11,11 +11,9 @@
 *=============================================================================
 */
 using System;
-using System.Collections.Generic;
-using System.Text;
-using TheCodeKing.Net.Messaging.Concrete.MailSlot;
 using System.IO;
 using System.Threading;
+using TheCodeKing.Net.Messaging.Concrete.MailSlot;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 {
@@ -26,22 +24,26 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
     internal sealed class NetworkRelayBroadcast : IXDBroadcast
     {
         /// <summary>
-        /// The encapsulated broadcast implementation that this instance provides
-        /// network propagation for.
-        /// </summary>
-        private IXDBroadcast nativeBroadcast;
-        /// <summary>
-        /// The MailSlot implementation used to broadcast messages across the local network.
-        /// </summary>
-        private IXDBroadcast networkBroadcast;
-        /// <summary>
         /// The base channel name used for propagating messages.
         /// </summary>
         internal const string NetworkPropagateChannel = "System.PropagateBroadcast";
+
         /// <summary>
         /// The MailSlot name used for network propagation.
         /// </summary>
         private readonly string mailSlotName;
+
+        /// <summary>
+        /// The encapsulated broadcast implementation that this instance provides
+        /// network propagation for.
+        /// </summary>
+        private readonly IXDBroadcast nativeBroadcast;
+
+        /// <summary>
+        /// The MailSlot implementation used to broadcast messages across the local network.
+        /// </summary>
+        private readonly IXDBroadcast networkBroadcast;
+
         /// <summary>
         /// The default constructor used to wrap a native broadcast implementation.
         /// </summary>
@@ -57,16 +59,19 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             {
                 throw new ArgumentNullException("networkBroadcast");
             }
-            if (nativeBroadcast.GetType() == typeof(XDMailSlotBroadcast))
+            if (nativeBroadcast.GetType() == typeof (XDMailSlotBroadcast))
             {
                 throw new ArgumentException("Cannot be of type XDMailSlotBroadcast.", "nativeBroadcast");
             }
-            this.mailSlotName = GetPropagateNetworkMailSlotName(nativeBroadcast);
+            mailSlotName = GetPropagateNetworkMailSlotName(nativeBroadcast);
             // the native broadcast that this implementation wrappers
             this.nativeBroadcast = nativeBroadcast;
             // the MailSlot broadcast implementation is used to send over the network
             this.networkBroadcast = networkBroadcast;
         }
+
+        #region IXDBroadcast Members
+
         /// <summary>
         /// The IXDBroadcast implementation that additionally propagates messages
         /// over the local network as well as the local machine.
@@ -90,8 +95,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             nativeBroadcast.SendToChannel(channelName, message);
 
             // start the network propagation
-            ThreadPool.QueueUserWorkItem(delegate(object state) { SafeNetworkPropagation(channelName, message); });
+            ThreadPool.QueueUserWorkItem(delegate { SafeNetworkPropagation(channelName, message); });
         }
+
+        #endregion
 
         /// <summary>
         /// Attempts to propagate the message across the network using MailSlots. This may fail
@@ -106,9 +113,12 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             try
             {
                 // broadcast system message over network
-                networkBroadcast.SendToChannel(mailSlotName, string.Concat(Environment.MachineName, ":" + channelName + ":", message));
+                networkBroadcast.SendToChannel(mailSlotName,
+                                               string.Concat(Environment.MachineName, ":" + channelName + ":", message));
             }
-            catch (IOException) { }
+            catch (IOException)
+            {
+            }
         }
 
         /// <summary>

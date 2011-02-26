@@ -12,11 +12,7 @@
 */
 using System;
 using System.Collections.Generic;
-using System.Text;
 using System.IO;
-using System.Threading;
-using System.Diagnostics;
-using System.Windows.Forms;
 using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 
 namespace TheCodeKing.Net.Messaging.Concrete.IOStream
@@ -30,15 +26,13 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
     internal sealed class XDIOStreamListener : IXDListener
     {
         // Flag as to whether dispose has been called
-        private bool disposed = false;
-        /// <summary>
-        /// A list of FileSystemWatcher instances used for each registered channel.
-        /// </summary>
-        private Dictionary<string, FileSystemWatcher> watcherList;
+
         /// <summary>
         /// A lock object used to ensure changes to watcherList are thread-safe.
         /// </summary>
-        private object lockObj = new object();
+        private readonly object lockObj = new object();
+
+        private bool disposed;
 
         /// <summary>
         /// An instance of NetworkRelayListener used to listen for messages sent across the network, so
@@ -47,17 +41,24 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         private NetworkRelayListener networkRelay;
 
         /// <summary>
+        /// A list of FileSystemWatcher instances used for each registered channel.
+        /// </summary>
+        private Dictionary<string, FileSystemWatcher> watcherList;
+
+        /// <summary>
         /// Default constructor.
         /// </summary>
         internal XDIOStreamListener()
         {
-            this.watcherList = new Dictionary<string, FileSystemWatcher>(StringComparer.InvariantCultureIgnoreCase);
+            watcherList = new Dictionary<string, FileSystemWatcher>(StringComparer.InvariantCultureIgnoreCase);
 
             // ensure there is a network watcher for this mode, the implementation ensures only one is active at
             // any one time
-            this.networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.IOStream),
-                                            XDListener.CreateListener(XDTransportMode.MailSlot));
+            networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.IOStream),
+                                                    XDListener.CreateListener(XDTransportMode.MailSlot));
         }
+
+        #region IXDListener Members
 
         /// <summary>
         /// The MessageReceived event used to broadcast the message to attached instances within the current appDomain.
@@ -81,6 +82,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             FileSystemWatcher watcher = EnsureWatcher(channelName);
             watcher.EnableRaisingEvents = true;
         }
+
         /// <summary>
         /// Disables any FileSystemWatcher for a particular channel so that messages are no longer received.
         /// </summary>
@@ -100,13 +102,25 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         }
 
         /// <summary>
+        /// Dispose implementation which ensures all FileSystemWatchers
+        /// are shut down and handlers detatched.
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        /// <summary>
         /// Provides a thread safe method to lookup/create a instance of FileSystemWatcher for a particular channel.
         /// </summary>
         /// <param name="channelName"></param>
         /// <returns></returns>
         private FileSystemWatcher EnsureWatcher(string channelName)
         {
-            FileSystemWatcher watcher = null;
+            FileSystemWatcher watcher;
             // try to get a reference to the watcher used for the current watcher
             if (!watcherList.TryGetValue(channelName, out watcher))
             {
@@ -118,9 +132,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                     {
                         // create a new watcher for the given channel, by default this is not enabled.
                         string folder = XDIOStreamBroadcast.GetChannelDirectory(channelName);
-                        watcher = new FileSystemWatcher(folder, "*.msg");
-                        watcher.NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite;
-                        watcher.Changed += new FileSystemEventHandler(OnMessageReceived);
+                        watcher = new FileSystemWatcher(folder, "*.msg")
+                                      {
+                                          NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite
+                                      };
+                        watcher.Changed += OnMessageReceived;
                         watcherList.Add(channelName, watcher);
                     }
                 }
@@ -139,16 +155,18 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             // if a new file is added to the channel directory
             if (e.ChangeType == WatcherChangeTypes.Changed)
             {
-                try 
+                try
                 {
                     // check if file exists
                     if (File.Exists(e.FullPath))
                     {
-                        string rawmessage = null;
+                        string rawmessage;
                         // try to load the file in shared access mode
-                        using (FileStream stream = File.Open(e.FullPath, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+                        using (
+                            FileStream stream = File.Open(e.FullPath, FileMode.Open, FileAccess.Read,
+                                                          FileShare.ReadWrite))
                         {
-                            using (StreamReader reader = new StreamReader(stream))
+                            using (var reader = new StreamReader(stream))
                             {
                                 rawmessage = reader.ReadToEnd();
                             }
@@ -164,20 +182,23 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                         }
                     }
                 }
-                catch (FileNotFoundException) 
+                catch (FileNotFoundException)
                 {
                     // if for any reason the file was deleted before the message could be read from the file,
                     // then can safely ignore this message
                 }
                 catch (UnauthorizedAccessException ue)
                 {
-                    throw new UnauthorizedAccessException(string.Format("Unable to bind to channel as access is denied." +
-                        " Ensure the process has read/write access to the directory '{0}'.", e.FullPath), ue);
+                    throw new UnauthorizedAccessException(
+                        string.Format("Unable to bind to channel as access is denied." +
+                                      " Ensure the process has read/write access to the directory '{0}'.", e.FullPath),
+                        ue);
                 }
                 catch (IOException ie)
                 {
                     throw new IOException(string.Format("There was an unexpected IO error binding to a channel." +
-                        " Ensure the process is unable to read/write to directory '{0}'.", e.FullPath), ie);
+                                                        " Ensure the process is unable to read/write to directory '{0}'.",
+                                                        e.FullPath), ie);
                 }
             }
         }
@@ -190,15 +211,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             Dispose(false);
         }
 
-        /// <summary>
-        /// Dispose implementation which ensures all FileSystemWatchers
-        /// are shut down and handlers detatched.
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
         /// <summary>
         /// Dispose implementation, which ensures the native window is destroyed
         /// </summary>
@@ -219,7 +231,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                     {
                         // remove all handlers
                         Delegate[] del = MessageReceived.GetInvocationList();
-                        foreach (TheCodeKing.Net.Messaging.XDListener.XDMessageHandler msg in del)
+                        foreach (XDListener.XDMessageHandler msg in del)
                         {
                             MessageReceived -= msg;
                         }
@@ -227,10 +239,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                     if (watcherList != null)
                     {
                         // shut down watchers
-                        foreach (FileSystemWatcher watcher in watcherList.Values)
+                        foreach (var watcher in watcherList.Values)
                         {
                             watcher.EnableRaisingEvents = false;
-                            watcher.Changed -= new FileSystemEventHandler(OnMessageReceived);
+                            watcher.Changed -= OnMessageReceived;
                             watcher.Dispose();
                         }
                         watcherList.Clear();

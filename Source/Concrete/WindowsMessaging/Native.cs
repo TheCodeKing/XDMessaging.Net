@@ -12,7 +12,6 @@
 */
 using System;
 using System.Runtime.InteropServices;
-using System.IO;
 
 namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
@@ -21,21 +20,20 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
     /// </summary>
     internal static class Native
     {
+        #region Delegates
+
         /// <summary>
-        /// The WM_COPYDATA constant.
+        /// A delegate used by the EnumChildWindows windows API to enumerate windows.
         /// </summary>
-        public const uint WM_COPYDATA = 0x4A;
-        /// <summary>
-        /// The struct used to marshal data between applications using
-        /// the windows messaging API.
-        /// </summary>
-        [StructLayout(LayoutKind.Sequential)]
-        public struct COPYDATASTRUCT
-        {
-            public IntPtr dwData;
-            public int cbData;
-            public IntPtr lpData;
-        }
+        /// <param name="hwnd">A pointer to a window that was found.</param>
+        /// <param name="lParam">The lParam passed by the EnumChildWindows API.</param>
+        /// <returns></returns>
+        public delegate int EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+
+        #endregion
+
+        #region SendMessageTimeoutFlags enum
+
         /// <summary>
         /// Specifies how to send the message. This parameter can be one or
         /// more of the following values.
@@ -64,6 +62,14 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
             /// </summary>
             SMTO_NOTIMEOUTIFNOTHUNG = 0x0008
         }
+
+        #endregion
+
+        /// <summary>
+        /// The WM_COPYDATA constant.
+        /// </summary>
+        public const uint WM_COPYDATA = 0x4A;
+
         /// <summary>
         /// Sends a native windows message to a specified window.
         /// </summary>
@@ -76,22 +82,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <param name="result">The result.</param>
         /// <returns></returns>
         [DllImport("user32", CharSet = CharSet.Auto)]
-        public extern static int SendMessageTimeout(
-                    IntPtr hwnd,
-                    uint wMsg,
-                    IntPtr wParam,
-                    ref COPYDATASTRUCT lParam,
-                    SendMessageTimeoutFlags flags,
-                    uint timeout,
-                    out IntPtr result);
-        
-        /// <summary>
-        /// A delegate used by the EnumChildWindows windows API to enumerate windows.
-        /// </summary>
-        /// <param name="hwnd">A pointer to a window that was found.</param>
-        /// <param name="lParam">The lParam passed by the EnumChildWindows API.</param>
-        /// <returns></returns>
-        public delegate int EnumWindowsProc(IntPtr hwnd, IntPtr lParam);
+        public static extern int SendMessageTimeout(
+            IntPtr hwnd,
+            uint wMsg,
+            IntPtr wParam,
+            ref COPYDATASTRUCT lParam,
+            SendMessageTimeoutFlags flags,
+            uint timeout,
+            out IntPtr result);
+
         /// <summary>
         /// The API used to enumerate topvlevel windows.
         /// </summary>
@@ -101,6 +100,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         [DllImport("user32", CharSet = CharSet.Auto)]
         [return: MarshalAs(UnmanagedType.Bool)]
         public static extern bool EnumWindows(EnumWindowsProc lpEnumFunc, IntPtr lParam);
+
         /// <summary>
         /// Gets a named window property for a given window address. 
         /// This returns zero if not found.
@@ -109,7 +109,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <param name="lpString">The property name to lookup.</param>
         /// <returns>The property data, or 0 if not found.</returns>
         [DllImport("user32", CharSet = CharSet.Auto)]
-        public extern static int GetProp(IntPtr hwnd, string lpString);
+        public static extern int GetProp(IntPtr hwnd, string lpString);
+
         /// <summary>
         /// Sets a window proerty value.
         /// </summary>
@@ -118,7 +119,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <param name="hData">The property value.</param>
         /// <returns>A value indicating whether the function succeeded.</returns>
         [DllImport("user32", CharSet = CharSet.Auto)]
-        public extern static int SetProp(IntPtr hwnd, string lpString, int hData);
+        public static extern int SetProp(IntPtr hwnd, string lpString, int hData);
+
         /// <summary>
         /// Removes a named property from a given window.
         /// </summary>
@@ -126,6 +128,22 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         /// <param name="lpString">The property name.</param>
         /// <returns>A value indicating whether the function succeeded.</returns>
         [DllImport("user32", CharSet = CharSet.Auto)]
-        public extern static int RemoveProp(IntPtr hwnd, string lpString);
+        public static extern int RemoveProp(IntPtr hwnd, string lpString);
+
+        #region Nested type: COPYDATASTRUCT
+
+        /// <summary>
+        /// The struct used to marshal data between applications using
+        /// the windows messaging API.
+        /// </summary>
+        [StructLayout(LayoutKind.Sequential)]
+        public struct COPYDATASTRUCT
+        {
+            public IntPtr dwData;
+            public int cbData;
+            public IntPtr lpData;
+        }
+
+        #endregion
     }
 }

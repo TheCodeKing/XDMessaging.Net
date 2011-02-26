@@ -11,23 +11,22 @@
 *=============================================================================
 */
 using System;
-using System.Collections.Generic;
-using System.Windows.Forms;
-using System.Threading;
 using System.IO;
+using System.Threading;
+using System.Windows.Forms;
 
 namespace TheCodeKing.Demo
 {
-    static class Program
+    internal static class Program
     {
         /// <summary>
         /// The main entry point for the application.
         /// </summary>
         [STAThread]
-        static void Main()
+        private static void Main()
         {
-            AppDomain.CurrentDomain.UnhandledException += new UnhandledExceptionEventHandler(CurrentDomain_UnhandledException);
-            Application.ThreadException += new ThreadExceptionEventHandler(Application_ThreadException);
+            AppDomain.CurrentDomain.UnhandledException += CurrentDomain_UnhandledException;
+            Application.ThreadException += Application_ThreadException;
 
             Application.EnableVisualStyles();
             Application.SetCompatibleTextRenderingDefault(false);
@@ -41,7 +40,7 @@ namespace TheCodeKing.Demo
         /// <param name="e"></param>
         private static void CurrentDomain_UnhandledException(object sender, UnhandledExceptionEventArgs e)
         {
-            LogException((Exception)e.ExceptionObject);
+            LogException((Exception) e.ExceptionObject);
         }
 
         /// <summary>
@@ -64,7 +63,8 @@ namespace TheCodeKing.Demo
             {
                 log.WriteLine(e);
             }
-            MessageBox.Show("Something when wrong.\r\nSee XDMessaging.log for details.\r\n", "Oops", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            MessageBox.Show("Something when wrong.\r\nSee XDMessaging.log for details.\r\n", "Oops",
+                            MessageBoxButtons.OK, MessageBoxIcon.Error);
 
             Application.Exit();
         }

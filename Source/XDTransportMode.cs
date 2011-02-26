@@ -10,10 +10,6 @@
 *
 *=============================================================================
 */
-using System;
-using System.Collections.Generic;
-using System.Text;
-
 namespace TheCodeKing.Net.Messaging
 {
     /// <summary>
@@ -31,6 +27,9 @@ namespace TheCodeKing.Net.Messaging
         /// be used within non-form based applications such as Windows Services.
         /// </summary>
         IOStream,
+        /// <summary>
+        /// Uses MailSlots to broadcast messages across same domain/workgroup networks.
+        /// </summary>
         MailSlot
     }
 }

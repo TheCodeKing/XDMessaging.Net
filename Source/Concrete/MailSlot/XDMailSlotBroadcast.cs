@@ -11,15 +11,9 @@
 *=============================================================================
 */
 using System;
-using System.Collections.Generic;
-using System.Text;
-using System.Threading;
 using System.IO;
-using System.Diagnostics;
-using System.Runtime.Serialization.Formatters.Binary;
-using System.Windows.Forms;
-using System.DirectoryServices.ActiveDirectory;
 using System.Runtime.InteropServices;
+using System.Runtime.Serialization.Formatters.Binary;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
@@ -36,17 +30,12 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// Indicates the base path of the MailSlot.
         /// </summary>
         internal const string SlotLocation = @"\mailslot\xdmessaging\";
+
         /// <summary>
         /// The unique identifier for the MailSlot.
         /// </summary>
         private readonly string mailSlotIdentifier;
-        /// <summary>
-        /// Static constructor for initializing the current network domain or workgroup
-        /// to which messages will be broadcast.
-        /// </summary>
-        static XDMailSlotBroadcast()
-        {
-        }
+
         /// <summary>
         /// Internal constructor.
         /// </summary>
@@ -55,18 +44,21 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             if (propagateNetwork)
             {
                 // address of network MailSlot
-                this.mailSlotIdentifier = string.Concat(@"\\*", SlotLocation); 
+                mailSlotIdentifier = string.Concat(@"\\*", SlotLocation);
             }
             else
             {
                 // address of local MailSlot
-                this.mailSlotIdentifier = string.Concat(@"\\", Environment.MachineName, SlotLocation); 
+                mailSlotIdentifier = string.Concat(@"\\", Environment.MachineName, SlotLocation);
             }
         }
+
+        #region IXDBroadcast Members
+
         /// <summary>
         /// Implementation of IXDBroadcast for sending messages to a named channel on the local network.
         /// </summary>
-        /// <param name="channel">The channel on which to send the message.</param>
+        /// <param name="channelName"></param>
         /// <param name="message">The message.</param>
         public void SendToChannel(string channelName, string message)
         {
@@ -87,24 +79,25 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             string mailSlotId = string.Concat(mailSlotIdentifier, channelName);
 
             IntPtr writeHandle = IntPtr.Zero;
-            writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0, IntPtr.Zero);
-            if ((int)writeHandle>0)
+            writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0,
+                                            IntPtr.Zero);
+            if ((int) writeHandle > 0)
             {
                 // format the message, and add a unique id to avoid duplicates in listener instances
                 // this is because mailslot is sent once for every protocol (TCP/IP NetBEU)
-                string raw = string.Format("{0}:{1}:{2}", Guid.NewGuid().ToString(), channelName, message);
+                string raw = string.Format("{0}:{1}:{2}", Guid.NewGuid(), channelName, message);
 
                 // serialize the data
                 byte[] bytes;
-                uint bytesWritten=0;
-                BinaryFormatter b = new BinaryFormatter();
-                using (MemoryStream stream = new MemoryStream())
+                uint bytesWritten = 0;
+                var b = new BinaryFormatter();
+                using (var stream = new MemoryStream())
                 {
                     b.Serialize(stream, raw);
                     // create byte array
                     bytes = stream.GetBuffer();
                 }
-                Native.WriteFile(writeHandle, bytes, (uint)bytes.Length, ref bytesWritten, IntPtr.Zero);
+                Native.WriteFile(writeHandle, bytes, (uint) bytes.Length, ref bytesWritten, IntPtr.Zero);
 
                 // close the file handle
                 Native.CloseHandle(writeHandle);
@@ -115,5 +108,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 throw new IOException(string.Format("{0} Unable to open mailslot. Try again later.", errorCode));
             }
         }
+
+        #endregion
     }
 }

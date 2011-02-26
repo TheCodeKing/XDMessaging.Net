@@ -44,20 +44,9 @@ namespace TheCodeKing.Net.Messaging
         private NetworkRelayListener networkRelay;
 
         /// <summary>
-        /// Creates a concrete IXDListener which uses the XDTransportMode.WindowsMessaging implementaion. This method
-        /// is now deprecated and XDListener.CreateInstance(XDTransportMode.WindowsMessaging) should be used instead.
+        /// The constructor used internally for creating new instances of XDListener.
         /// </summary>
-        [Obsolete("Use the static CreateListener method to create a particular implementation of IXDListener.")]
-        public XDListener()
-            : this(true)
-        {
-        }
-
-        /// <summary>
-        /// The non-obsolete constructor used internally for creating new instances of XDListener.
-        /// </summary>
-        /// <param name="nonObsolete"></param>
-        internal XDListener(bool nonObsolete)
+        internal XDListener()
         {
             // create a top-level native window
             var p = new CreateParams();
@@ -141,7 +130,7 @@ namespace TheCodeKing.Net.Messaging
                 case XDTransportMode.MailSlot:
                     return new XDMailSlotListener();
                 default:
-                    return new XDListener(true);
+                    return new XDListener();
             }
         }
 

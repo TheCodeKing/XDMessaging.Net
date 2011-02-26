@@ -164,7 +164,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         private void MailSlotChecker(object state)
         {
             var info = (MailSlotThreadInfo) state;
-            bool isOwner = false;
+            bool isOwner;
             string mutextKey = string.Concat(mutexNetworkDispatcher, ".", info.ChannelName);
             var accessControl = new MutexSecurity();
             var sid = new SecurityIdentifier(WellKnownSidType.AuthenticatedUserSid, null);
@@ -185,7 +185,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                     catch (UnauthorizedAccessException)
                     {
                     }
-                    // shut down thread
+                        // shut down thread
                     catch (AbandonedMutexException)
                     {
                         // This thread is now the owner

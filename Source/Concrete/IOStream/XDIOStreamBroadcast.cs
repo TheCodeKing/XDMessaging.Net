@@ -101,7 +101,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         /// <param name="state"></param>
         private static void CleanUpMessages(object state)
         {
-            var directory = (DirectoryInfo)state;
+            var directory = (DirectoryInfo) state;
 
             // use a mutex to ensure only one listener system wide is running
             bool createdNew;

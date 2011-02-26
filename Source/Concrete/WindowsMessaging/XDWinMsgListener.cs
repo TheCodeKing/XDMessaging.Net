@@ -22,7 +22,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
     /// receive messages broadcast using a concrete IXDBroadcast implementation on the same machine. Non-form based 
     /// application are not supported by this implementation.
     /// </summary>
-    public sealed class XDWinMsgListener : NativeWindow, IXDListener
+    internal sealed class XDWinMsgListener : NativeWindow, IXDListener
     {
         // Flag as to whether dispose has been called
         private bool disposed;
@@ -41,7 +41,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
             p.Y = 0;
             p.Caption = string.Concat("TheCodeKing.Net.XDServices.", Guid.NewGuid().ToString());
             p.Parent = IntPtr.Zero;
-            base.CreateHandle(p);
+            CreateHandle(p);
 
             networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.WindowsMessaging),
                                                     XDListener.CreateListener(XDTransportMode.MailSlot));

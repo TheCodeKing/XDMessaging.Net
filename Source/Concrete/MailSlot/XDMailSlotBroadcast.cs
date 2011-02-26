@@ -78,7 +78,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             //synchronize writes to mailslot
             string mailSlotId = string.Concat(mailSlotIdentifier, channelName);
 
-            IntPtr writeHandle = IntPtr.Zero;
+            IntPtr writeHandle;
             writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0,
                                             IntPtr.Zero);
             if ((int) writeHandle > 0)

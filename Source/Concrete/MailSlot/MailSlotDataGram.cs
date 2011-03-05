@@ -3,7 +3,7 @@ using TheCodeKing.Net.Messaging.Helpers;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
-    public class MailSlotDataGram
+    internal class MailSlotDataGram
     {
         #region Constants and Fields
 

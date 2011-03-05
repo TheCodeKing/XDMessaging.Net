@@ -91,7 +91,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             string folder = GetChannelDirectory(channelName);
             string filePath = Path.Combine(folder, string.Concat(fileName, ".msg"));
             // write the message to the temp file, which will trigger listeners in other processes
-            using (StreamWriter writer = File.CreateText(filePath))
+            using (var writer = File.CreateText(filePath))
             {
                 // write out the channel name and message, this allows for invalid
                 // characters in the channel name.

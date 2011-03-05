@@ -21,7 +21,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
     ///   The data struct that is passed between AppDomain boundaries. This is
     ///   sent as a delimited string containing the channel and message.
     /// </summary>
-    public struct WinMsgDataGram : IDisposable
+    internal struct WinMsgDataGram : IDisposable
     {
         #region Constants and Fields
 

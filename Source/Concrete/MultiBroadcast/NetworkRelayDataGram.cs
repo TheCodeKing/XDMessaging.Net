@@ -3,7 +3,7 @@ using TheCodeKing.Net.Messaging.Helpers;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 {
-    public class NetworkRelayDataGram
+    internal class NetworkRelayDataGram
     {
         #region Constants and Fields
 

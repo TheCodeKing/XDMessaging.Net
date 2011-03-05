@@ -1,8 +1,24 @@
-﻿using System;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expressed or implied.
+*
+*=============================================================================
+*/
+using System;
 using TheCodeKing.Net.Messaging.Helpers;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
+    /// <summary>
+    ///   The data struct that is passed between AppDomain boundaries for the MailSlot
+    ///   implementation. This is sent as a delimited string containing the channel and message.
+    /// </summary>
     internal class MailSlotDataGram
     {
         #region Constants and Fields
@@ -14,15 +30,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 
         #region Constructors and Destructors
 
-        public MailSlotDataGram()
-        {
-            dataGram = new DataGram();
-        }
-
         public MailSlotDataGram(Guid id, string channel, string message)
         {
             this.id = id;
             dataGram = new DataGram(channel, message);
+        }
+
+        internal MailSlotDataGram()
+        {
+            dataGram = new DataGram();
         }
 
         #endregion
@@ -65,15 +81,24 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 
         #region Operators
 
-        public static implicit operator DataGram(MailSlotDataGram gram)
+        /// <summary>
+        ///   Allows implicit casting from MailSlotDataGram to DataGram.
+        /// </summary>
+        /// <param name = "dataGram"></param>
+        /// <returns></returns>
+        public static implicit operator DataGram(MailSlotDataGram dataGram)
         {
-            return gram.dataGram;
+            return dataGram.dataGram;
         }
 
         #endregion
 
         #region Public Methods
 
+        /// <summary>
+        ///   Converts the instance to the string delimited format.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return string.Concat(Id, ":", Channel, ":", Message);
@@ -83,6 +108,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 
         #region Methods
 
+        /// <summary>
+        ///   Creates an instance of DataGram from a raw delimited string.
+        /// </summary>
+        /// <param name = "rawmessage"></param>
+        /// <returns></returns>
         internal static MailSlotDataGram ExpandFromRaw(string rawmessage)
         {
             // if the message contains valid data

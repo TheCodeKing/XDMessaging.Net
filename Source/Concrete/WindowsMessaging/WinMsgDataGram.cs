@@ -1,6 +1,6 @@
 /*=============================================================================
 *
-*	(C) Copyright 2007, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
 *
 *   http://www.TheCodeKing.co.uk
 *  
@@ -18,13 +18,16 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
     /// <summary>
-    ///   The data struct that is passed between AppDomain boundaries. This is
-    ///   sent as a delimited string containing the channel and message.
+    ///   The data struct that is passed between AppDomain boundaries for the Windows Messaging
+    ///   implementation. This is sent as a delimited string containing the channel and message.
     /// </summary>
-    internal struct WinMsgDataGram : IDisposable
+    internal class WinMsgDataGram : IDisposable
     {
         #region Constants and Fields
 
+        /// <summary>
+        /// The encapsulated basic DataGram instance.
+        /// </summary>
         private readonly DataGram dataGram;
 
         /// <summary>
@@ -108,6 +111,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 
         #region Operators
 
+        /// <summary>
+        /// Allows implicit casting from WinMsgDataGram to DataGram.
+        /// </summary>
+        /// <param name="dataGram"></param>
+        /// <returns></returns>
         public static implicit operator DataGram(WinMsgDataGram dataGram)
         {
             return dataGram.dataGram;
@@ -117,6 +125,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 
         #region Public Methods
 
+        /// <summary>
+        /// Converts the instance to the string delimited format.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return dataGram.ToString();

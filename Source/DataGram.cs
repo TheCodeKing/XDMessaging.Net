@@ -1,6 +1,6 @@
 /*=============================================================================
 *
-*	(C) Copyright 2007, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
 *
 *   http://www.TheCodeKing.co.uk
 *  
@@ -10,13 +10,15 @@
 *
 *=============================================================================
 */
+using System;
+
 namespace TheCodeKing.Net.Messaging
 {
     /// <summary>
-    ///   The data struct that is passed between AppDomain boundaries. This is
+    ///   The data class that is passed between AppDomain boundaries. This is
     ///   sent as a delimited string containing the channel and message.
     /// </summary>
-    public struct DataGram
+    public class DataGram
     {
         #region Constants and Fields
 
@@ -43,6 +45,10 @@ namespace TheCodeKing.Net.Messaging
         {
             this.channel = channel;
             this.message = message;
+        }
+
+        internal DataGram()
+        {
         }
 
         #endregion
@@ -77,6 +83,10 @@ namespace TheCodeKing.Net.Messaging
 
         #region Public Methods
 
+        /// <summary>
+        /// Converts the instance to the string delimited format.
+        /// </summary>
+        /// <returns></returns>
         public override string ToString()
         {
             return string.Concat(Channel, ":", Message);
@@ -86,6 +96,11 @@ namespace TheCodeKing.Net.Messaging
 
         #region Methods
 
+        /// <summary>
+        /// Creates an instance of DataGram from a raw delimited string.
+        /// </summary>
+        /// <param name="rawmessage"></param>
+        /// <returns></returns>
         internal static DataGram ExpandFromRaw(string rawmessage)
         {
             // if the message contains valid data

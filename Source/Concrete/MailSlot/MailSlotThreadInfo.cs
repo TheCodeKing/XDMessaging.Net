@@ -16,16 +16,18 @@ using System.Threading;
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
     /// <summary>
-    /// A class used for keeping a reference to the current thread 
-    /// and read file handle.
+    ///   A class used for keeping a reference to the current thread 
+    ///   and read file handle.
     /// </summary>
     internal sealed class MailSlotThreadInfo
     {
+        #region Constructors and Destructors
+
         /// <summary>
-        /// Default constructor.
+        ///   Default constructor.
         /// </summary>
-        /// <param name="channelName"></param>
-        /// <param name="thread"></param>
+        /// <param name = "channelName"></param>
+        /// <param name = "thread"></param>
         public MailSlotThreadInfo(string channelName, Thread thread)
         {
             Thread = thread;
@@ -33,27 +35,33 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             ChannelName = channelName;
         }
 
-        /// <summary>
-        /// The file handle used by the current handle.
-        /// </summary>
-        public IntPtr FileHandle { get; set; }
+        #endregion
+
+        #region Properties
 
         /// <summary>
-        /// The current thread.
-        /// </summary>
-        public Thread Thread { get; set; }
-
-        /// <summary>
-        /// The channel name for this thread.
+        ///   The channel name for this thread.
         /// </summary>
         public string ChannelName { get; private set; }
 
         /// <summary>
-        /// Indicates whether the current file handle is valid.
+        ///   The file handle used by the current handle.
+        /// </summary>
+        public IntPtr FileHandle { get; set; }
+
+        /// <summary>
+        ///   Indicates whether the current file handle is valid.
         /// </summary>
         public bool HasValidFileHandle
         {
             get { return ((int) FileHandle) > 0; }
         }
+
+        /// <summary>
+        ///   The current thread.
+        /// </summary>
+        public Thread Thread { get; set; }
+
+        #endregion
     }
 }

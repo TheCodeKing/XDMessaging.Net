@@ -13,16 +13,20 @@
 namespace TheCodeKing.Net.Messaging
 {
     /// <summary>
-    /// The API defined for dispatching messages interprocess and across appDomains.
+    ///   The API defined for dispatching messages interprocess and across appDomains.
     /// </summary>
     public interface IXDBroadcast
     {
+        #region Public Methods
+
         /// <summary>
-        /// The API used to broadcast messages to a channel, and other applications that
-        /// may be listening.
+        ///   The API used to broadcast messages to a channel, and other applications that
+        ///   may be listening.
         /// </summary>
-        /// <param name="channel">The channel name to broadcast on.</param>
-        /// <param name="message">The string message data.</param>
+        /// <param name = "channel">The channel name to broadcast on.</param>
+        /// <param name = "message">The string message data.</param>
         void SendToChannel(string channel, string message);
+
+        #endregion
     }
 }

@@ -18,48 +18,51 @@ using System.Runtime.Serialization.Formatters.Binary;
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
     /// <summary>
-    /// Implementation of IXDBroadcast which sends messages over the local network and 
-    /// interprocess. Messages sent to a named channel will be received by the first available
-    /// instance of IXDListener in the same mode. Each message may only be read by ONE listener
-    /// on a single machine. Other listeners will queue until they can take ownership of the listener
-    /// singleton.
+    ///   Implementation of IXDBroadcast which sends messages over the local network and 
+    ///   interprocess. Messages sent to a named channel will be received by the first available
+    ///   instance of IXDListener in the same mode. Each message may only be read by ONE listener
+    ///   on a single machine. Other listeners will queue until they can take ownership of the listener
+    ///   singleton.
     /// </summary>
     public sealed class XDMailSlotBroadcast : IXDBroadcast
     {
+        #region Constants and Fields
+
         /// <summary>
-        /// Indicates the base path of the MailSlot.
+        ///   Indicates the base path of the MailSlot.
         /// </summary>
         internal const string SlotLocation = @"\mailslot\xdmessaging\";
 
         /// <summary>
-        /// The unique identifier for the MailSlot.
+        ///   The unique identifier for the MailSlot.
         /// </summary>
         private readonly string mailSlotIdentifier;
 
+        #endregion
+
+        #region Constructors and Destructors
+
         /// <summary>
-        /// Internal constructor.
+        ///   Internal constructor.
         /// </summary>
         internal XDMailSlotBroadcast(bool propagateNetwork)
         {
-            if (propagateNetwork)
-            {
-                // address of network MailSlot
-                mailSlotIdentifier = string.Concat(@"\\*", SlotLocation);
-            }
-            else
-            {
-                // address of local MailSlot
-                mailSlotIdentifier = string.Concat(@"\\", Environment.MachineName, SlotLocation);
-            }
+            mailSlotIdentifier = propagateNetwork
+                                     ? string.Concat(@"\\*", SlotLocation)
+                                     : string.Concat(@"\\", Environment.MachineName, SlotLocation);
         }
 
-        #region IXDBroadcast Members
+        #endregion
+
+        #region Implemented Interfaces
+
+        #region IXDBroadcast
 
         /// <summary>
-        /// Implementation of IXDBroadcast for sending messages to a named channel on the local network.
+        ///   Implementation of IXDBroadcast for sending messages to a named channel on the local network.
         /// </summary>
-        /// <param name="channelName"></param>
-        /// <param name="message">The message.</param>
+        /// <param name = "channelName"></param>
+        /// <param name = "message">The message.</param>
         public void SendToChannel(string channelName, string message)
         {
             if (string.IsNullOrEmpty(channelName))
@@ -78,14 +81,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             //synchronize writes to mailslot
             string mailSlotId = string.Concat(mailSlotIdentifier, channelName);
 
-            IntPtr writeHandle;
-            writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0,
-                                            IntPtr.Zero);
+            IntPtr writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0,
+                                                   IntPtr.Zero);
             if ((int) writeHandle > 0)
             {
                 // format the message, and add a unique id to avoid duplicates in listener instances
                 // this is because mailslot is sent once for every protocol (TCP/IP NetBEU)
-                string raw = string.Format("{0}:{1}:{2}", Guid.NewGuid(), channelName, message);
+                var dataGram = new MailSlotDataGram(Guid.NewGuid(), channelName, message);
+
+                string raw = dataGram.ToString();
 
                 // serialize the data
                 byte[] bytes;
@@ -108,6 +112,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
                 throw new IOException(string.Format("{0} Unable to open mailslot. Try again later.", errorCode));
             }
         }
+
+        #endregion
 
         #endregion
     }

@@ -20,16 +20,18 @@ using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 namespace TheCodeKing.Net.Messaging
 {
     /// <summary>
-    /// Class used to broadcast messages to other applications listening
-    /// on a particular channel.
+    ///   Class used to broadcast messages to other applications listening
+    ///   on a particular channel.
     /// </summary>
     public static class XDBroadcast
     {
+        #region Public Methods
+
         /// <summary>
-        /// Creates an instance of IXDBroadcast with the otption to propagate over the local network.
+        ///   Creates an instance of IXDBroadcast with the otption to propagate over the local network.
         /// </summary>
-        /// <param name="mode">The broadcast mode.</param>
-        /// <param name="propagateNetwork">true to propagate messages over the local network.</param>
+        /// <param name = "mode">The broadcast mode.</param>
+        /// <param name = "propagateNetwork">true to propagate messages over the local network.</param>
         /// <returns></returns>
         public static IXDBroadcast CreateBroadcast(XDTransportMode mode, bool propagateNetwork)
         {
@@ -49,10 +51,10 @@ namespace TheCodeKing.Net.Messaging
         }
 
         /// <summary>
-        /// Creates a concrete instance of IXDBroadcast used to broadcast messages to 
-        /// other processes in one or more modes.
+        ///   Creates a concrete instance of IXDBroadcast used to broadcast messages to 
+        ///   other processes in one or more modes.
         /// </summary>
-        /// <param name="modes">One or more transport mechanisms to use for interprocess communication.</param>
+        /// <param name = "modes">One or more transport mechanisms to use for interprocess communication.</param>
         /// <returns>The concreate instance of IXDBroadcast</returns>
         public static IXDBroadcast CreateBroadcast(params XDTransportMode[] modes)
         {
@@ -85,5 +87,7 @@ namespace TheCodeKing.Net.Messaging
             }
             return new XDMultiBroadcast(singleItems.Values);
         }
+
+        #endregion
     }
 }

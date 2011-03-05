@@ -17,47 +17,87 @@ using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
     /// <summary>
-    /// An implementation of IXDListener used to send and recieve messages interprocess, using the Windows
-    /// Messaging XDTransportMode. Applications may leverage this instance to register listeners on pseudo 'channels', and 
-    /// receive messages broadcast using a concrete IXDBroadcast implementation on the same machine. Non-form based 
-    /// application are not supported by this implementation.
+    ///   An implementation of IXDListener used to send and recieve messages interprocess, using the Windows
+    ///   Messaging XDTransportMode. Applications may leverage this instance to register listeners on pseudo 'channels', and 
+    ///   receive messages broadcast using a concrete IXDBroadcast implementation on the same machine. Non-form based 
+    ///   application are not supported by this implementation.
     /// </summary>
+    /// `q1
     internal sealed class XDWinMsgListener : NativeWindow, IXDListener
     {
         // Flag as to whether dispose has been called
+
+        #region Constants and Fields
+
         private bool disposed;
         private NetworkRelayListener networkRelay;
 
+        #endregion
+
+        #region Constructors and Destructors
+
         /// <summary>
-        /// The constructor used internally for creating new instances of XDListener.
+        ///   The constructor used internally for creating new instances of XDListener.
         /// </summary>
         internal XDWinMsgListener()
         {
             // create a top-level native window
-            var p = new CreateParams();
-            p.Width = 0;
-            p.Height = 0;
-            p.X = 0;
-            p.Y = 0;
-            p.Caption = string.Concat("TheCodeKing.Net.XDServices.", Guid.NewGuid().ToString());
-            p.Parent = IntPtr.Zero;
+            var p = new CreateParams
+                        {
+                            Width = 0,
+                            Height = 0,
+                            X = 0,
+                            Y = 0,
+                            Caption = string.Concat("TheCodeKing.Net.XDServices.", Guid.NewGuid().ToString()),
+                            Parent = IntPtr.Zero
+                        };
+
             CreateHandle(p);
 
             networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.WindowsMessaging),
                                                     XDListener.CreateListener(XDTransportMode.MailSlot));
         }
 
-        #region IXDListener Members
+        /// <summary>
+        ///   Deconstructor, cleans unmanaged resources only
+        /// </summary>
+        ~XDWinMsgListener()
+        {
+            Dispose(false);
+        }
+
+        #endregion
+
+        #region Events
 
         /// <summary>
-        /// The event fired when messages are received.
+        ///   The event fired when messages are received.
         /// </summary>
         public event XDListener.XDMessageHandler MessageReceived;
 
+        #endregion
+
+        #region Implemented Interfaces
+
+        #region IDisposable
+
         /// <summary>
-        /// Registers the instance to recieve messages from a named channel.
+        ///   Dispose implementation, which ensures the native window is destroyed
         /// </summary>
-        /// <param name="channelName">The channel name to listen on.</param>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
+        #endregion
+
+        #region IXDListener
+
+        /// <summary>
+        ///   Registers the instance to recieve messages from a named channel.
+        /// </summary>
+        /// <param name = "channelName">The channel name to listen on.</param>
         public void RegisterChannel(string channelName)
         {
             if (string.IsNullOrEmpty(channelName))
@@ -72,10 +112,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         }
 
         /// <summary>
-        /// Unregisters the channel name with the instance, so that messages from this 
-        /// channel will no longer be received.
+        ///   Unregisters the channel name with the instance, so that messages from this 
+        ///   channel will no longer be received.
         /// </summary>
-        /// <param name="channelName">The channel name to stop listening for.</param>
+        /// <param name = "channelName">The channel name to stop listening for.</param>
         public void UnRegisterChannel(string channelName)
         {
             if (string.IsNullOrEmpty(channelName))
@@ -89,22 +129,30 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
             Native.RemoveProp(Handle, GetChannelKey(channelName));
         }
 
-        /// <summary>
-        /// Dispose implementation, which ensures the native window is destroyed
-        /// </summary>
-        public void Dispose()
-        {
-            Dispose(true);
-            GC.SuppressFinalize(this);
-        }
+        #endregion
 
         #endregion
 
+        #region Methods
+
         /// <summary>
-        /// The native window message filter used to catch our custom WM_COPYDATA
-        /// messages containing cross AppDomain messages. All other messages are ignored.
+        ///   Gets a channel key string associated with the channel name. This is used as the 
+        ///   property name attached to listening windows in order to identify them as
+        ///   listeners. Using the key instead of user defined channel name avoids protential 
+        ///   property name clashes.
         /// </summary>
-        /// <param name="msg">A representation of the native Windows Message.</param>
+        /// <param name = "channelName">The channel name for which a channel key is required.</param>
+        /// <returns>The string channel key.</returns>
+        internal static string GetChannelKey(string channelName)
+        {
+            return string.Format("TheCodeKing.Net.XDServices.{0}", channelName);
+        }
+
+        /// <summary>
+        ///   The native window message filter used to catch our custom WM_COPYDATA
+        ///   messages containing cross AppDomain messages. All other messages are ignored.
+        /// </summary>
+        /// <param name = "msg">A representation of the native Windows Message.</param>
         protected override void WndProc(ref Message msg)
         {
             base.WndProc(ref msg);
@@ -114,7 +162,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
             }
             // we can free any unmanaged resources immediately in the dispose, managed channel and message 
             // data will still be retained in the object passed to the event
-            using (DataGram dataGram = DataGram.FromPointer(msg.LParam))
+            using (var dataGram = WinMsgDataGram.FromPointer(msg.LParam))
             {
                 if (MessageReceived != null && dataGram.IsValid)
                 {
@@ -124,29 +172,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         }
 
         /// <summary>
-        /// Gets a channel key string associated with the channel name. This is used as the 
-        /// property name attached to listening windows in order to identify them as
-        /// listeners. Using the key instead of user defined channel name avoids protential 
-        /// property name clashes. 
-        /// </summary>
-        /// <param name="channelName">The channel name for which a channel key is required.</param>
-        /// <returns>The string channel key.</returns>
-        internal static string GetChannelKey(string channelName)
-        {
-            return string.Format("TheCodeKing.Net.XDServices.{0}", channelName);
-        }
-
-        /// <summary>
-        /// Deconstructor, cleans unmanaged resources only
-        /// </summary>
-        ~XDWinMsgListener()
-        {
-            Dispose(false);
-        }
-
-        /// <summary>
-        /// Dispose implementation which ensures the native window is destroyed, and
-        /// managed resources detached.
+        ///   Dispose implementation which ensures the native window is destroyed, and
+        ///   managed resources detached.
         /// </summary>
         private void Dispose(bool disposeManaged)
         {
@@ -178,5 +205,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                 }
             }
         }
+
+        #endregion
     }
 }

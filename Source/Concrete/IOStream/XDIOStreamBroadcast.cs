@@ -19,34 +19,40 @@ using System.Threading;
 namespace TheCodeKing.Net.Messaging.Concrete.IOStream
 {
     /// <summary>
-    /// A concrete implementation of IXDBroadcast which can be used to send messages across
-    /// appDomain and process boundaries using file IO streams to a shared directory. Instances
-    /// of XDIOStreamListener can be used to receive the messages in another process.
+    ///   A concrete implementation of IXDBroadcast which can be used to send messages across
+    ///   appDomain and process boundaries using file IO streams to a shared directory. Instances
+    ///   of XDIOStreamListener can be used to receive the messages in another process.
     /// </summary>
     internal sealed class XDIOStreamBroadcast : IXDBroadcast
     {
-        /// <summary>
-        /// Unique mutex key to synchronize the clean up tasks across processes.
-        /// </summary>
-        private const string mutexCleanUpKey = @"Global\XDIOStreamBroadcast.Cleanup";
+        #region Constants and Fields
 
         /// <summary>
-        /// The timeout period after which messages are deleted. 
+        ///   The timeout period after which messages are deleted.
         /// </summary>
         private const int fileTimeoutMilliseconds = 5000;
 
         /// <summary>
-        /// Get a list of charactors that must be stripped from a channel name folder.
+        ///   Unique mutex key to synchronize the clean up tasks across processes.
+        /// </summary>
+        private const string mutexCleanUpKey = @"Global\XDIOStreamBroadcast.Cleanup";
+
+        /// <summary>
+        ///   Get a list of charactors that must be stripped from a channel name folder.
         /// </summary>
         private static readonly char[] invalidChannelChars = Path.GetInvalidFileNameChars();
 
         /// <summary>
-        /// The temporary folder where messages will be stored.
+        ///   The temporary folder where messages will be stored.
         /// </summary>
         private static readonly string temporaryFolder;
 
+        #endregion
+
+        #region Constructors and Destructors
+
         /// <summary>
-        /// Static constructor gets the path to the temporary directory.
+        ///   Static constructor gets the path to the temporary directory.
         /// </summary>
         static XDIOStreamBroadcast()
         {
@@ -54,14 +60,18 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                                            "XDMessaging");
         }
 
-        #region IXDBroadcast Members
+        #endregion
+
+        #region Implemented Interfaces
+
+        #region IXDBroadcast
 
         /// <summary>
-        /// The implementation of IXDBroadcast, used to broadcast a new message to other processes. This creates a unique
-        /// file on the filesystem. The temporary files are cleaned up after a pre-defined timeout. 
+        ///   The implementation of IXDBroadcast, used to broadcast a new message to other processes. This creates a unique
+        ///   file on the filesystem. The temporary files are cleaned up after a pre-defined timeout.
         /// </summary>
-        /// <param name="channelName"></param>
-        /// <param name="message"></param>
+        /// <param name = "channelName"></param>
+        /// <param name = "message"></param>
         public void SendToChannel(string channelName, string message)
         {
             if (string.IsNullOrEmpty(channelName))
@@ -85,7 +95,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             {
                 // write out the channel name and message, this allows for invalid
                 // characters in the channel name.
-                writer.Write(string.Concat(channelName, ":", message));
+                var dataGram = new DataGram(channelName, message);
+                writer.Write(dataGram.ToString());
                 writer.Flush();
             }
             // return as fast as we can, leaving a clean up task
@@ -94,11 +105,72 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
 
         #endregion
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
-        /// This method is called within a seperate thread and deletes messages that are older than
-        /// the pre-defined expiry time.
+        ///   A helper method used to determine the temporary directory location used for
+        ///   a particular channel. The directory is created if it does not exist.
         /// </summary>
-        /// <param name="state"></param>
+        /// <param name = "channelName"></param>
+        /// <returns></returns>
+        internal static string GetChannelDirectory(string channelName)
+        {
+            string folder = null;
+            try
+            {
+                string channelKey = GetChannelKey(channelName);
+                folder = Path.Combine(temporaryFolder, channelKey);
+                if (!Directory.Exists(folder))
+                {
+                    Directory.CreateDirectory(folder);
+                }
+                return folder;
+            }
+            catch (PathTooLongException e)
+            {
+                throw new ArgumentException(string.Format("Unable to bind to channel as the name '{0}' is too long." +
+                                                          " Try a shorter channel name.", channelName), e);
+            }
+            catch (UnauthorizedAccessException ue)
+            {
+                throw new UnauthorizedAccessException(
+                    string.Format("Unable to bind to channel '{0}' as access is denied." +
+                                  " Ensure the process has read/write access to the directory '{1}'.", channelName,
+                                  folder), ue);
+            }
+            catch (IOException ie)
+            {
+                throw new IOException(string.Format("There was an unexpected IO error binding to channel '{0}'." +
+                                                    " Ensure the process is unable to read/write to directory '{1}'.",
+                                                    channelName, folder), ie);
+            }
+        }
+
+        /// <summary>
+        ///   Gets a channel key string associated with the channel name. This is used as the 
+        ///   directory name in the temporary directory, and we therefore strip out any invalid characters.
+        /// </summary>
+        /// <param name = "channelName">The channel name for which a channel key is required.</param>
+        /// <returns>The string channel key.</returns>
+        internal static string GetChannelKey(string channelName)
+        {
+            foreach (var c in invalidChannelChars)
+            {
+                if (channelName.Contains(c.ToString()))
+                {
+                    channelName = channelName.Replace(c, '_');
+                }
+            }
+            return channelName;
+        }
+
+        /// <summary>
+        ///   This method is called within a seperate thread and deletes messages that are older than
+        ///   the pre-defined expiry time.
+        /// </summary>
+        /// <param name = "state"></param>
         private static void CleanUpMessages(object state)
         {
             var directory = (DirectoryInfo) state;
@@ -136,10 +208,10 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         }
 
         /// <summary>
-        /// Helper method to delete messages form the given directory older
-        /// than the specified timeout.
+        ///   Helper method to delete messages form the given directory older
+        ///   than the specified timeout.
         /// </summary>
-        /// <param name="directory"></param>
+        /// <param name = "directory"></param>
         private static void CleanUpMessages(DirectoryInfo directory)
         {
             try
@@ -177,61 +249,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             } // if the file is still in use retry again later.
         }
 
-        /// <summary>
-        /// A helper method used to determine the temporary directory location used for
-        /// a particular channel. The directory is created if it does not exist.
-        /// </summary>
-        /// <param name="channelName"></param>
-        /// <returns></returns>
-        internal static string GetChannelDirectory(string channelName)
-        {
-            string folder = null;
-            try
-            {
-                string channelKey = GetChannelKey(channelName);
-                folder = Path.Combine(temporaryFolder, channelKey);
-                if (!Directory.Exists(folder))
-                {
-                    Directory.CreateDirectory(folder);
-                }
-                return folder;
-            }
-            catch (PathTooLongException e)
-            {
-                throw new ArgumentException(string.Format("Unable to bind to channel as the name '{0}' is too long." +
-                                                          " Try a shorter channel name.", channelName), e);
-            }
-            catch (UnauthorizedAccessException ue)
-            {
-                throw new UnauthorizedAccessException(
-                    string.Format("Unable to bind to channel '{0}' as access is denied." +
-                                  " Ensure the process has read/write access to the directory '{1}'.", channelName,
-                                  folder), ue);
-            }
-            catch (IOException ie)
-            {
-                throw new IOException(string.Format("There was an unexpected IO error binding to channel '{0}'." +
-                                                    " Ensure the process is unable to read/write to directory '{1}'.",
-                                                    channelName, folder), ie);
-            }
-        }
-
-        /// <summary>
-        /// Gets a channel key string associated with the channel name. This is used as the 
-        /// directory name in the temporary directory, and we therefore strip out any invalid characters.
-        /// </summary>
-        /// <param name="channelName">The channel name for which a channel key is required.</param>
-        /// <returns>The string channel key.</returns>
-        internal static string GetChannelKey(string channelName)
-        {
-            foreach (var c in invalidChannelChars)
-            {
-                if (channelName.Contains(c.ToString()))
-                {
-                    channelName = channelName.Replace(c, '_');
-                }
-            }
-            return channelName;
-        }
+        #endregion
     }
 }

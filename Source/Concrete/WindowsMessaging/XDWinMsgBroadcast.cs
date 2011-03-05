@@ -15,12 +15,14 @@ using System;
 namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
     /// <summary>
-    /// The implementation of IXDBroadcast used to broadcast messages acorss appDomain and process boundaries
-    /// using the XDTransportMode.WindowsMessaging implementation. Non-form based application are not supported.
+    ///   The implementation of IXDBroadcast used to broadcast messages acorss appDomain and process boundaries
+    ///   using the XDTransportMode.WindowsMessaging implementation. Non-form based application are not supported.
     /// </summary>
     internal sealed class XDWinMsgBroadcast : IXDBroadcast
     {
-        #region IXDBroadcast Members
+        #region Implemented Interfaces
+
+        #region IXDBroadcast
 
         public void SendToChannel(string channelName, string message)
         {
@@ -37,7 +39,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                 throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
             }
             // create a DataGram instance, and ensure memory is freed
-            using (var dataGram = new DataGram(channelName, message))
+            using (var dataGram = new WinMsgDataGram(channelName, message))
             {
                 // Allocate the DataGram to a memory address contained in COPYDATASTRUCT
                 Native.COPYDATASTRUCT dataStruct = dataGram.ToStruct();
@@ -48,13 +50,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                 var winEnum = new WindowsEnum(filter.WindowFilterHandler);
                 foreach (var hWnd in winEnum.Enumerate())
                 {
-                    IntPtr outPtr = IntPtr.Zero;
+                    IntPtr outPtr;
                     // For each listening window, send the message data. Return if hang or unresponsive within 1 sec.
                     Native.SendMessageTimeout(hWnd, Native.WM_COPYDATA, IntPtr.Zero, ref dataStruct,
                                               Native.SendMessageTimeoutFlags.SMTO_ABORTIFHUNG, 1000, out outPtr);
                 }
             }
         }
+
+        #endregion
 
         #endregion
     }

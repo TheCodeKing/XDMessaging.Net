@@ -18,37 +18,43 @@ using TheCodeKing.Net.Messaging.Concrete.MailSlot;
 namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 {
     /// <summary>
-    /// This implementation is used to broadcast messages from other implementations across
-    /// the network using an internal MailSlot.
+    ///   This implementation is used to broadcast messages from other implementations across
+    ///   the network using an internal MailSlot.
     /// </summary>
     internal sealed class NetworkRelayBroadcast : IXDBroadcast
     {
+        #region Constants and Fields
+
         /// <summary>
-        /// The base channel name used for propagating messages.
+        ///   The base channel name used for propagating messages.
         /// </summary>
         internal const string NetworkPropagateChannel = "System.PropagateBroadcast";
 
         /// <summary>
-        /// The MailSlot name used for network propagation.
+        ///   The MailSlot name used for network propagation.
         /// </summary>
         private readonly string mailSlotName;
 
         /// <summary>
-        /// The encapsulated broadcast implementation that this instance provides
-        /// network propagation for.
+        ///   The encapsulated broadcast implementation that this instance provides
+        ///   network propagation for.
         /// </summary>
         private readonly IXDBroadcast nativeBroadcast;
 
         /// <summary>
-        /// The MailSlot implementation used to broadcast messages across the local network.
+        ///   The MailSlot implementation used to broadcast messages across the local network.
         /// </summary>
         private readonly IXDBroadcast networkBroadcast;
 
+        #endregion
+
+        #region Constructors and Destructors
+
         /// <summary>
-        /// The default constructor used to wrap a native broadcast implementation.
+        ///   The default constructor used to wrap a native broadcast implementation.
         /// </summary>
-        /// <param name="nativeBroadcast"></param>
-        /// <param name="networkBroadcast"></param>
+        /// <param name = "nativeBroadcast"></param>
+        /// <param name = "networkBroadcast"></param>
         internal NetworkRelayBroadcast(IXDBroadcast nativeBroadcast, IXDBroadcast networkBroadcast)
         {
             if (nativeBroadcast == null)
@@ -70,14 +76,18 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             this.networkBroadcast = networkBroadcast;
         }
 
-        #region IXDBroadcast Members
+        #endregion
+
+        #region Implemented Interfaces
+
+        #region IXDBroadcast
 
         /// <summary>
-        /// The IXDBroadcast implementation that additionally propagates messages
-        /// over the local network as well as the local machine.
+        ///   The IXDBroadcast implementation that additionally propagates messages
+        ///   over the local network as well as the local machine.
         /// </summary>
-        /// <param name="channelName"></param>
-        /// <param name="message"></param>
+        /// <param name = "channelName"></param>
+        /// <param name = "message"></param>
         public void SendToChannel(string channelName, string message)
         {
             if (string.IsNullOrEmpty(channelName))
@@ -100,12 +110,27 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 
         #endregion
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
-        /// Attempts to propagate the message across the network using MailSlots. This may fail
-        /// under load in which case the message is dropped.
+        ///   Gets the unique network propagation MailSlot name.
         /// </summary>
-        /// <param name="channelName"></param>
-        /// <param name="message"></param>
+        /// <param name = "nativeBroadcast"></param>
+        /// <returns></returns>
+        internal static string GetPropagateNetworkMailSlotName(IXDBroadcast nativeBroadcast)
+        {
+            // each mode has a unique MailSlot ident for monitoring network traffic  
+            return string.Concat(NetworkPropagateChannel, ".", nativeBroadcast.GetType().Name);
+        }
+
+        /// <summary>
+        ///   Attempts to propagate the message across the network using MailSlots. This may fail
+        ///   under load in which case the message is dropped.
+        /// </summary>
+        /// <param name = "channelName"></param>
+        /// <param name = "message"></param>
         private void SafeNetworkPropagation(string channelName, string message)
         {
             // if mailslot cannot be written to, handle these gracefully
@@ -121,15 +146,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             }
         }
 
-        /// <summary>
-        /// Gets the unique network propagation MailSlot name.
-        /// </summary>
-        /// <param name="nativeBroadcast"></param>
-        /// <returns></returns>
-        internal static string GetPropagateNetworkMailSlotName(IXDBroadcast nativeBroadcast)
-        {
-            // each mode has a unique MailSlot ident for monitoring network traffic  
-            return string.Concat(NetworkPropagateChannel, ".", nativeBroadcast.GetType().Name);
-        }
+        #endregion
     }
 }

@@ -222,7 +222,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
             {
                 Action<string> action = ProcessMessage;
                 // process message async
-                action.Invoke(e.FullPath);
+                action.BeginInvoke(e.FullPath, action.EndInvoke, null);
             }
         }
 

@@ -14,6 +14,7 @@ using System;
 using System.IO;
 using System.Threading;
 using TheCodeKing.Net.Messaging.Concrete.MailSlot;
+using TheCodeKing.Net.Messaging.Interfaces;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 {
@@ -28,23 +29,16 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         /// <summary>
         ///   The base channel name used for propagating messages.
         /// </summary>
-        internal const string NetworkPropagateChannel = "System.PropagateBroadcast";
+        private const string networkPropagateChannelPrefix = "System.PropagateBroadcast.";
 
-        /// <summary>
-        ///   The MailSlot name used for network propagation.
-        /// </summary>
-        private readonly string mailSlotName;
-
-        /// <summary>
-        ///   The encapsulated broadcast implementation that this instance provides
-        ///   network propagation for.
-        /// </summary>
-        private readonly IXDBroadcast nativeBroadcast;
+        private readonly XDTransportMode mode;
 
         /// <summary>
         ///   The MailSlot implementation used to broadcast messages across the local network.
         /// </summary>
         private readonly IXDBroadcast networkBroadcast;
+
+        private readonly ISerializerHelper serializerHelper;
 
         #endregion
 
@@ -53,27 +47,34 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         /// <summary>
         ///   The default constructor used to wrap a native broadcast implementation.
         /// </summary>
-        /// <param name = "nativeBroadcast"></param>
+        /// <param name = "serializerHelper"></param>
         /// <param name = "networkBroadcast"></param>
-        internal NetworkRelayBroadcast(IXDBroadcast nativeBroadcast, IXDBroadcast networkBroadcast)
+        /// <param name = "mode"></param>
+        internal NetworkRelayBroadcast(ISerializerHelper serializerHelper, IXDBroadcast networkBroadcast, XDTransportMode mode)
         {
-            if (nativeBroadcast == null)
-            {
-                throw new ArgumentNullException("nativeBroadcast");
-            }
             if (networkBroadcast == null)
             {
                 throw new ArgumentNullException("networkBroadcast");
             }
-            if (nativeBroadcast.GetType() == typeof (XDMailSlotBroadcast))
+            if (serializerHelper == null)
             {
-                throw new ArgumentException("Cannot be of type XDMailSlotBroadcast.", "nativeBroadcast");
+                throw new ArgumentNullException("serializerHelper");
             }
-            mailSlotName = GetPropagateNetworkMailSlotName(nativeBroadcast);
-            // the native broadcast that this implementation wrappers
-            this.nativeBroadcast = nativeBroadcast;
+
+            this.serializerHelper = serializerHelper;
+
             // the MailSlot broadcast implementation is used to send over the network
             this.networkBroadcast = networkBroadcast;
+            this.mode = mode;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        public static string GetNetworkPropagationSlotForMode(XDTransportMode mode)
+        {
+            return string.Concat(networkPropagateChannelPrefix, mode.ToString());
         }
 
         #endregion
@@ -81,6 +82,24 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         #region Implemented Interfaces
 
         #region IXDBroadcast
+
+        public void SendToChannel(string channelName, object message)
+        {
+            if (string.IsNullOrEmpty(channelName))
+            {
+                throw new ArgumentException("The channel name must be defined", "channelName");
+            }
+            if (message == null)
+            {
+                throw new ArgumentNullException("message", "The messsage packet cannot be null");
+            }
+            if (channelName.Contains(":"))
+            {
+                throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
+            }
+
+            SendToChannel(channelName, serializerHelper.Serialize(message));
+        }
 
         /// <summary>
         ///   The IXDBroadcast implementation that additionally propagates messages
@@ -92,20 +111,18 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         {
             if (string.IsNullOrEmpty(channelName))
             {
-                throw new ArgumentNullException(channelName, "The channel name must be defined");
+                throw new ArgumentException("The channel name must be defined", "channelName");
             }
             if (message == null)
             {
-                throw new ArgumentNullException(message, "The messsage packet cannot be null");
+                throw new ArgumentNullException("message", "The messsage packet cannot be null");
             }
-            if (string.IsNullOrEmpty(channelName))
+            if (channelName.Contains(":"))
             {
                 throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
             }
-            nativeBroadcast.SendToChannel(channelName, message);
-
             // start the network propagation
-            ThreadPool.QueueUserWorkItem(delegate { SafeNetworkPropagation(channelName, message); });
+            ThreadPool.QueueUserWorkItem(state => SafeNetworkPropagation(channelName, message));
         }
 
         #endregion
@@ -113,17 +130,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         #endregion
 
         #region Methods
-
-        /// <summary>
-        ///   Gets the unique network propagation MailSlot name.
-        /// </summary>
-        /// <param name = "nativeBroadcast"></param>
-        /// <returns></returns>
-        internal static string GetPropagateNetworkMailSlotName(IXDBroadcast nativeBroadcast)
-        {
-            // each mode has a unique MailSlot ident for monitoring network traffic  
-            return string.Concat(NetworkPropagateChannel, ".", nativeBroadcast.GetType().Name);
-        }
 
         /// <summary>
         ///   Attempts to propagate the message across the network using MailSlots. This may fail
@@ -137,9 +143,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             // dropping the message
             try
             {
-                // broadcast system message over network
-                networkBroadcast.SendToChannel(mailSlotName,
-                                               string.Concat(Environment.MachineName, ":" + channelName + ":", message));
+                var dataGram = new NetworkRelayDataGram(XDMailSlotBroadcast.LocalScope, channelName, message);
+
+                // broadcast system message over network using propagation channel
+                var location = GetNetworkPropagationSlotForMode(mode);
+                networkBroadcast.SendToChannel(location, dataGram.ToString());
             }
             catch (IOException)
             {

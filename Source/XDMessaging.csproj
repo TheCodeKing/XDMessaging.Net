@@ -16,9 +16,8 @@
     </UpgradeBackupLocation>
     <OldToolsVersion>3.5</OldToolsVersion>
     <IsWebBootstrapper>false</IsWebBootstrapper>
-    <TargetFrameworkVersion>v2.0</TargetFrameworkVersion>
-    <TargetFrameworkProfile>
-    </TargetFrameworkProfile>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
     <PublishUrl>publish\</PublishUrl>
     <Install>true</Install>
     <InstallFrom>Disk</InstallFrom>
@@ -62,17 +61,26 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Concrete\IOStream\XDIOStreamListener.cs" />
+    <Compile Include="Concrete\MailSlot\MailSlotDataReceivedEventArgs.cs" />
     <Compile Include="Concrete\MailSlot\MailSlotDataGram.cs" />
-    <Compile Include="Concrete\MailSlot\MailSlotThreadInfo.cs" />
+    <Compile Include="Concrete\MailSlot\MailSlotReader.cs" />
+    <Compile Include="Concrete\MailSlot\MailSlotWatcher.cs" />
+    <Compile Include="Concrete\MailSlot\MailSlotWriter.cs" />
+    <Compile Include="Concrete\MailSlot\NetworkMessageFragmentor.cs" />
+    <Compile Include="Concrete\MultiBroadcast\NetworkRelayBroadcast.cs" />
+    <Compile Include="Concrete\MultiBroadcast\NetworkRelayDataGram.cs" />
+    <Compile Include="Concrete\MultiBroadcast\NetworkRelayListener.cs" />
+    <Compile Include="Helpers\FixedSizeCollection.cs" />
     <Compile Include="Concrete\MailSlot\XDMailSlotBroadcast.cs" />
     <Compile Include="Concrete\MailSlot\Native.cs" />
     <Compile Include="Concrete\MailSlot\XDMailSlotListener.cs" />
-    <Compile Include="Concrete\MultiBroadcast\NetworkRelayDataGram.cs" />
-    <Compile Include="Concrete\MultiBroadcast\NetworkRelayBroadcast.cs" />
     <Compile Include="Concrete\MultiBroadcast\XDMultiBroadcast.cs" />
-    <Compile Include="Concrete\MultiBroadcast\NetworkRelayListener.cs" />
     <Compile Include="Concrete\WindowsMessaging\WinMsgDataGram.cs" />
     <Compile Include="Concrete\WindowsMessaging\XDWinMsgListener.cs" />
+    <Compile Include="Helpers\ResourceLocker.cs" />
+    <Compile Include="Interfaces\ISerializerHelper.cs" />
+    <Compile Include="Helpers\SerializerHelper.cs" />
+    <Compile Include="TypedDataGram.cs" />
     <Compile Include="Helpers\GuidHelper.cs" />
     <Compile Include="Interfaces\IXDBroadcast.cs" />
     <Compile Include="Interfaces\IXDListener.cs" />

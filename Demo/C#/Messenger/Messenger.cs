@@ -67,7 +67,8 @@ namespace TheCodeKing.Demo
             InitializeMode(XDTransportMode.WindowsMessaging);
 
             // broadcast on the status channel that we have loaded
-            broadcast.SendToChannel("Status", string.Format("{0} has joined", Handle));
+            var message = string.Format("{0} has joined", Handle);
+            broadcast.SendToChannel("Status", message);
         }
 
         /// <summary>
@@ -78,7 +79,8 @@ namespace TheCodeKing.Demo
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
-            broadcast.SendToChannel("Status", string.Format("{0} is shutting down", Handle));
+            var message = string.Format("{0} is shutting down", Handle);
+            broadcast.SendToChannel("Status", message);
         }
 
         /// <summary>
@@ -94,26 +96,46 @@ namespace TheCodeKing.Demo
                 try
                 {
                     // onClosing messages may fail if the form is being disposed.
-                    Invoke((MethodInvoker) delegate { UpdateDisplayText(e.DataGram); });
+                    Invoke((MethodInvoker)(() => OnMessageReceived(sender, e)));
                 }
                 catch (ObjectDisposedException)
+                {
+                }
+                catch (InvalidOperationException)
                 {
                 }
             }
             else
             {
-                UpdateDisplayText(e.DataGram);
+                switch(e.DataGram.Channel.ToLower())
+                {
+                    case "status":
+                        // pain text
+                        UpdateDisplayText(e.DataGram.Channel, e.DataGram.Message);
+                        break;
+                    default:
+                        // all other channels contain serialized FormattedUserMessage object 
+                        TypedDataGram<FormattedUserMessage> typedDataGram = e.DataGram;
+                        UpdateDisplayText(typedDataGram.Channel, typedDataGram.Message.FormattedTextMessage);
+                        break;
+                }
             }
         }
 
         /// <summary>
         /// A helper method used to update the Windows Form.
         /// </summary>
-        /// <param name="dataGram">dataGram</param>
-        private void UpdateDisplayText(DataGram dataGram)
+        /// <param name="channelName">The channel to display</param>
+        /// <param name="displayText">The message to display</param>
+        private void UpdateDisplayText(string channelName, string displayText)
         {
+            if (string.IsNullOrEmpty(channelName) || string.IsNullOrEmpty(displayText))
+            {
+                return;
+            }
+
             Color textColor;
-            switch (dataGram.Channel.ToLower())
+            switch (channelName.ToLower())
             {
                 case "status":
                     textColor = Color.Green;
@@ -122,7 +144,7 @@ namespace TheCodeKing.Demo
                     textColor = Color.Blue;
                     break;
             }
-            string msg = string.Format("{0}: {1}\r\n", dataGram.Channel, dataGram.Message);
+            string msg = string.Format("{0}: {1}\r\n", channelName, displayText);
             UpdateDisplayText(msg, textColor);
         }
 
@@ -178,9 +200,10 @@ namespace TheCodeKing.Demo
         {
             if (inputTextBox.Text.Length > 0)
             {
-                // send to all channels
-                broadcast.SendToChannel("Channel1", string.Format("{0} says {1}", Handle, inputTextBox.Text));
-                broadcast.SendToChannel("Channel2", string.Format("{0} says {1}", Handle, inputTextBox.Text));
+                // send FormattedUserMessage object to all channels
+                var message = new FormattedUserMessage("{0} says {1}", Handle.ToString(), inputTextBox.Text);
+                broadcast.SendToChannel("BinaryChannel1", message);
+                broadcast.SendToChannel("BinaryChannel2", message);
                 inputTextBox.Text = "";
             }
         }
@@ -196,13 +219,17 @@ namespace TheCodeKing.Demo
         {
             if (channel1Check.Checked)
             {
-                listener.RegisterChannel("Channel1");
-                broadcast.SendToChannel("Status", string.Format("{0} is registering Channel1.", Handle));
+                listener.RegisterChannel("BinaryChannel1");
+                // send in pain text
+                var message = string.Format("{0} is registering Channel1.", Handle);
+                broadcast.SendToChannel("Status", message);
             }
             else
             {
-                listener.UnRegisterChannel("Channel1");
-                broadcast.SendToChannel("Status", string.Format("{0} is unregistering Channel1.", Handle));
+                listener.UnRegisterChannel("BinaryChannel1");
+                // send in pain text
+                var message = string.Format("{0} is unregistering Channel1.", Handle);
+                broadcast.SendToChannel("Status", message);
             }
         }
 
@@ -217,13 +244,17 @@ namespace TheCodeKing.Demo
         {
             if (channel2Check.Checked)
             {
-                listener.RegisterChannel("Channel2");
-                broadcast.SendToChannel("Status", string.Format("{0} is registering Channel2.", Handle));
+                listener.RegisterChannel("BinaryChannel2");
+                // send in pain text
+                var message = string.Format("{0} is registering Channel2.", Handle);
+                broadcast.SendToChannel("Status", message);
             }
             else
             {
-                listener.UnRegisterChannel("Channel2");
-                broadcast.SendToChannel("Status", string.Format("{0} is unregistering Channel2.", Handle));
+                listener.UnRegisterChannel("BinaryChannel2");
+                // send in pain text
+                var message = string.Format("{0} is unregistering Channel2.", Handle);
+                broadcast.SendToChannel("Status", message);
             }
         }
 
@@ -239,12 +270,16 @@ namespace TheCodeKing.Demo
             if (statusCheckBox.Checked)
             {
                 listener.RegisterChannel("Status");
-                broadcast.SendToChannel("Status", string.Format("{0} is registering Status.", Handle));
+                // send in plain text
+                var message = string.Format("{0} is registering Status.", Handle);
+                broadcast.SendToChannel("Status", message);
             }
             else
             {
                 listener.UnRegisterChannel("Status");
-                broadcast.SendToChannel("Status", string.Format("{0} is unregistering Status.", Handle));
+                // send in plain text
+                var message = string.Format("{0} is unregistering Status.", Handle);
+                broadcast.SendToChannel("Status", message);
             }
         }
 
@@ -276,19 +311,21 @@ namespace TheCodeKing.Demo
             // register if checkbox is checked
             if (channel1Check.Checked)
             {
-                listener.RegisterChannel("Channel1");
+                listener.RegisterChannel("BinaryChannel1");
             }
 
             // register if checkbox is checked
             if (channel2Check.Checked)
             {
-                listener.RegisterChannel("Channel2");
+                listener.RegisterChannel("BinaryChannel2");
             }
 
             // if we already have a broadcast instance
             if (broadcast != null)
             {
-                broadcast.SendToChannel("Status", string.Format("{0} is changing mode to {1}", Handle, mode));
+                // send in plain text
+                var message = string.Format("{0} is changing mode to {1}", Handle, mode);
+                broadcast.SendToChannel("Status", message);
             }
 
             // create an instance of IXDBroadcast using the given mode, 

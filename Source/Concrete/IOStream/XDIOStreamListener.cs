@@ -38,12 +38,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         private bool disposed;
 
         /// <summary>
-        ///   An instance of NetworkRelayListener used to listen for messages sent across the network, so
-        ///   they can be dispatched locally. A Mutex ensures only one instance is active at any one time for this mode.
-        /// </summary>
-        private NetworkRelayListener networkRelay;
-
-        /// <summary>
         ///   A list of FileSystemWatcher instances used for each registered channel.
         /// </summary>
         private Dictionary<string, FileSystemWatcher> watcherList;
@@ -58,11 +52,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         internal XDIOStreamListener()
         {
             watcherList = new Dictionary<string, FileSystemWatcher>(StringComparer.InvariantCultureIgnoreCase);
-
-            // ensure there is a network watcher for this mode, the implementation ensures only one is active at
-            // any one time
-            networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.IOStream),
-                                                    XDListener.CreateListener(XDTransportMode.MailSlot));
         }
 
         /// <summary>
@@ -110,7 +99,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         {
             if (string.IsNullOrEmpty(channelName))
             {
-                throw new ArgumentNullException(channelName, "The channel name cannot be null or empty.");
+                throw new ArgumentException("The channel name cannot be null or empty.", "channelName");
             }
             if (disposed)
             {
@@ -128,7 +117,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         {
             if (string.IsNullOrEmpty(channelName))
             {
-                throw new ArgumentNullException(channelName, "The channel name cannot be null or empty.");
+                throw new ArgumentException("The channel name cannot be null or empty.", "channelName");
             }
             if (disposed)
             {
@@ -154,12 +143,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                 disposed = true;
                 if (disposeManaged)
                 {
-                    if (networkRelay != null)
-                    {
-                        networkRelay.Dispose();
-                        networkRelay = null;
-                    }
-
                     if (MessageReceived != null)
                     {
                         // remove all handlers

@@ -18,19 +18,21 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
     ///   The implementation used to listen for and relay network messages for all
     ///   instances of IXDListener.
     /// </summary>
-    internal sealed class NetworkRelayListener : IDisposable
+    internal sealed class NetworkRelayListener : IXDListener
     {
         #region Constants and Fields
 
         /// <summary>
-        ///   The instance used to broadcast network messages on the local machine.
+        ///   The factory instance used to create broadcast instances in order to re-send network messages natively.
         /// </summary>
         private readonly IXDBroadcast nativeBroadcast;
 
         /// <summary>
         ///   The instance of MailSlot used to receive network messages from other machines.
         /// </summary>
-        private IXDListener propagateListener;
+        private readonly IXDListener propagateListener;
+
+        private readonly IXDListener nativeListener;
 
         #endregion
 
@@ -40,12 +42,20 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         ///   Default constructor.
         /// </summary>
         /// <param name = "nativeBroadcast"></param>
+        /// <param name = "nativeListener"></param>
         /// <param name = "propagateListener"></param>
-        internal NetworkRelayListener(IXDBroadcast nativeBroadcast, IXDListener propagateListener)
+        /// <param name = "mode"></param>
+        internal NetworkRelayListener(IXDBroadcast nativeBroadcast,
+                                      IXDListener nativeListener,
+                                      IXDListener propagateListener, XDTransportMode mode)
         {
             if (nativeBroadcast == null)
             {
                 throw new ArgumentNullException("nativeBroadcast");
+            }
+            if (nativeListener == null)
+            {
+                throw new ArgumentNullException("nativeListener");
             }
             if (propagateListener == null)
             {
@@ -53,9 +63,19 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             }
             this.nativeBroadcast = nativeBroadcast;
             this.propagateListener = propagateListener;
+            this.nativeListener = nativeListener;
             // listen on the network channel for this mode
-            this.propagateListener.RegisterChannel(NetworkRelayBroadcast.GetPropagateNetworkMailSlotName(nativeBroadcast));
-            this.propagateListener.MessageReceived += OnMessageReceived;
+            this.propagateListener.RegisterChannel(NetworkRelayBroadcast.GetNetworkPropagationSlotForMode(mode));
+            this.propagateListener.MessageReceived += OnNetworkMessageReceived;
+            this.nativeListener.MessageReceived += OnMessageReceived;
+        }
+
+        private void OnMessageReceived(object sender, XDMessageEventArgs e)
+        {
+            if (MessageReceived!=null)
+            {
+                MessageReceived(sender, e);
+            }
         }
 
         #endregion
@@ -69,10 +89,13 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         /// </summary>
         public void Dispose()
         {
+            if (nativeListener != null)
+            {
+                nativeListener.Dispose();
+            }
             if (propagateListener != null)
             {
                 propagateListener.Dispose();
-                propagateListener = null;
             }
         }
 
@@ -87,28 +110,31 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
-        private void OnMessageReceived(object sender, XDMessageEventArgs e)
+        private void OnNetworkMessageReceived(object sender, XDMessageEventArgs e)
         {
-            // network message is of format machine:channel:message
             if (e.DataGram.IsValid)
             {
-                NetworkRelayDataGram machineInfo = NetworkRelayDataGram.ExpandFromRaw(e.DataGram.Message);
-                if (machineInfo.IsValid)
+                NetworkRelayDataGram dataGram = e.DataGram;
+                // don't relay if the message was broadcast on this machine
+                if (dataGram.IsValid && dataGram.MachineName != Environment.MachineName)
                 {
-                    // don't relay if the message was broadcast on this machine
-                    if (machineInfo.Channel != Environment.MachineName)
-                    {
-                        DataGram dataGram = DataGram.ExpandFromRaw(machineInfo.Message);
-                        if (dataGram.IsValid)
-                        {
-                            // propagate the message on this machine using the same mode as the sender
-                            nativeBroadcast.SendToChannel(dataGram.Channel, dataGram.Message);
-                        }
-                    }
+                    nativeBroadcast.SendToChannel(dataGram.Channel, dataGram.Message);
                 }
             }
         }
 
         #endregion
+
+        public event XDListener.XDMessageHandler MessageReceived;
+
+        public void RegisterChannel(string channelName)
+        {
+            nativeListener.RegisterChannel(channelName);
+        }
+
+        public void UnRegisterChannel(string channelName)
+        {
+            nativeListener.UnRegisterChannel(channelName);
+        }
     }
 }

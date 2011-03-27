@@ -12,6 +12,7 @@
 */
 using TheCodeKing.Net.Messaging.Concrete.IOStream;
 using TheCodeKing.Net.Messaging.Concrete.MailSlot;
+using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
 
 namespace TheCodeKing.Net.Messaging
@@ -35,6 +36,7 @@ namespace TheCodeKing.Net.Messaging
 
         #region Public Methods
 
+                
         /// <summary>
         ///   Creates an concrete implementation of IXDListener to listen for messages using
         ///   either a specific XDTransportMode.
@@ -43,15 +45,38 @@ namespace TheCodeKing.Net.Messaging
         /// <returns></returns>
         public static IXDListener CreateListener(XDTransportMode transport)
         {
+            return CreateListener(transport, false);
+        }
+
+        /// <summary>
+        ///   Creates an concrete implementation of IXDListener to listen for messages using
+        ///   either a specific XDTransportMode. If excludeNetworkMessages is true, then this instance
+        ///   will not participate in listening for network propagated messages.
+        /// </summary>
+        /// <param name = "transport"></param>
+        /// <param name = "excludeNetworkMessages"></param>
+        /// <returns></returns>
+        public static IXDListener CreateListener(XDTransportMode transport, bool excludeNetworkMessages)
+        {
+            IXDListener listener;
             switch (transport)
             {
                 case XDTransportMode.IOStream:
-                    return new XDIOStreamListener();
+                    listener = new XDIOStreamListener();
+                    break;
                 case XDTransportMode.MailSlot:
-                    return new XDMailSlotListener();
+                    listener = new XDMailSlotListener();
+                    break;
                 default:
-                    return new XDWinMsgListener();
+                    listener = new XDWinMsgListener();
+                    break;
             }
+            if (!excludeNetworkMessages)
+            {
+                var networkListener = new XDMailSlotListener();
+                listener = new NetworkRelayListener(XDBroadcast.CreateBroadcast(transport, false), listener, networkListener, transport);
+            }
+            return listener;
         }
 
         #endregion

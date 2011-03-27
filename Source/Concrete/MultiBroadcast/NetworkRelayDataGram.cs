@@ -19,7 +19,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
     ///   The data struct that is passed between AppDomain boundaries for the NetworkRelay
     ///   implementation. This is sent as a delimited string containing the channel and message.
     /// </summary>
-    internal class NetworkRelayDataGram
+    internal sealed class NetworkRelayDataGram
     {
         #region Constants and Fields
 
@@ -40,6 +40,15 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
 
         #endregion
 
+        public static implicit operator NetworkRelayDataGram(DataGram dataGram)
+        {
+            if (dataGram == null)
+            {
+                return null;
+            }
+            return ExpandFromRaw(dataGram.Message);
+        }
+
         #region Constructors and Destructors
 
         /// <summary>
@@ -54,6 +63,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             this.machineName = machineName;
             this.id = id;
             dataGram = new DataGram(channel, message);
+        }
+
+        internal NetworkRelayDataGram(string machineName, string channel, string message)
+            : this(machineName, Guid.NewGuid(), channel, message)
+        {
         }
 
         internal NetworkRelayDataGram()
@@ -105,7 +119,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             get
             {
                 return !string.IsNullOrEmpty(Channel) && !string.IsNullOrEmpty(Message)
-                       && Id == Guid.Empty && !string.IsNullOrEmpty(MachineName);
+                       && Id != Guid.Empty && !string.IsNullOrEmpty(MachineName);
             }
         }
 

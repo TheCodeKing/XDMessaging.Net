@@ -27,6 +27,8 @@ namespace TheCodeKing.Net.Messaging
         /// <param name = "message">The string message data.</param>
         void SendToChannel(string channel, string message);
 
+        void SendToChannel(string channel, object message);
+
         #endregion
     }
 }

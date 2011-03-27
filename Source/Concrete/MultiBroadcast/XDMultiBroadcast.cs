@@ -10,6 +10,7 @@
 *
 *=============================================================================
 */
+using System;
 using System.Collections.Generic;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
@@ -40,6 +41,11 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
             this.broadcastInstances = broadcastInstances;
         }
 
+        internal XDMultiBroadcast(params IXDBroadcast[] broadcastInstances)
+        {
+            this.broadcastInstances = broadcastInstances;
+        }
+
         #endregion
 
         #region Implemented Interfaces
@@ -50,13 +56,45 @@ namespace TheCodeKing.Net.Messaging.Concrete.MultiBroadcast
         ///   The implementation of IXDBroadcast used to send messages in 
         ///   multiple modes.
         /// </summary>
-        /// <param name = "channel"></param>
+        /// <param name = "channelName"></param>
         /// <param name = "message"></param>
-        public void SendToChannel(string channel, string message)
+        public void SendToChannel(string channelName, string message)
         {
+            if (string.IsNullOrEmpty(channelName))
+            {
+                throw new ArgumentException("The channel name must be defined", "channelName");
+            }
+            if (message == null)
+            {
+                throw new ArgumentNullException("message", "The messsage packet cannot be null");
+            }
+            if (channelName.Contains(":"))
+            {
+                throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
+            }
             foreach (var broadcast in broadcastInstances)
             {
-                broadcast.SendToChannel(channel, message);
+                broadcast.SendToChannel(channelName, message);
+            }
+        }
+
+        public void SendToChannel(string channelName, object message)
+        {
+            if (string.IsNullOrEmpty(channelName))
+            {
+                throw new ArgumentException("The channel name must be defined", "channelName");
+            }
+            if (message == null)
+            {
+                throw new ArgumentNullException("message", "The messsage packet cannot be null");
+            }
+            if (channelName.Contains(":"))
+            {
+                throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
+            }
+            foreach (var broadcast in broadcastInstances)
+            {
+                broadcast.SendToChannel(channelName, message);
             }
         }
 

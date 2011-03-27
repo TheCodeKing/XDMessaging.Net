@@ -126,14 +126,14 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <param name = "lpBuffer">The buffer to write to the MailSlot.</param>
         /// <param name = "nNumberOfBytesToWrite">The number of bytes to write from the buffer.</param>
         /// <param name = "lpNumberOfBytesWritten">The number of bytes that were written.</param>
-        /// <param name = "lpOverlapped">A pointer to an OVERLAPPED structure if openned with FILE_FLAG_OVERLAPPED</param>
+        /// <param name = "lpOverlapped">A OVERLAPPED structure if openned with FILE_FLAG_OVERLAPPED</param>
         /// <returns></returns>
         [DllImport("kernel32.dll", SetLastError = true)]
         public static extern bool WriteFile(
             IntPtr hFile,
             byte[] lpBuffer,
             uint nNumberOfBytesToWrite,
-            [In] ref uint lpNumberOfBytesWritten,
+            out uint lpNumberOfBytesWritten,
             IntPtr lpOverlapped);
 
         #endregion

@@ -12,7 +12,6 @@
 */
 using System;
 using System.Windows.Forms;
-using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 
 namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
 {
@@ -22,7 +21,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
     ///   receive messages broadcast using a concrete IXDBroadcast implementation on the same machine. Non-form based 
     ///   application are not supported by this implementation.
     /// </summary>
-    /// `q1
     internal sealed class XDWinMsgListener : NativeWindow, IXDListener
     {
         // Flag as to whether dispose has been called
@@ -30,7 +28,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         #region Constants and Fields
 
         private bool disposed;
-        private NetworkRelayListener networkRelay;
 
         #endregion
 
@@ -53,9 +50,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                         };
 
             CreateHandle(p);
-
-            networkRelay = new NetworkRelayListener(XDBroadcast.CreateBroadcast(XDTransportMode.WindowsMessaging),
-                                                    XDListener.CreateListener(XDTransportMode.MailSlot));
         }
 
         /// <summary>
@@ -102,7 +96,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         {
             if (string.IsNullOrEmpty(channelName))
             {
-                throw new ArgumentNullException(channelName, "The channel name cannot be null or empty.");
+                 throw new ArgumentException("The channel name cannot be null or empty.", "channelName");
             }
             if (disposed)
             {
@@ -120,7 +114,7 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
         {
             if (string.IsNullOrEmpty(channelName))
             {
-                throw new ArgumentNullException(channelName, "The channel name cannot be null or empty.");
+                 throw new ArgumentException("The channel name cannot be null or empty.", "channelName");
             }
             if (disposed)
             {
@@ -182,12 +176,6 @@ namespace TheCodeKing.Net.Messaging.Concrete.WindowsMessaging
                 disposed = true;
                 if (disposeManaged)
                 {
-                    if (networkRelay != null)
-                    {
-                        networkRelay.Dispose();
-                        networkRelay = null;
-                    }
-
                     if (MessageReceived != null)
                     {
                         // remove all handlers

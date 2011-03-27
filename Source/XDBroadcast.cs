@@ -16,6 +16,7 @@ using TheCodeKing.Net.Messaging.Concrete.IOStream;
 using TheCodeKing.Net.Messaging.Concrete.MailSlot;
 using TheCodeKing.Net.Messaging.Concrete.MultiBroadcast;
 using TheCodeKing.Net.Messaging.Concrete.WindowsMessaging;
+using TheCodeKing.Net.Messaging.Helpers;
 
 namespace TheCodeKing.Net.Messaging
 {
@@ -25,6 +26,13 @@ namespace TheCodeKing.Net.Messaging
     /// </summary>
     public static class XDBroadcast
     {
+        private static readonly SerializerHelper serializerHelper;
+
+        static XDBroadcast()
+        {
+            serializerHelper = new SerializerHelper();
+        }
+
         #region Public Methods
 
         /// <summary>
@@ -39,13 +47,12 @@ namespace TheCodeKing.Net.Messaging
             // no need to use the NetworkRelayBroadcast instance for this type.
             if (mode == XDTransportMode.MailSlot)
             {
-                return new XDMailSlotBroadcast(propagateNetwork);
+                return new XDMailSlotBroadcast(serializerHelper, propagateNetwork);
             }
             IXDBroadcast broadcast = CreateBroadcast(mode);
             if (propagateNetwork)
             {
-                // create a wrapper to broadcast that will also send messages over network
-                return new NetworkRelayBroadcast(broadcast, CreateBroadcast(XDTransportMode.MailSlot, true));
+                broadcast = new XDMultiBroadcast(broadcast, new NetworkRelayBroadcast(serializerHelper, CreateBroadcast(XDTransportMode.MailSlot, true), mode));
             }
             return broadcast;
         }
@@ -67,11 +74,11 @@ namespace TheCodeKing.Net.Messaging
                 switch (modes[0])
                 {
                     case XDTransportMode.IOStream:
-                        return new XDIOStreamBroadcast();
+                        return new XDIOStreamBroadcast(serializerHelper);
                     case XDTransportMode.MailSlot:
-                        return new XDMailSlotBroadcast(false);
+                        return new XDMailSlotBroadcast(serializerHelper, false);
                     default:
-                        return new XDWinMsgBroadcast();
+                        return new XDWinMsgBroadcast(serializerHelper);
                 }
             }
 

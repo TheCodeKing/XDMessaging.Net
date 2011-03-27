@@ -14,7 +14,7 @@ using System;
 
 namespace TheCodeKing.Net.Messaging.Helpers
 {
-    public static class GuidHelper
+    internal static class GuidHelper
     {
         #region Public Methods
 

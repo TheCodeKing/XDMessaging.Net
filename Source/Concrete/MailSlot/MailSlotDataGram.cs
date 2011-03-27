@@ -11,6 +11,8 @@
 *=============================================================================
 */
 using System;
+using System.Linq;
+using System.Text;
 using TheCodeKing.Net.Messaging.Helpers;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
@@ -19,40 +21,72 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
     ///   The data struct that is passed between AppDomain boundaries for the MailSlot
     ///   implementation. This is sent as a delimited string containing the channel and message.
     /// </summary>
-    internal class MailSlotDataGram
+    internal sealed class MailSlotDataGram
     {
         #region Constants and Fields
 
-        private readonly DataGram dataGram;
+        private readonly string channel;
         private readonly Guid id;
+        private readonly ushort index;
+        private readonly ushort total;
+        private readonly string[] fragments;
 
         #endregion
 
         #region Constructors and Destructors
 
-        public MailSlotDataGram(Guid id, string channel, string message)
+        public MailSlotDataGram(Guid id, ushort index, ushort total, string channel, string message)
         {
+            if (index > total)
+            {
+                throw new ArgumentException("index cannot be greater then total", "index");
+            }
             this.id = id;
-            dataGram = new DataGram(channel, message);
+            this.index = index;
+            this.total = total;
+            this.channel = channel;
+            fragments = new string[total];
+            fragments[index] = message;
         }
 
         internal MailSlotDataGram()
         {
-            dataGram = new DataGram();
+            fragments = new string[0];
         }
 
         #endregion
 
         #region Properties
 
+        public bool IsComplete
+        {
+            get { return !fragments.Contains(null); }
+        }
+
         /// <summary>
         ///   Gets the channel name.
         /// </summary>
         public string Channel
         {
-            get { return dataGram.Channel; }
+            get { return channel; }
         }
 
+        /// <summary>
+        ///   Gets the fragment index of this message.
+        /// </summary>
+        public ushort Index
+        {
+            get { return index; }
+        }
+
+        /// <summary>
+        ///   Gets the number of fragments in this message.
+        /// </summary>
+        public ushort TotalParts
+        {
+            get { return total; }
+        }
+        
         /// <summary>
         ///   Gets the message Id.
         /// </summary>
@@ -66,7 +100,18 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// </summary>
         public string Message
         {
-            get { return dataGram.Message; }
+            get 
+            {
+                return string.Join("", fragments); 
+            }
+        }
+
+        /// <summary>
+        ///   Gets the unique message Id.
+        /// </summary>
+        public string UniqueId
+        {
+            get { return (id == Guid.Empty) ? string.Empty : string.Concat(id, "-", index, "-of-", total); }
         }
 
         /// <summary>
@@ -88,12 +133,18 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <returns></returns>
         public static implicit operator DataGram(MailSlotDataGram dataGram)
         {
-            return dataGram.dataGram;
+            return new DataGram(dataGram.Channel, dataGram.Message);
         }
 
         #endregion
 
         #region Public Methods
+
+        public byte[] ToBytes()
+        {
+            var encoding = new UTF8Encoding();
+            return encoding.GetBytes(ToString());
+        }
 
         /// <summary>
         ///   Converts the instance to the string delimited format.
@@ -101,7 +152,12 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <returns></returns>
         public override string ToString()
         {
-            return string.Concat(Id, ":", Channel, ":", Message);
+            return string.Concat(Id, ":", index, ":", total, ":", Channel, ":", Message);
+        }
+
+        public void AddFragment(ushort msgIndex, string message)
+        {
+            fragments[msgIndex] = message;
         }
 
         #endregion
@@ -119,12 +175,17 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
             if (!string.IsNullOrEmpty(rawmessage) && rawmessage.Contains(":"))
             {
                 // extract the channel name and message data
-                string[] parts = rawmessage.Split(new[] {':'}, 3);
-                if (parts.Length == 3)
+                string[] parts = rawmessage.Split(new[] {':'}, 5);
+                if (parts.Length == 5)
                 {
                     Guid guid;
                     GuidHelper.TryParse(parts[0], out guid);
-                    return new MailSlotDataGram(guid, parts[1], parts[2]);
+                    ushort index;
+                    ushort total;
+                    if (ushort.TryParse(parts[1], out index) && ushort.TryParse(parts[2], out total))
+                    {
+                        return new MailSlotDataGram(guid, index, total, parts[3], parts[4]);
+                    }
                 }
             }
             return new MailSlotDataGram();

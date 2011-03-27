@@ -11,9 +11,8 @@
 *=============================================================================
 */
 using System;
-using System.IO;
-using System.Runtime.InteropServices;
-using System.Runtime.Serialization.Formatters.Binary;
+using TheCodeKing.Net.Messaging.Helpers;
+using TheCodeKing.Net.Messaging.Interfaces;
 
 namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
 {
@@ -28,15 +27,23 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
     {
         #region Constants and Fields
 
+        internal const string GlobalScope = "*";
+        internal static readonly string LocalScope = Environment.MachineName;
+
+        private const int maxMailSlotSize = 424;
+
         /// <summary>
         ///   Indicates the base path of the MailSlot.
         /// </summary>
-        internal const string SlotLocation = @"\mailslot\xdmessaging\";
+        private const string slotLocation = @"\mailslot\xdmessaging\";
 
         /// <summary>
-        ///   The unique identifier for the MailSlot.
+        ///   The writer to use for sending messages over MailSlot.
         /// </summary>
-        private readonly string mailSlotIdentifier;
+        private readonly string mailSlotScope;
+
+        private readonly MailSlotWriter mailSlotWriter;
+        private readonly ISerializerHelper serializerHelper;
 
         #endregion
 
@@ -45,11 +52,19 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         /// <summary>
         ///   Internal constructor.
         /// </summary>
-        internal XDMailSlotBroadcast(bool propagateNetwork)
+        internal XDMailSlotBroadcast(ISerializerHelper serializerHelper, bool propagateNetwork)
         {
-            mailSlotIdentifier = propagateNetwork
-                                     ? string.Concat(@"\\*", SlotLocation)
-                                     : string.Concat(@"\\", Environment.MachineName, SlotLocation);
+            if (serializerHelper == null)
+            {
+                throw new ArgumentNullException("serializerHelper");
+            }
+            this.serializerHelper = serializerHelper;
+
+            mailSlotScope = propagateNetwork
+                                ? GlobalScope
+                                : LocalScope;
+
+            mailSlotWriter = new MailSlotWriter();
         }
 
         #endregion
@@ -57,6 +72,24 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         #region Implemented Interfaces
 
         #region IXDBroadcast
+
+        public void SendToChannel(string channelName, object message)
+        {
+            if (string.IsNullOrEmpty(channelName))
+            {
+                throw new ArgumentException("The channel name must be defined", "channelName");
+            }
+            if (message == null)
+            {
+                throw new ArgumentNullException("message", "The messsage packet cannot be null");
+            }
+            if (channelName.Contains(":"))
+            {
+                throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
+            }
+
+            SendToChannel(channelName, serializerHelper.Serialize(message));
+        }
 
         /// <summary>
         ///   Implementation of IXDBroadcast for sending messages to a named channel on the local network.
@@ -67,53 +100,38 @@ namespace TheCodeKing.Net.Messaging.Concrete.MailSlot
         {
             if (string.IsNullOrEmpty(channelName))
             {
-                throw new ArgumentNullException(channelName, "The channel name must be defined");
+                throw new ArgumentException("The channel name must be defined", "channelName");
             }
             if (message == null)
             {
-                throw new ArgumentNullException(message, "The messsage packet cannot be null");
+                throw new ArgumentNullException("message", "The messsage packet cannot be null");
             }
-            if (string.IsNullOrEmpty(channelName))
+            if (channelName.Contains(":"))
             {
                 throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
             }
 
-            //synchronize writes to mailslot
-            string mailSlotId = string.Concat(mailSlotIdentifier, channelName);
+            // the message is broken into fragements due to the mailslot size limitation of 424.
+            var fragmentor = new NetworkMessageFragmentor(channelName, message);
+            var messages = fragmentor.GetFragments(maxMailSlotSize);
+            var mailSlotLocation = GetChannelPath(mailSlotScope, channelName);
 
-            IntPtr writeHandle = Native.CreateFile(mailSlotId, FileAccess.Write, FileShare.Read, 0, FileMode.Open, 0,
-                                                   IntPtr.Zero);
-            if ((int) writeHandle > 0)
+            foreach (var fragment in messages)
             {
-                // format the message, and add a unique id to avoid duplicates in listener instances
-                // this is because mailslot is sent once for every protocol (TCP/IP NetBEU)
-                var dataGram = new MailSlotDataGram(Guid.NewGuid(), channelName, message);
-
-                string raw = dataGram.ToString();
-
-                // serialize the data
-                byte[] bytes;
-                uint bytesWritten = 0;
-                var b = new BinaryFormatter();
-                using (var stream = new MemoryStream())
-                {
-                    b.Serialize(stream, raw);
-                    // create byte array
-                    bytes = stream.GetBuffer();
-                }
-                Native.WriteFile(writeHandle, bytes, (uint) bytes.Length, ref bytesWritten, IntPtr.Zero);
-
-                // close the file handle
-                Native.CloseHandle(writeHandle);
-            }
-            else
-            {
-                int errorCode = Marshal.GetLastWin32Error();
-                throw new IOException(string.Format("{0} Unable to open mailslot. Try again later.", errorCode));
+                mailSlotWriter.Write(mailSlotLocation, fragment.ToBytes());
             }
         }
 
         #endregion
+
+        #endregion
+
+        #region Methods
+
+        internal static string GetChannelPath(string scope, string channelName)
+        {
+            return string.Concat(@"\\", scope, slotLocation, channelName);
+        }
 
         #endregion
     }

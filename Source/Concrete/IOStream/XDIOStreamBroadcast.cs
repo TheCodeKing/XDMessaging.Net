@@ -15,6 +15,8 @@ using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
+using TheCodeKing.Net.Messaging.Helpers;
+using TheCodeKing.Net.Messaging.Interfaces;
 
 namespace TheCodeKing.Net.Messaging.Concrete.IOStream
 {
@@ -25,6 +27,8 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
     /// </summary>
     internal sealed class XDIOStreamBroadcast : IXDBroadcast
     {
+        private readonly ISerializerHelper serializerHelper;
+
         #region Constants and Fields
 
         /// <summary>
@@ -60,11 +64,38 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
                                            "XDMessaging");
         }
 
+        internal XDIOStreamBroadcast(ISerializerHelper serializerHelper)
+        {
+            if (serializerHelper == null)
+            {
+                throw new ArgumentNullException("serializerHelper");
+            }
+
+            this.serializerHelper = serializerHelper;
+        }
+
         #endregion
 
         #region Implemented Interfaces
 
         #region IXDBroadcast
+
+        public void SendToChannel(string channelName, object message)
+        {
+            if (string.IsNullOrEmpty(channelName))
+            {
+                throw new ArgumentException("The channel name must be defined", "channelName");
+            }
+            if (message == null)
+            {
+                throw new ArgumentNullException("message", "The messsage packet cannot be null");
+            }
+            if (channelName.Contains(":"))
+            {
+                throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
+            }
+            SendToChannel(channelName, serializerHelper.Serialize(message));
+        }
 
         /// <summary>
         ///   The implementation of IXDBroadcast, used to broadcast a new message to other processes. This creates a unique
@@ -76,13 +107,13 @@ namespace TheCodeKing.Net.Messaging.Concrete.IOStream
         {
             if (string.IsNullOrEmpty(channelName))
             {
-                throw new ArgumentNullException(channelName, "The channel name must be defined");
+                throw new ArgumentException("The channel name must be defined", "channelName");
             }
             if (message == null)
             {
-                throw new ArgumentNullException(message, "The messsage packet cannot be null");
+                throw new ArgumentNullException("message", "The messsage packet cannot be null");
             }
-            if (string.IsNullOrEmpty(channelName))
+            if (channelName.Contains(":"))
             {
                 throw new ArgumentException("The channel name may not contain the ':' character.", "channelName");
             }

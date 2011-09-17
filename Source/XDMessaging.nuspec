@@ -11,6 +11,6 @@
 	<requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <copyright>Copyright 2011</copyright>
-	<tags>IPC cross-domain inter-process communication</tags>
+	<tags>IPC cross-domain inter-process communication messaging</tags>
   </metadata>
 </package>

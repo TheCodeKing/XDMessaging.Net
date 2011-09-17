@@ -6,6 +6,7 @@
     <title>$title$</title>
     <authors>$author$</authors>
     <owners>$author$</owners>
+	<licenseUrl>https://github.com/TheCodeKing/XDMessaging.Net/blob/master/License</licenseUrl>
 	<projectUrl>https://github.com/TheCodeKing/XDMessaging.Net</projectUrl>
 	<requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>

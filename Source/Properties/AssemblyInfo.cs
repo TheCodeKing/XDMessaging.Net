@@ -6,13 +6,13 @@ using System.Runtime.InteropServices;
 // associated with an assembly.
 
 [assembly: AssemblyTitle("XDMessaging Library")]
-[assembly: AssemblyDescription("Cross AppDomain messaging API, based on native Windows messages.")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("")]
+[assembly: AssemblyCompany("Mike Carlisle")]
 [assembly: AssemblyProduct("TheCodeKing.Net.Messaging")]
 [assembly: AssemblyCopyright("Copyright ©  2011")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
+[assembly: AssemblyDescription("The XDMessaging library provides an easy-to-use, zero configuration solution to same-box communications. It provides a simple API for broadcasting and receiving messages across application domain, process and network boundaries.")]
 
 // Setting ComVisible to false makes the types in this assembly not visible 
 // to COM components.  If you need to access a type in this assembly from 
@@ -36,3 +36,6 @@ using System.Runtime.InteropServices;
 
 [assembly: AssemblyVersion("3.0.0.0")]
 [assembly: AssemblyFileVersion("3.0.0.0")]
+#if SIGNED
+[assembly: AssemblyKeyFile(@"..\..\..\..\thecodeking.snk")]
+#endif

@@ -10,7 +10,7 @@
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>TheCodeKing.Demo</RootNamespace>
     <AssemblyName>Messenger</AssemblyName>
-    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+    <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
@@ -40,10 +40,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging, Version=2.1.0.3, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Bin\XDMessaging.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Messenger.cs">
@@ -59,6 +55,20 @@
       <DependentUpon>Messenger.cs</DependentUpon>
     </EmbeddedResource>
     <None Include="app.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\Source\XDMessaging.Core\XDMessaging.Core.csproj">
+      <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
+      <Name>XDMessaging.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.IOStream\XDMessaging.Transport.IOStream.csproj">
+      <Project>{B71BD6E3-D7D7-40EC-9ACD-0A11F27A4E60}</Project>
+      <Name>XDMessaging.Transport.IOStream</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.WindowsMessaging\XDMessaging.Transport.WindowsMessaging.csproj">
+      <Project>{BF6E06B2-7886-4204-89E5-42A5DE6FFCAA}</Project>
+      <Name>XDMessaging.Transport.WindowsMessaging</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

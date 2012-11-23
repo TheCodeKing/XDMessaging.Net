@@ -56,7 +56,7 @@ namespace TheCodeKing.Demo
             this.panel1.Dock = System.Windows.Forms.DockStyle.Bottom;
             this.panel1.Location = new System.Drawing.Point(0, 247);
             this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(289, 157);
+            this.panel1.Size = new System.Drawing.Size(299, 157);
             this.panel1.TabIndex = 2;
             // 
             // propagateCheck
@@ -66,9 +66,9 @@ namespace TheCodeKing.Demo
             this.propagateCheck.CheckState = System.Windows.Forms.CheckState.Checked;
             this.propagateCheck.Location = new System.Drawing.Point(13, 128);
             this.propagateCheck.Name = "propagateCheck";
-            this.propagateCheck.Size = new System.Drawing.Size(269, 17);
+            this.propagateCheck.Size = new System.Drawing.Size(217, 17);
             this.propagateCheck.TabIndex = 3;
-            this.propagateCheck.Text = "Propagate messages to local Workgroup or Domain";
+            this.propagateCheck.Text = "Propagate messages to RemoteNetwork";
             this.propagateCheck.UseVisualStyleBackColor = true;
             this.propagateCheck.CheckedChanged += new System.EventHandler(this.propagateCheck_CheckedChanged);
             // 
@@ -79,7 +79,7 @@ namespace TheCodeKing.Demo
             this.groupBox1.Controls.Add(this.channel2Check);
             this.groupBox1.Location = new System.Drawing.Point(12, 35);
             this.groupBox1.Name = "groupBox1";
-            this.groupBox1.Size = new System.Drawing.Size(130, 90);
+            this.groupBox1.Size = new System.Drawing.Size(135, 90);
             this.groupBox1.TabIndex = 0;
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Channels";
@@ -123,9 +123,9 @@ namespace TheCodeKing.Demo
             this.Mode.Controls.Add(this.mailRadio);
             this.Mode.Controls.Add(this.ioStreamRadio);
             this.Mode.Controls.Add(this.wmRadio);
-            this.Mode.Location = new System.Drawing.Point(148, 35);
+            this.Mode.Location = new System.Drawing.Point(153, 35);
             this.Mode.Name = "Mode";
-            this.Mode.Size = new System.Drawing.Size(130, 90);
+            this.Mode.Size = new System.Drawing.Size(135, 90);
             this.Mode.TabIndex = 0;
             this.Mode.TabStop = false;
             this.Mode.Text = "Mode";
@@ -135,23 +135,23 @@ namespace TheCodeKing.Demo
             this.mailRadio.AutoSize = true;
             this.mailRadio.Location = new System.Drawing.Point(15, 64);
             this.mailRadio.Name = "mailRadio";
-            this.mailRadio.Size = new System.Drawing.Size(65, 17);
+            this.mailRadio.Size = new System.Drawing.Size(102, 17);
             this.mailRadio.TabIndex = 8;
             this.mailRadio.TabStop = true;
-            this.mailRadio.Text = "Mail Slot";
+            this.mailRadio.Text = "RemoteNetwork";
             this.mailRadio.UseVisualStyleBackColor = true;
-            this.mailRadio.MouseClick += new System.Windows.Forms.MouseEventHandler(this.mailRadio_MouseClick);
             this.mailRadio.CheckedChanged += new System.EventHandler(this.mode_CheckedChanged);
+            this.mailRadio.MouseClick += new System.Windows.Forms.MouseEventHandler(this.mailRadio_MouseClick);
             // 
             // ioStreamRadio
             // 
             this.ioStreamRadio.AutoSize = true;
             this.ioStreamRadio.Location = new System.Drawing.Point(15, 41);
             this.ioStreamRadio.Name = "ioStreamRadio";
-            this.ioStreamRadio.Size = new System.Drawing.Size(72, 17);
+            this.ioStreamRadio.Size = new System.Drawing.Size(83, 17);
             this.ioStreamRadio.TabIndex = 7;
             this.ioStreamRadio.TabStop = true;
-            this.ioStreamRadio.Text = "IO Stream";
+            this.ioStreamRadio.Text = "Compatibility";
             this.ioStreamRadio.UseVisualStyleBackColor = true;
             this.ioStreamRadio.CheckedChanged += new System.EventHandler(this.mode_CheckedChanged);
             // 
@@ -161,10 +161,10 @@ namespace TheCodeKing.Demo
             this.wmRadio.Checked = true;
             this.wmRadio.Location = new System.Drawing.Point(15, 18);
             this.wmRadio.Name = "wmRadio";
-            this.wmRadio.Size = new System.Drawing.Size(67, 17);
+            this.wmRadio.Size = new System.Drawing.Size(118, 17);
             this.wmRadio.TabIndex = 6;
             this.wmRadio.TabStop = true;
-            this.wmRadio.Text = "Win Msg";
+            this.wmRadio.Text = "HighPerformanceUI";
             this.wmRadio.UseVisualStyleBackColor = true;
             this.wmRadio.CheckedChanged += new System.EventHandler(this.mode_CheckedChanged);
             // 
@@ -172,12 +172,12 @@ namespace TheCodeKing.Demo
             // 
             this.inputTextBox.Location = new System.Drawing.Point(13, 6);
             this.inputTextBox.Name = "inputTextBox";
-            this.inputTextBox.Size = new System.Drawing.Size(178, 20);
+            this.inputTextBox.Size = new System.Drawing.Size(189, 20);
             this.inputTextBox.TabIndex = 1;
             // 
             // sendBtn
             // 
-            this.sendBtn.Location = new System.Drawing.Point(197, 6);
+            this.sendBtn.Location = new System.Drawing.Point(208, 6);
             this.sendBtn.Name = "sendBtn";
             this.sendBtn.Size = new System.Drawing.Size(80, 23);
             this.sendBtn.TabIndex = 2;
@@ -192,7 +192,7 @@ namespace TheCodeKing.Demo
             this.displayTextBox.Location = new System.Drawing.Point(0, 0);
             this.displayTextBox.Name = "displayTextBox";
             this.displayTextBox.ReadOnly = true;
-            this.displayTextBox.Size = new System.Drawing.Size(289, 247);
+            this.displayTextBox.Size = new System.Drawing.Size(299, 247);
             this.displayTextBox.TabIndex = 4;
             this.displayTextBox.TabStop = false;
             this.displayTextBox.Text = "";
@@ -201,7 +201,7 @@ namespace TheCodeKing.Demo
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.ClientSize = new System.Drawing.Size(289, 404);
+            this.ClientSize = new System.Drawing.Size(299, 404);
             this.Controls.Add(this.displayTextBox);
             this.Controls.Add(this.panel1);
             this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedToolWindow;

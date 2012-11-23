@@ -14,41 +14,64 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using TheCodeKing.Net.Messaging;
+using XDMessaging.Core;
+using XDMessaging.Core.Message;
 
 namespace TheCodeKing.Demo
 {
     /// <summary>
-    /// A demo messaging application which demostrates the cross AppDomain Messaging API.
-    /// This independent instances of the application to receive and send messages between
-    /// each other.
+    ///   A demo messaging application which demostrates the cross AppDomain Messaging API.
+    ///   This independent instances of the application to receive and send messages between
+    ///   each other.
     /// </summary>
     public partial class Messenger : Form
     {
+        #region Constants and Fields
+
         /// <summary>
-        /// The instance used to broadcast messages on a particular channel.
+        ///   The instance used to broadcast messages on a particular channel.
         /// </summary>
         private IXDBroadcast broadcast;
 
         /// <summary>
-        /// The instance used to listen to broadcast messages.
+        ///   The instance used to listen to broadcast messages.
         /// </summary>
         private IXDListener listener;
 
+        #endregion
+
+        #region Constructors and Destructors
+
         /// <summary>
-        /// Default constructor.
+        ///   Default constructor.
         /// </summary>
         public Messenger()
         {
             InitializeComponent();
         }
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
-        /// The onload event which initializes the messaging API by registering
-        /// for the Status and Message channels. This also assigns a delegate for
-        /// processing messages received. 
+        ///   The closing overrride used to broadcast on the status channel that the window is
+        ///   closing.
         /// </summary>
-        /// <param name="e"></param>
+        /// <param name = "e"></param>
+        protected override void OnClosing(CancelEventArgs e)
+        {
+            base.OnClosing(e);
+            var message = string.Format("{0} is shutting down", Handle);
+            broadcast.SendToChannel("Status", message);
+        }
+
+        /// <summary>
+        ///   The onload event which initializes the messaging API by registering
+        ///   for the Status and Message channels. This also assigns a delegate for
+        ///   processing messages received.
+        /// </summary>
+        /// <param name = "e"></param>
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
@@ -64,7 +87,7 @@ namespace TheCodeKing.Demo
             // set the handle id in the form title
             Text += string.Format(" - Window {0}", Handle);
 
-            InitializeMode(XDTransportMode.WindowsMessaging);
+            InitializeMode(XDTransportMode.HighPerformanceUI);
 
             // broadcast on the status channel that we have loaded
             var message = string.Format("{0} has joined", Handle);
@@ -72,115 +95,10 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        /// The closing overrride used to broadcast on the status channel that the window is
-        /// closing.
+        ///   Wire up the enter key to submit a message.
         /// </summary>
-        /// <param name="e"></param>
-        protected override void OnClosing(CancelEventArgs e)
-        {
-            base.OnClosing(e);
-            var message = string.Format("{0} is shutting down", Handle);
-            broadcast.SendToChannel("Status", message);
-        }
-
-        /// <summary>
-        /// The delegate which processes all cross AppDomain messages and writes them to screen.
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void OnMessageReceived(object sender, XDMessageEventArgs e)
-        {
-            // If called from a seperate thread, rejoin so that be can update form elements.
-            if (InvokeRequired && !IsDisposed)
-            {
-                try
-                {
-                    // onClosing messages may fail if the form is being disposed.
-                    Invoke((MethodInvoker)(() => OnMessageReceived(sender, e)));
-                }
-                catch (ObjectDisposedException)
-                {
-                }
-                catch (InvalidOperationException)
-                {
-                }
-            }
-            else
-            {
-                switch(e.DataGram.Channel.ToLower())
-                {
-                    case "status":
-                        // pain text
-                        UpdateDisplayText(e.DataGram.Channel, e.DataGram.Message);
-                        break;
-                    default:
-                        // all other channels contain serialized FormattedUserMessage object 
-                        TypedDataGram<FormattedUserMessage> typedDataGram = e.DataGram;
-                        UpdateDisplayText(typedDataGram.Channel, typedDataGram.Message.FormattedTextMessage);
-                        break;
-                }
-            }
-        }
-
-        /// <summary>
-        /// A helper method used to update the Windows Form.
-        /// </summary>
-        /// <param name="channelName">The channel to display</param>
-        /// <param name="displayText">The message to display</param>
-        private void UpdateDisplayText(string channelName, string displayText)
-        {
-            if (string.IsNullOrEmpty(channelName) || string.IsNullOrEmpty(displayText))
-            {
-                return;
-            }
-
-            Color textColor;
-            switch (channelName.ToLower())
-            {
-                case "status":
-                    textColor = Color.Green;
-                    break;
-                default:
-                    textColor = Color.Blue;
-                    break;
-            }
-            string msg = string.Format("{0}: {1}\r\n", channelName, displayText);
-            UpdateDisplayText(msg, textColor);
-        }
-
-        /// <summary>
-        /// A helper method used to update the Windows Form.
-        /// </summary>
-        /// <param name="message">The message to be displayed on the form.</param>
-        /// <param name="textColor">The colour text to use for the message.</param>
-        private void UpdateDisplayText(string message, Color textColor)
-        {
-            if (!IsDisposed)
-            {
-                displayTextBox.AppendText(message);
-                displayTextBox.Select(displayTextBox.Text.Length - message.Length + 1, displayTextBox.Text.Length);
-                displayTextBox.SelectionColor = textColor;
-                displayTextBox.Select(displayTextBox.Text.Length, displayTextBox.Text.Length);
-                displayTextBox.ScrollToCaret();
-            }
-        }
-
-        /// <summary>
-        /// Sends a user input string on the Message channel. A message is not sent if
-        /// the string is empty.
-        /// </summary>
-        /// <param name="sender">The event sender.</param>
-        /// <param name="e">The event args.</param>
-        private void sendBtn_Click(object sender, EventArgs e)
-        {
-            SendMessage();
-        }
-
-        /// <summary>
-        /// Wire up the enter key to submit a message.
-        /// </summary>
-        /// <param name="m"></param>
-        /// <param name="k"></param>
+        /// <param name = "m"></param>
+        /// <param name = "k"></param>
         /// <returns></returns>
         protected override bool ProcessCmdKey(ref Message m, Keys k)
         {
@@ -194,99 +112,9 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        /// Helper method for sending message.
+        ///   Initialize the broadcast and listener mode.
         /// </summary>
-        private void SendMessage()
-        {
-            if (inputTextBox.Text.Length > 0)
-            {
-                // send FormattedUserMessage object to all channels
-                var message = new FormattedUserMessage("{0} says {1}", Handle.ToString(), inputTextBox.Text);
-                broadcast.SendToChannel("BinaryChannel1", message);
-                broadcast.SendToChannel("BinaryChannel2", message);
-                inputTextBox.Text = "";
-            }
-        }
-
-        /// <summary>
-        /// Adds or removes the Message channel from the messaging API. This effects whether messages 
-        /// sent on this channel will be received by the application. Status messages are broadcast 
-        /// on the Status channel whenever this setting is changed. 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void channel1_CheckedChanged(object sender, EventArgs e)
-        {
-            if (channel1Check.Checked)
-            {
-                listener.RegisterChannel("BinaryChannel1");
-                // send in pain text
-                var message = string.Format("{0} is registering Channel1.", Handle);
-                broadcast.SendToChannel("Status", message);
-            }
-            else
-            {
-                listener.UnRegisterChannel("BinaryChannel1");
-                // send in pain text
-                var message = string.Format("{0} is unregistering Channel1.", Handle);
-                broadcast.SendToChannel("Status", message);
-            }
-        }
-
-        /// <summary>
-        /// Adds or removes the Message channel from the messaging API. This effects whether messages 
-        /// sent on this channel will be received by the application. Status messages are broadcast 
-        /// on the Status channel whenever this setting is changed. 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void channel2_CheckedChanged(object sender, EventArgs e)
-        {
-            if (channel2Check.Checked)
-            {
-                listener.RegisterChannel("BinaryChannel2");
-                // send in pain text
-                var message = string.Format("{0} is registering Channel2.", Handle);
-                broadcast.SendToChannel("Status", message);
-            }
-            else
-            {
-                listener.UnRegisterChannel("BinaryChannel2");
-                // send in pain text
-                var message = string.Format("{0} is unregistering Channel2.", Handle);
-                broadcast.SendToChannel("Status", message);
-            }
-        }
-
-        /// <summary>
-        /// Adds or removes the Status channel from the messaging API. This effects whether messages 
-        /// sent on this channel will be received by the application. Status messages are broadcast 
-        /// on the Status channel whenever this setting is changed. 
-        /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void statusChannel_CheckedChanged(object sender, EventArgs e)
-        {
-            if (statusCheckBox.Checked)
-            {
-                listener.RegisterChannel("Status");
-                // send in plain text
-                var message = string.Format("{0} is registering Status.", Handle);
-                broadcast.SendToChannel("Status", message);
-            }
-            else
-            {
-                listener.UnRegisterChannel("Status");
-                // send in plain text
-                var message = string.Format("{0} is unregistering Status.", Handle);
-                broadcast.SendToChannel("Status", message);
-            }
-        }
-
-        /// <summary>
-        /// Initialize the broadcast and listener mode.
-        /// </summary>
-        /// <param name="mode">The new mode.</param>
+        /// <param name = "mode">The new mode.</param>
         private void InitializeMode(XDTransportMode mode)
         {
             if (listener != null)
@@ -334,15 +162,57 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        /// On form changed mode.
+        ///   The delegate which processes all cross AppDomain messages and writes them to screen.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
-        private void mode_CheckedChanged(object sender, EventArgs e)
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
+        private void OnMessageReceived(object sender, XDMessageEventArgs e)
         {
-            if (((RadioButton) sender).Checked)
+            // If called from a seperate thread, rejoin so that be can update form elements.
+            if (InvokeRequired && !IsDisposed)
             {
-                SetMode();
+                try
+                {
+                    // onClosing messages may fail if the form is being disposed.
+                    Invoke((MethodInvoker) (() => OnMessageReceived(sender, e)));
+                }
+                catch (ObjectDisposedException)
+                {
+                }
+                catch (InvalidOperationException)
+                {
+                }
+            }
+            else
+            {
+                switch (e.DataGram.Channel.ToLower())
+                {
+                    case "status":
+                        // pain text
+                        UpdateDisplayText(e.DataGram.Channel, e.DataGram.Message);
+                        break;
+                    default:
+                        // all other channels contain serialized FormattedUserMessage object 
+                        TypedDataGram<FormattedUserMessage> typedDataGram = e.DataGram;
+                        UpdateDisplayText(typedDataGram.Channel, typedDataGram.Message.FormattedTextMessage);
+                        break;
+                }
+            }
+        }
+
+        /// <summary>
+        ///   Helper method for sending message.
+        /// </summary>
+        private void SendMessage()
+        {
+            if (inputTextBox.Text.Length > 0)
+            {
+                // send FormattedUserMessage object to all channels
+                var message = new FormattedUserMessage("{0} says {1}", Handle.ToString(), inputTextBox.Text);
+                
+                broadcast.SendToChannel("BinaryChannel1", message);
+                broadcast.SendToChannel("BinaryChannel2", message);
+                inputTextBox.Text = "";
             }
         }
 
@@ -350,29 +220,135 @@ namespace TheCodeKing.Demo
         {
             if (wmRadio.Checked)
             {
-                InitializeMode(XDTransportMode.WindowsMessaging);
+                InitializeMode(XDTransportMode.HighPerformanceUI);
             }
             else if (ioStreamRadio.Checked)
             {
-                InitializeMode(XDTransportMode.IOStream);
+                InitializeMode(XDTransportMode.Compatibility);
             }
             else
             {
-                InitializeMode(XDTransportMode.MailSlot);
+                InitializeMode(XDTransportMode.RemoteNetwork);
             }
         }
 
         /// <summary>
-        /// If the MailSlot checkbox is checked, display info about single-instance limitation.
+        ///   A helper method used to update the Windows Form.
         /// </summary>
-        /// <param name="sender"></param>
-        /// <param name="e"></param>
+        /// <param name = "channelName">The channel to display</param>
+        /// <param name = "displayText">The message to display</param>
+        private void UpdateDisplayText(string channelName, string displayText)
+        {
+            if (string.IsNullOrEmpty(channelName) || string.IsNullOrEmpty(displayText))
+            {
+                return;
+            }
+
+            Color textColor;
+            switch (channelName.ToLower())
+            {
+                case "status":
+                    textColor = Color.Green;
+                    break;
+                default:
+                    textColor = Color.Blue;
+                    break;
+            }
+            string msg = string.Format("{0}: {1}\r\n", channelName, displayText);
+            UpdateDisplayText(msg, textColor);
+        }
+
+        /// <summary>
+        ///   A helper method used to update the Windows Form.
+        /// </summary>
+        /// <param name = "message">The message to be displayed on the form.</param>
+        /// <param name = "textColor">The colour text to use for the message.</param>
+        private void UpdateDisplayText(string message, Color textColor)
+        {
+            if (!IsDisposed)
+            {
+                displayTextBox.AppendText(message);
+                displayTextBox.Select(displayTextBox.Text.Length - message.Length + 1, displayTextBox.Text.Length);
+                displayTextBox.SelectionColor = textColor;
+                displayTextBox.Select(displayTextBox.Text.Length, displayTextBox.Text.Length);
+                displayTextBox.ScrollToCaret();
+            }
+        }
+
+        /// <summary>
+        ///   Adds or removes the Message channel from the messaging API. This effects whether messages 
+        ///   sent on this channel will be received by the application. Status messages are broadcast 
+        ///   on the Status channel whenever this setting is changed.
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
+        private void channel1_CheckedChanged(object sender, EventArgs e)
+        {
+            if (channel1Check.Checked)
+            {
+                listener.RegisterChannel("BinaryChannel1");
+                // send in pain text
+                var message = string.Format("{0} is registering Channel1.", Handle);
+                broadcast.SendToChannel("Status", message);
+            }
+            else
+            {
+                listener.UnRegisterChannel("BinaryChannel1");
+                // send in pain text
+                var message = string.Format("{0} is unregistering Channel1.", Handle);
+                broadcast.SendToChannel("Status", message);
+            }
+        }
+
+        /// <summary>
+        ///   Adds or removes the Message channel from the messaging API. This effects whether messages 
+        ///   sent on this channel will be received by the application. Status messages are broadcast 
+        ///   on the Status channel whenever this setting is changed.
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
+        private void channel2_CheckedChanged(object sender, EventArgs e)
+        {
+            if (channel2Check.Checked)
+            {
+                listener.RegisterChannel("BinaryChannel2");
+                // send in pain text
+                var message = string.Format("{0} is registering Channel2.", Handle);
+                broadcast.SendToChannel("Status", message);
+            }
+            else
+            {
+                listener.UnRegisterChannel("BinaryChannel2");
+                // send in pain text
+                var message = string.Format("{0} is unregistering Channel2.", Handle);
+                broadcast.SendToChannel("Status", message);
+            }
+        }
+
+        /// <summary>
+        ///   If the MailSlot checkbox is checked, display info about single-instance limitation.
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
         private void mailRadio_MouseClick(object sender, MouseEventArgs e)
         {
             if (mailRadio.Checked)
             {
                 UpdateDisplayText("MailSlot mode only allows one listener on a single channel at any one time.\r\n",
                                   Color.Red);
+            }
+        }
+
+        /// <summary>
+        ///   On form changed mode.
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
+        private void mode_CheckedChanged(object sender, EventArgs e)
+        {
+            if (((RadioButton) sender).Checked)
+            {
+                SetMode();
             }
         }
 
@@ -389,5 +365,43 @@ namespace TheCodeKing.Demo
             }
             SetMode();
         }
+
+        /// <summary>
+        ///   Sends a user input string on the Message channel. A message is not sent if
+        ///   the string is empty.
+        /// </summary>
+        /// <param name = "sender">The event sender.</param>
+        /// <param name = "e">The event args.</param>
+        private void sendBtn_Click(object sender, EventArgs e)
+        {
+            SendMessage();
+        }
+
+        /// <summary>
+        ///   Adds or removes the Status channel from the messaging API. This effects whether messages 
+        ///   sent on this channel will be received by the application. Status messages are broadcast 
+        ///   on the Status channel whenever this setting is changed.
+        /// </summary>
+        /// <param name = "sender"></param>
+        /// <param name = "e"></param>
+        private void statusChannel_CheckedChanged(object sender, EventArgs e)
+        {
+            if (statusCheckBox.Checked)
+            {
+                listener.RegisterChannel("Status");
+                // send in plain text
+                var message = string.Format("{0} is registering Status.", Handle);
+                broadcast.SendToChannel("Status", message);
+            }
+            else
+            {
+                listener.UnRegisterChannel("Status");
+                // send in plain text
+                var message = string.Format("{0} is unregistering Status.", Handle);
+                broadcast.SendToChannel("Status", message);
+            }
+        }
+
+        #endregion
     }
 }

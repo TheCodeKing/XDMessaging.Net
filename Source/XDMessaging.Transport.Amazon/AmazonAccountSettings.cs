@@ -24,7 +24,7 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(appSettings).IsNotNull();
 
             RegionEndPoint = null;
-            UniqueAppKey = "XDMessaging_";
+            UniqueAppKey = "XDM";
             AccessKey = appSettings[awsAccessKey];
             SecretKey = appSettings[awsSecretKey];
         }

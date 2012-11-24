@@ -39,6 +39,7 @@
     <Reference Include="System" />
     <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
     <Reference Include="Microsoft.CSharp" />
@@ -48,8 +49,12 @@
   <ItemGroup>
     <Compile Include="AmazonAccountSettings.cs" />
     <Compile Include="AmazonFacade.cs" />
+    <Compile Include="AmazonSqsNotification.cs" />
+    <Compile Include="AwsQueueReceiver.cs" />
     <Compile Include="IAmazonFacade.cs" />
+    <Compile Include="IAwsQueueReceiver.cs" />
     <Compile Include="NameHelper.cs" />
+    <Compile Include="SubscriptionInfo.cs" />
     <Compile Include="XDAmazonListener.cs" />
     <Compile Include="XDAmazonBroadcast.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />

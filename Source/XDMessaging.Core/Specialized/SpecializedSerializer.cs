@@ -1,4 +1,5 @@
-﻿using TheCodeKing.Utils.Contract;
+﻿using System.Runtime.Serialization;
+using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.Core.Message;
 
@@ -34,7 +35,7 @@ namespace XDMessaging.Core.Specialized
         {
             Validate.That(data).IsNotNullOrEmpty();
 
-            if (typeof(DataGram).IsAssignableFrom(typeof(T)))
+            if (typeof(T).GetCustomAttributes(typeof (DataContractAttribute), true).Length>0)
             {
                 return dataGramSerializer.Deserialize<T>(data); 
             }
@@ -45,7 +46,7 @@ namespace XDMessaging.Core.Specialized
         {
             Validate.That(obj).IsNotNull();
 
-            if (typeof(DataGram).IsAssignableFrom(typeof(T)))
+            if (typeof(T).GetCustomAttributes(typeof(DataContractAttribute), true).Length > 0)
             {
                 return dataGramSerializer.Serialize<T>(obj);
             }

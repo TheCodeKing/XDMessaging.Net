@@ -1,10 +1,12 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Configuration;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
 using TheCodeKing.Utils.IoC;
 using XDMessaging.Core;
 using XDMessaging.Core.IoC;
+using XDMessaging.Core.Message;
 using XDMessaging.Core.Specialized;
 
 namespace XDMessaging.Transport.Amazon
@@ -14,7 +16,10 @@ namespace XDMessaging.Transport.Amazon
     {
         #region Constants and Fields
 
+        private readonly ConcurrentDictionary<string, string> registeredTopics =
+            new ConcurrentDictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
         private readonly IAmazonFacade amazonFacade;
+        private readonly AmazonAccountSettings amazonAccountSettings;
         private readonly ISerializer serializer;
 
         #endregion
@@ -30,13 +35,15 @@ namespace XDMessaging.Transport.Amazon
             instance.Register<IAmazonFacade, AmazonFacade>();
         }
 
-        public XDAmazonBroadcast(ISerializer serializer, IAmazonFacade amazonFacade)
+        public XDAmazonBroadcast(ISerializer serializer, IAmazonFacade amazonFacade, AmazonAccountSettings amazonAccountSettings)
         {
             Validate.That(serializer).IsNotNull();
             Validate.That(amazonFacade).IsNotNull();
+            Validate.That(amazonAccountSettings).IsNotNull();
 
             this.serializer = serializer;
             this.amazonFacade = amazonFacade;
+            this.amazonAccountSettings = amazonAccountSettings;
         }
 
         #endregion
@@ -47,12 +54,29 @@ namespace XDMessaging.Transport.Amazon
 
         public void SendToChannel(string channel, string message)
         {
-            throw new NotImplementedException();
+            Validate.That(channel).IsNotNull();
+            Validate.That(message).IsNotNullOrEmpty();
+
+            var topicArn = registeredTopics.GetOrAdd(channel, CreateChannel);
+            var dataGram = new DataGram(channel, message);
+            var data = serializer.Serialize(dataGram);
+            amazonFacade.PublishMessageToTopic(topicArn, channel, data);
+        }
+
+        public string CreateChannel(string channelName)
+        {
+            var topicName = NameHelper.GetTopicNameFromChannel(amazonAccountSettings.UniqueAppKey, channelName);
+            return amazonFacade.CreateOrRetrieveTopic(topicName);
         }
 
         public void SendToChannel(string channel, object message)
         {
-            throw new NotImplementedException();
+            Validate.That(channel).IsNotNull();
+            Validate.That(message).IsNotNull();
+
+            var msg = serializer.Serialize(message);
+            SendToChannel(channel, msg);
+
         }
 
         #endregion

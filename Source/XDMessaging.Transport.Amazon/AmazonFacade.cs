@@ -96,11 +96,28 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(name).IsNotNullOrEmpty();
 
-            var sqsRequest = new CreateQueueRequest {QueueName = name};
+            var longPollAttribute = new Attribute().WithName("ReceiveMessageWaitTimeSeconds").WithValue("20");
+            var sqsRequest = new CreateQueueRequest().WithQueueName(name).WithAttribute(longPollAttribute);
             var createQueueResponse = Sqs.CreateQueue(sqsRequest);
             return new Uri(createQueueResponse.CreateQueueResult.QueueUrl);
         }
 
+        public string DeleteQueue(Uri queueUri)
+        {
+            Validate.That(queueUri).IsNotNull();
+
+            var sqsDeleteRequest = new DeleteQueueRequest().WithQueueUrl(queueUri.AbsoluteUri);
+            try
+            {
+                var deleteQueueResponse = Sqs.DeleteQueue(sqsDeleteRequest);
+                return deleteQueueResponse.ResponseMetadata.RequestId;
+            }
+            catch (AmazonSQSException)
+            {
+                return null;
+            }
+        }
+        
         public string CreateOrRetrieveTopic(string name)
         {
             Validate.That(name).IsNotNullOrEmpty();
@@ -110,24 +127,33 @@ namespace XDMessaging.Transport.Amazon
             return topicResponse.CreateTopicResult.TopicArn;
         }
 
-        public void SetSqsPolicyForSnsPublish(Uri queueUrl, string mytopicArn)
+        public string PublishMessageToTopic(string topicArn, string subject, string message)
+        {
+            var publishRequest = new PublishRequest()
+                .WithSubject(subject)
+                .WithMessage(message)
+                .WithTopicArn(topicArn);
+            var result = Sns.Publish(publishRequest);
+            return result.PublishResult.MessageId;
+        }
+
+        public string SetSqsPolicyForSnsPublish(Uri queueUrl, string queueArn, string mytopicArn)
         {
             Validate.That(queueUrl).IsNotNull();
+            Validate.That(queueArn).IsNotNullOrEmpty();
             Validate.That(mytopicArn).IsNotNullOrEmpty();
 
             var sqsPolicy = new Policy().WithStatements(
                 new Statement(Statement.StatementEffect.Allow)
+                    .WithResources(new Resource(queueArn))
                     .WithPrincipals(Principal.AllUsers)
                     .WithActionIdentifiers(SQSActionIdentifiers.SendMessage)
-                    .WithConditions(ConditionFactory.NewSourceArnCondition(mytopicArn)));
+                    .WithConditions(ConditionFactory.NewCondition(ConditionFactory.ArnComparisonType.ArnEquals, "aws:SourceArn", mytopicArn)));
 
-            var policyAttribute = new Attribute {Name = "Policy", Value = sqsPolicy.ToJson()};
-            var setQueueAttributesRequest = new SetQueueAttributesRequest
-                                                {
-                                                    Attribute = new List<Attribute> {policyAttribute},
-                                                    QueueUrl = queueUrl.AbsoluteUri
-                                                };
-            Sqs.SetQueueAttributes(setQueueAttributesRequest);
+            var setQueueAttributesRequest =
+                new SetQueueAttributesRequest().WithQueueUrl(queueUrl.AbsoluteUri).WithPolicy(sqsPolicy.ToJson());
+            var response = Sqs.SetQueueAttributes(setQueueAttributesRequest);
+            return response.ResponseMetadata.RequestId;
         }
 
         public string SubscribeQueueToTopic(string queueArn, string topicArn)
@@ -135,28 +161,44 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(queueArn).IsNotNullOrEmpty();
             Validate.That(topicArn).IsNotNullOrEmpty();
 
-            var subScribeRequest = new SubscribeRequest {Endpoint = queueArn, Protocol = "sqs", TopicArn = topicArn};
+            var subScribeRequest = new SubscribeRequest().WithEndpoint(queueArn).WithProtocol("sqs").WithTopicArn(topicArn);
             var response = Sns.Subscribe(subScribeRequest);
             return response.SubscribeResult.SubscriptionArn;
+        }
+
+        public string UnsubscribeQueueToTopic(string subscriptionArn)
+        {
+            Validate.That(subscriptionArn).IsNotNullOrEmpty();
+
+            var unsubscribeRequest = new UnsubscribeRequest().WithSubscriptionArn(subscriptionArn);
+            var response = Sns.Unsubscribe(unsubscribeRequest);
+            return response.ResponseMetadata.RequestId;
+        }
+
+        public IEnumerable<Message> ReadQueue(Uri queueUrl)
+        {
+            Validate.That(queueUrl).IsNotNull();
+
+            var receiveMessageRequest = new ReceiveMessageRequest().WithQueueUrl(queueUrl.AbsoluteUri);
+            var response = Sqs.ReceiveMessage(receiveMessageRequest);
+            return response.ReceiveMessageResult.Message;
+        }
+
+        public string DeleteMessage(Uri queueUrl, string messageId)
+        {
+            var deleteMessageRequest = new DeleteMessageRequest().WithQueueUrl(queueUrl.AbsoluteUri).WithReceiptHandle(messageId);
+            var deleteResponseMessage = Sqs.DeleteMessage(deleteMessageRequest);
+            return deleteResponseMessage.ResponseMetadata.RequestId;
         }
 
         #endregion
 
         #region Methods
 
-        private static List<T> CreateList<T>(params T[] items)
-        {
-            return new List<T>(items);
-        }
-
         private string GetQueueArn(Uri queueUrl)
         {
             // get queueArn
-            var attributeRequest = new GetQueueAttributesRequest
-                                       {
-                                           AttributeName = CreateList("QueueArn"),
-                                           QueueUrl = queueUrl.AbsoluteUri
-                                       };
+            var attributeRequest = new GetQueueAttributesRequest().WithQueueUrl(queueUrl.AbsoluteUri).WithAttributeName("QueueArn");
             var queueAttributes = Sqs.GetQueueAttributes(attributeRequest);
             return queueAttributes.GetQueueAttributesResult.Attribute[0].Value;
         }

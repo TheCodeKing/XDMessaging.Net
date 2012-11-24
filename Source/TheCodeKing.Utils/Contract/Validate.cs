@@ -74,7 +74,7 @@ namespace TheCodeKing.Utils.Contract
             }
         }
 
-        public static void IsNotNull(this IEvaluator<Uri> evaluator)
+        public static void IsAbsoluteUri(this IEvaluator<Uri> evaluator)
         {
             if (evaluator.Value == null)
             {

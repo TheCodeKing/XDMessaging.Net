@@ -32,14 +32,15 @@ namespace XDMessaging.Core
 
         static XDBroadcast()
         {
-            InstanceResolver = SimpleIoCContainerBootstrapper.GetInstance();
+            Container = SimpleIoCContainerBootstrapper.GetInstance();
+            SimpleIoCContainerBootstrapper.Scan.ScanAllAssemblies<IXDBroadcast>(Container);
         }
 
         #endregion
 
         #region Properties
 
-        public static IoCContainer InstanceResolver { get; set; }
+        public static IoCContainer Container { get; set; }
 
         #endregion
 
@@ -81,7 +82,7 @@ namespace XDMessaging.Core
             }
             if (modes.Length == 1)
             {
-                return InstanceResolver.Resolve<IXDBroadcast>(Convert.ToString(modes[0]));
+                return Container.Resolve<IXDBroadcast>(Convert.ToString(modes[0]));
             }
 
             // ensure only one of each type added
@@ -91,7 +92,7 @@ namespace XDMessaging.Core
                 // only add one of each mode
                 if (!singleItems.ContainsKey(mode))
                 {
-                    singleItems.Add(mode, InstanceResolver.Resolve<IXDBroadcast>(Convert.ToString(mode)));
+                    singleItems.Add(mode, Container.Resolve<IXDBroadcast>(Convert.ToString(mode)));
                 }
             }
             return new XDMultiBroadcast(singleItems.Values);

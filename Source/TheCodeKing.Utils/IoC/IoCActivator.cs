@@ -31,6 +31,10 @@ namespace TheCodeKing.Utils.IoC
 
         public object CreateInstance(Type type)
         {
+            if (type.IsAbstract || type.IsInterface)
+            {
+                return null;
+            }
             var args = GetConstructorParameters(type);
             return Activator.CreateInstance(type,
                                             bindingFlags,
@@ -44,7 +48,7 @@ namespace TheCodeKing.Utils.IoC
         private ConstructorInfo FindConstructorWithLeastParameters(Type type)
         {
             return type.GetConstructors(bindingFlags)
-                .Where(o => !o.GetParameters().Any(p => !container.IsRegistered(p.ParameterType)))
+                //.Where(o => !o.GetParameters().Any(p => !(p.ParameterType.IsAbstract && p.ParameterType.IsInterface && container.IsRegistered(p.ParameterType))))
                 .OrderBy(o => o.GetParameters().Length).ElementAtOrDefault(0);
         }
 

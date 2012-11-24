@@ -14,8 +14,10 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
+using Amazon;
 using XDMessaging.Core;
 using XDMessaging.Core.Message;
+using XDMessaging.Transport.Amazon;
 
 namespace TheCodeKing.Demo
 {
@@ -75,6 +77,9 @@ namespace TheCodeKing.Demo
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+
+            AmazonAccountSettings.GetInstance().RegionEndPoint = RegionEndpoint.EUWest1;
+            XDBroadcast.Container.AwsSettings();
 
             var tooltips = new ToolTip();
             tooltips.SetToolTip(sendBtn, "Broadcast message on Channel 1\r\nand Channel2");

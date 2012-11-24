@@ -5,11 +5,11 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("XDMessaging.Transport.MailSlot")]
+[assembly: AssemblyTitle("XDMessaging.Transport.Amazon")]
 [assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("AKQA")]
-[assembly: AssemblyProduct("XDMessaging.Transport.MailSlot")]
+[assembly: AssemblyProduct("XDMessaging.Transport.Amazon")]
 [assembly: AssemblyCopyright("Copyright © AKQA 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("87f7f29e-e77a-40be-96bc-6d8d27c0ce6f")]
+[assembly: Guid("8bb08548-0063-4d29-b69e-962edcce1c94")]
 
 // Version information for an assembly consists of the following four values:
 //

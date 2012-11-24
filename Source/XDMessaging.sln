@@ -20,6 +20,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Messenger", "..\Demo\C#\Mes
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCodeKing.Utils", "TheCodeKing.Utils\TheCodeKing.Utils.csproj", "{7C0BF688-F17B-481E-B37C-211C6D063946}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XDMessaging.Transport.Amazon", "XDMessaging.Transport.Amazon\XDMessaging.Transport.Amazon.csproj", "{A7518064-616C-4424-AE27-41EF29D636A3}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -123,6 +125,21 @@ Global
 		{7C0BF688-F17B-481E-B37C-211C6D063946}.SignedRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7C0BF688-F17B-481E-B37C-211C6D063946}.SignedRelease|Mixed Platforms.Build.0 = Release|Any CPU
 		{7C0BF688-F17B-481E-B37C-211C6D063946}.SignedRelease|x86.ActiveCfg = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.Release|x86.ActiveCfg = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.SignedRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.SignedRelease|Any CPU.Build.0 = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.SignedRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.SignedRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{A7518064-616C-4424-AE27-41EF29D636A3}.SignedRelease|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

@@ -2,6 +2,7 @@
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 
 namespace XDMessaging.Core.IoC
@@ -10,18 +11,27 @@ namespace XDMessaging.Core.IoC
     {
         #region Public Methods
 
-        public void ScanAllAssemblies(IoCContainer container)
+        public void ScanAllAssemblies<T>(IoCContainer container)
         {
+            Validate.That(container).IsNotNull();
+
             var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            ScanAllAssemblies(container, location);
+            ScanAllAssemblies<T>(container, location);
         }
 
-        public void ScanAllAssemblies(IoCContainer container, string location)
+        public void ScanAllAssemblies<T>(IoCContainer container, string location)
         {
-            var assemblies = Directory.GetFiles(location, "*.dll").Select(Assembly.LoadFile).ToList();
+            Validate.That(container).IsNotNull();
+            Validate.That(location).IsNotNullOrEmpty();
+
+            var assemblies =
+                Directory.GetFiles(location, "*.dll").Select(Assembly.LoadFile).Where(
+                    a =>
+                    !Path.GetFileName(a.Location).StartsWith("system.", StringComparison.InvariantCultureIgnoreCase)).
+                    ToList();
             foreach (var assembly in assemblies)
             {
-                SearchAssemblyForAutoRegistrations(container, assembly);
+                SearchAssemblyForAutoRegistrations<T>(container, assembly);
             }
         }
 
@@ -29,30 +39,21 @@ namespace XDMessaging.Core.IoC
 
         #region Methods
 
-        private static void RegisterSpecializedImplementation<T>(IoCContainer container, Type type)
+        private static void SearchAssemblyForAutoRegistrations<T>(IoCContainer container, Assembly assembly)
         {
-            foreach (var transportMode in type.GetCustomAttributes(typeof (TransportModeHintAttribute), false)
-                .Select(attr => ((TransportModeHintAttribute) attr).Mode))
+            foreach (var type in assembly.GetTypes().Where(type => typeof(T).IsAssignableFrom(type)))
             {
-                container.Register(typeof (T), type, Convert.ToString(transportMode));
+                RegisterSpecializedImplementation<T>(container, type);
             }
         }
 
-        private static void SearchAssemblyForAutoRegistrations(IoCContainer container, Assembly assembly)
+        private static void RegisterSpecializedImplementation<T>(IoCContainer container, Type type)
         {
-            var broadcastType = typeof (IXDBroadcast);
-            var listenerType = typeof (IXDListener);
-
-            foreach (var type in assembly.GetTypes())
+            foreach (var transportMode in type.GetCustomAttributes(typeof(TransportModeHintAttribute), false)
+                .Select(attr => ((TransportModeHintAttribute)attr).Mode))
             {
-                if (broadcastType.IsAssignableFrom(type))
-                {
-                    RegisterSpecializedImplementation<IXDBroadcast>(container, type);
-                }
-                else if (listenerType.IsAssignableFrom(type))
-                {
-                    RegisterSpecializedImplementation<IXDListener>(container, type);
-                }
+                type.TypeInitializer.Invoke(null, null);
+                container.Register(typeof(T), type, Convert.ToString(transportMode));
             }
         }
 

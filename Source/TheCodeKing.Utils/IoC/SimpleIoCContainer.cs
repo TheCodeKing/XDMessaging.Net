@@ -112,7 +112,7 @@ namespace TheCodeKing.Utils.IoC
             {
                 return map[key]();
             }
-            return null;
+            return activator.CreateInstance(type);
         }
 
         #endregion

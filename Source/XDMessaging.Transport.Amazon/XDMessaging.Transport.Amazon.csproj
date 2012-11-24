@@ -5,13 +5,14 @@
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
-    <ProjectGuid>{B8F97D49-850A-410A-BA25-D9E7A680F033}</ProjectGuid>
+    <ProjectGuid>{A7518064-616C-4424-AE27-41EF29D636A3}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>XDMessaging.Transport.MailSlot</RootNamespace>
-    <AssemblyName>XDMessaging.Transport.MailSlot</AssemblyName>
+    <RootNamespace>XDMessaging.Transport.Amazon</RootNamespace>
+    <AssemblyName>XDMessaging.Transport.Amazon</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -31,7 +32,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK, Version=1.5.9.0, Culture=neutral, PublicKeyToken=cd2d24cd2bace800, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AWSSDK.1.5.9.0\lib\AWSSDK.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -40,22 +46,27 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="MailSlotDataGram.cs" />
-    <Compile Include="MailSlotDataReceivedEventArgs.cs" />
-    <Compile Include="MailSlotReader.cs" />
-    <Compile Include="MailSlotWatcher.cs" />
-    <Compile Include="MailSlotWriter.cs" />
-    <Compile Include="Native.cs" />
-    <Compile Include="NetworkMessageFragmentor.cs" />
+    <Compile Include="AmazonAccountSettings.cs" />
+    <Compile Include="AmazonFacade.cs" />
+    <Compile Include="IAmazonFacade.cs" />
+    <Compile Include="NameHelper.cs" />
+    <Compile Include="XDAmazonListener.cs" />
+    <Compile Include="XDAmazonBroadcast.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="XDMailSlotBroadcast.cs" />
-    <Compile Include="XDMailSlotListener.cs" />
+    <Compile Include="XDAmazonExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
+      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
+      <Name>TheCodeKing.Utils</Name>
+    </ProjectReference>
     <ProjectReference Include="..\XDMessaging.Core\XDMessaging.Core.csproj">
       <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
       <Name>XDMessaging.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

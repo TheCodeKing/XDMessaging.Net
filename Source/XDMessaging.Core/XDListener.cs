@@ -23,10 +23,11 @@ namespace XDMessaging.Core
     {
         static XDListener()
         {
-            InstanceResolver = SimpleIoCContainerBootstrapper.GetInstance();
+            Container = SimpleIoCContainerBootstrapper.GetInstance();
+            SimpleIoCContainerBootstrapper.Scan.ScanAllAssemblies<IXDListener>(Container);
         }
 
-        public static IoCContainer InstanceResolver { get; set; }
+        public static IoCContainer Container { get; set; }
 
         #region Delegates
 
@@ -49,7 +50,7 @@ namespace XDMessaging.Core
         /// <returns></returns>
         public static IXDListener CreateListener(XDTransportMode transportMode)
         {
-            return InstanceResolver.Resolve<IXDListener>(transportMode.ToString());
+            return Container.Resolve<IXDListener>(transportMode.ToString());
         }
 
         #endregion

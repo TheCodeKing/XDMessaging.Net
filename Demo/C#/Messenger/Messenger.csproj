@@ -34,6 +34,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK, Version=1.5.8.0, Culture=neutral, PublicKeyToken=cd2d24cd2bace800, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\..\..\Source\packages\AWSSDK.1.5.9.0\lib\AWSSDK.dll</HintPath>
+    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
@@ -57,9 +61,17 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Source\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
+      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
+      <Name>TheCodeKing.Utils</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\XDMessaging.Core\XDMessaging.Core.csproj">
       <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
       <Name>XDMessaging.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.Amazon\XDMessaging.Transport.Amazon.csproj">
+      <Project>{A7518064-616C-4424-AE27-41EF29D636A3}</Project>
+      <Name>XDMessaging.Transport.Amazon</Name>
     </ProjectReference>
     <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.IOStream\XDMessaging.Transport.IOStream.csproj">
       <Project>{B71BD6E3-D7D7-40EC-9ACD-0A11F27A4E60}</Project>

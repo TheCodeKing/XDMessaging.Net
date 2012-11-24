@@ -33,14 +33,13 @@ namespace XDMessaging.Core
         static XDBroadcast()
         {
             Container = SimpleIoCContainerBootstrapper.GetInstance();
-            SimpleIoCContainerBootstrapper.Scan.ScanAllAssemblies<IXDBroadcast>(Container);
         }
 
         #endregion
 
         #region Properties
 
-        public static IoCContainer Container { get; set; }
+        public static IocContainer Container { get; set; }
 
         #endregion
 

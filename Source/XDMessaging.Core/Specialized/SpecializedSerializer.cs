@@ -1,7 +1,18 @@
-﻿using System.Runtime.Serialization;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expressed or implied.
+*
+*=============================================================================
+*/
+using System.Runtime.Serialization;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core.Message;
 
 namespace XDMessaging.Core.Specialized
 {
@@ -29,15 +40,15 @@ namespace XDMessaging.Core.Specialized
 
         #region Implemented Interfaces
 
-        #region ISerializer<object>
+        #region ISerializer
 
         public T Deserialize<T>(string data) where T : class
         {
             Validate.That(data).IsNotNullOrEmpty();
 
-            if (typeof(T).GetCustomAttributes(typeof (DataContractAttribute), true).Length>0)
+            if (typeof (T).GetCustomAttributes(typeof (DataContractAttribute), true).Length > 0)
             {
-                return dataGramSerializer.Deserialize<T>(data); 
+                return dataGramSerializer.Deserialize<T>(data);
             }
             return objectSerializer.Deserialize<T>(data);
         }
@@ -46,11 +57,11 @@ namespace XDMessaging.Core.Specialized
         {
             Validate.That(obj).IsNotNull();
 
-            if (typeof(T).GetCustomAttributes(typeof(DataContractAttribute), true).Length > 0)
+            if (typeof (T).GetCustomAttributes(typeof (DataContractAttribute), true).Length > 0)
             {
-                return dataGramSerializer.Serialize<T>(obj);
+                return dataGramSerializer.Serialize(obj);
             }
-            return objectSerializer.Serialize<T>(obj);
+            return objectSerializer.Serialize(obj);
         }
 
         #endregion

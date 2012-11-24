@@ -1,11 +1,23 @@
-﻿using System;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expressed or implied.
+*
+*=============================================================================
+*/
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using TheCodeKing.Utils.Contract;
 
 namespace TheCodeKing.Utils.IoC
 {
-    public sealed class SimpleIoCContainer : IoCContainer
+    public sealed class SimpleIoCContainer : IocContainer
     {
         #region Constants and Fields
 
@@ -19,7 +31,7 @@ namespace TheCodeKing.Utils.IoC
 
         #region Constructors and Destructors
 
-        public SimpleIoCContainer(Func<IoCContainer, IoCActivator> activatorFactory)
+        public SimpleIoCContainer(Func<IocContainer, IoCActivator> activatorFactory)
         {
             activator = activatorFactory(this);
         }
@@ -28,7 +40,7 @@ namespace TheCodeKing.Utils.IoC
 
         #region Public Methods
 
-        public IoCContainer Initialize(Action<IoCContainer> configure)
+        public IocContainer Initialize(Action<IocContainer> configure)
         {
             configure(this);
             return this;

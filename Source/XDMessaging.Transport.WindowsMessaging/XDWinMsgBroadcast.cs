@@ -35,9 +35,16 @@ namespace XDMessaging.Transport.WindowsMessaging
 
         #region Constructors and Destructors
 
-        static XDWinMsgBroadcast()
+        /// <summary>
+        /// Initialize method called from XDMessaging.Core before the instance is constructed.
+        /// This allows external classes to registered dependencies with the IocContainer.
+        /// </summary>
+        /// <param name="container">The IocContainer instance used to construct this class.</param>
+        private static void Initialize(IocContainer container)
         {
-            SimpleIoCContainerBootstrapper.GetInstance().Register<ISerializer, SpecializedSerializer>();
+            Validate.That(container).IsNotNull();
+
+            container.Register<ISerializer, SpecializedSerializer>();
         }
 
         private XDWinMsgBroadcast(ISerializer serializer)

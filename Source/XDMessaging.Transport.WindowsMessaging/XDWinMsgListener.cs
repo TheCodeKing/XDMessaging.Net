@@ -16,7 +16,6 @@ using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.Core;
-using XDMessaging.Core.IoC;
 using XDMessaging.Core.Specialized;
 
 namespace XDMessaging.Transport.WindowsMessaging
@@ -40,11 +39,6 @@ namespace XDMessaging.Transport.WindowsMessaging
         #endregion
 
         #region Constructors and Destructors
-
-        static XDWinMsgListener()
-        {
-            SimpleIoCContainerBootstrapper.GetInstance().Register<ISerializer, SpecializedSerializer>();
-        }
 
         /// <summary>
         ///   The constructor used internally for creating new instances of XDListener.
@@ -180,6 +174,18 @@ namespace XDMessaging.Transport.WindowsMessaging
                     MessageReceived.Invoke(this, new XDMessageEventArgs(dataGram));
                 }
             }
+        }
+
+        /// <summary>
+        ///   Initialize method called from XDMessaging.Core before the instance is constructed.
+        ///   This allows external classes to registered dependencies with the IocContainer.
+        /// </summary>
+        /// <param name = "container">The IocContainer instance used to construct this class.</param>
+        private static void Initialize(IocContainer container)
+        {
+            Validate.That(container).IsNotNull();
+
+            container.Register<ISerializer, SpecializedSerializer>();
         }
 
         /// <summary>

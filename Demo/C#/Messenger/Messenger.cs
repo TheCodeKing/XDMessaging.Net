@@ -77,9 +77,13 @@ namespace TheCodeKing.Demo
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-
-            AmazonAccountSettings.GetInstance().RegionEndPoint = RegionEndpoint.EUWest1;
-            XDBroadcast.Container.AwsSettings();
+            var settings = XDBroadcast.Container.AwsSettings();
+            settings.RegionEndPoint = RegionEndpoint.EUWest1;
+            if (string.IsNullOrEmpty(settings.AccessKey) || string.IsNullOrEmpty(settings.SecretKey))
+            {
+                MessageBox.Show("Azazon AWS not set. Enter your credentials in the app.config.", "Missing AWS account", MessageBoxButtons.OK,
+                                MessageBoxIcon.Warning);
+            }
 
             var tooltips = new ToolTip();
             tooltips.SetToolTip(sendBtn, "Broadcast message on Channel 1\r\nand Channel2");

@@ -1,4 +1,16 @@
-﻿using System;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expressed or implied.
+*
+*=============================================================================
+*/
+using System;
 using System.IO;
 using System.Security.AccessControl;
 using System.Security.Principal;
@@ -7,7 +19,6 @@ using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.Core;
-using XDMessaging.Core.IoC;
 using XDMessaging.Core.Message;
 using XDMessaging.Core.Specialized;
 
@@ -54,7 +65,6 @@ namespace XDMessaging.Transport.IOStream
         /// </summary>
         static XDIOStreamBroadcast()
         {
-            SimpleIoCContainerBootstrapper.GetInstance().Register<ISerializer, SpecializedSerializer>();
             temporaryFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                                            "XDMessagingv4");
         }
@@ -252,6 +262,18 @@ namespace XDMessaging.Transport.IOStream
             catch (UnauthorizedAccessException)
             {
             } // if the file is still in use retry again later.
+        }
+
+        /// <summary>
+        ///   Initialize method called from XDMessaging.Core before the instance is constructed.
+        ///   This allows external classes to registered dependencies with the IocContainer.
+        /// </summary>
+        /// <param name = "container">The IocContainer instance used to construct this class.</param>
+        private static void Initialize(IocContainer container)
+        {
+            Validate.That(container).IsNotNull();
+
+            container.Register<ISerializer, SpecializedSerializer>();
         }
 
         #endregion

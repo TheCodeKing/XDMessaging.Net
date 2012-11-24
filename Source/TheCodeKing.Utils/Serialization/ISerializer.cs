@@ -10,7 +10,6 @@
 *
 *=============================================================================
 */
-
 namespace TheCodeKing.Utils.Serialization
 {
     public interface ISerializer

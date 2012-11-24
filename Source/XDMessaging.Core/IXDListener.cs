@@ -11,6 +11,7 @@
 *=============================================================================
 */
 using System;
+using TheCodeKing.Utils.IoC;
 
 namespace XDMessaging.Core
 {

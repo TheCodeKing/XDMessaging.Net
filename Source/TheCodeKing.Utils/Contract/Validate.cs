@@ -1,8 +1,19 @@
-﻿using System;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expressed or implied.
+*
+*=============================================================================
+*/
+using System;
 using System.Collections;
 using System.Diagnostics;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 namespace TheCodeKing.Utils.Contract
 {
@@ -67,14 +78,6 @@ namespace TheCodeKing.Utils.Contract
     {
         #region Public Methods
 
-        public static void IsNotNull<T>(this IEvaluator<T> evaluator) where T : class
-        {
-            if (evaluator.Value == null)
-            {
-                AssertNullArgument(evaluator);
-            }
-        }
-
         public static void IsAbsoluteUri(this IEvaluator<Uri> evaluator)
         {
             if (evaluator.Value == null)
@@ -84,6 +87,14 @@ namespace TheCodeKing.Utils.Contract
             if (evaluator.Value.IsAbsoluteUri)
             {
                 AssertIllegalArgument(evaluator);
+            }
+        }
+
+        public static void IsNotNull<T>(this IEvaluator<T> evaluator) where T : class
+        {
+            if (evaluator.Value == null)
+            {
+                AssertNullArgument(evaluator);
             }
         }
 
@@ -107,32 +118,6 @@ namespace TheCodeKing.Utils.Contract
             }
         }
 
-        public static void ContainsOnly(this IEvaluator<string> evaluator, string regex)
-        {
-            if (regex==null)
-            {
-                AssertIllegalArgument(evaluator);
-            }
-            ContainsOnly(evaluator, Regex.Replace(evaluator.Value, regex, ""));
-        }
-
-        public static void ContainsOnly(this IEvaluator<string> evaluator, Regex regex)
-        {
-            if (evaluator.Value == null || regex == null)
-            {
-                AssertNullArgument(evaluator);
-            }
-            if (evaluator.Value == string.Empty)
-            {
-                AssertIllegalArgument(evaluator);
-            }
-            var value = regex.Replace(evaluator.Value, "");
-            if (value != "")
-            {
-                AssertIllegalArgument(evaluator);   
-            }
-        }
-
         public static IEvaluator<T> That<T>(T value)
         {
             var stackTrace = new StackTrace();
@@ -148,7 +133,6 @@ namespace TheCodeKing.Utils.Contract
 
             return new Evaluator<T>(value, parameters.Name, message);
         }
-
 
         #endregion
 

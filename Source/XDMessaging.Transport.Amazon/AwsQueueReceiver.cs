@@ -1,8 +1,18 @@
-﻿using System;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expressed or implied.
+*
+*=============================================================================
+*/
+using System;
 using System.Collections.Concurrent;
-using System.Collections.Generic;
 using System.Threading;
-using Amazon.ElasticMapReduce.Model;
 using Amazon.SQS.Model;
 using TheCodeKing.Utils.Contract;
 
@@ -10,15 +20,14 @@ namespace XDMessaging.Transport.Amazon
 {
     internal class AwsQueueReceiver : IAwsQueueReceiver
     {
-        internal class ReadTask
-        {
-            public SubscriptionInfo SubscriptionInfo { get; set; }
-            public Action<Message> OnMessageReceived { get; set; }
-            public bool IsCancelled { get; set; }
-        }
+        #region Constants and Fields
 
         private readonly IAmazonFacade amazonFacade;
         private readonly ConcurrentDictionary<string, ReadTask> tracking = new ConcurrentDictionary<string, ReadTask>();
+
+        #endregion
+
+        #region Constructors and Destructors
 
         public AwsQueueReceiver(IAmazonFacade amazonFacade)
         {
@@ -27,9 +36,18 @@ namespace XDMessaging.Transport.Amazon
             this.amazonFacade = amazonFacade;
         }
 
+        #endregion
+
+        #region Implemented Interfaces
+
+        #region IAwsQueueReceiver
+
         public void Start(SubscriptionInfo subscriptionInfo, Action<Message> onMessageReceived)
         {
-            var readTask = new ReadTask { SubscriptionInfo = subscriptionInfo, OnMessageReceived = onMessageReceived };
+            Validate.That(subscriptionInfo).IsNotNull();
+            Validate.That(onMessageReceived).IsNotNull();
+
+            var readTask = new ReadTask {SubscriptionInfo = subscriptionInfo, OnMessageReceived = onMessageReceived};
             tracking.AddOrUpdate(subscriptionInfo.ChannelName, k => readTask, (k, g) =>
                                                                                   {
                                                                                       g.IsCancelled = true;
@@ -40,6 +58,8 @@ namespace XDMessaging.Transport.Amazon
 
         public void Stop(SubscriptionInfo subscriptionInfo)
         {
+            Validate.That(subscriptionInfo).IsNotNull();
+
             ReadTask readTask;
             tracking.TryRemove(subscriptionInfo.ChannelName, out readTask);
             if (readTask != null)
@@ -48,22 +68,37 @@ namespace XDMessaging.Transport.Amazon
             }
         }
 
+        #endregion
+
+        #endregion
+
+        #region Methods
+
         private void AsyncReadQueueLoop(object state)
         {
-            var readTask = (ReadTask)state;
+            var readTask = (ReadTask) state;
 
-            while (readTask.IsCancelled || readTask.SubscriptionInfo.IsSubscribed)
+            while (!readTask.IsCancelled && readTask.SubscriptionInfo.IsSubscribed)
             {
                 foreach (var message in amazonFacade.ReadQueue(readTask.SubscriptionInfo.QueueUrl))
                 {
-                    if (readTask.IsCancelled || !readTask.SubscriptionInfo.IsSubscribed)
-                    {
-                        break;
-                    }
                     amazonFacade.DeleteMessage(readTask.SubscriptionInfo.QueueUrl, message.ReceiptHandle);
                     readTask.OnMessageReceived(message);
                 }
             }
+        }
+
+        #endregion
+
+        internal class ReadTask
+        {
+            #region Properties
+
+            public bool IsCancelled { get; set; }
+            public Action<Message> OnMessageReceived { get; set; }
+            public SubscriptionInfo SubscriptionInfo { get; set; }
+
+            #endregion
         }
     }
 }

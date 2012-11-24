@@ -1,4 +1,16 @@
-﻿using System;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expressed or implied.
+*
+*=============================================================================
+*/
+using System;
 using System.Collections.Concurrent;
 using System.Configuration;
 using Amazon.SQS.Model;
@@ -6,7 +18,6 @@ using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.Core;
-using XDMessaging.Core.IoC;
 using XDMessaging.Core.Message;
 using XDMessaging.Core.Specialized;
 
@@ -18,8 +29,8 @@ namespace XDMessaging.Transport.Amazon
         #region Constants and Fields
 
         private readonly AmazonAccountSettings amazonAccountSettings;
-        private readonly IAwsQueueReceiver awsQueueReceiver;
         private readonly IAmazonFacade amazonFacade;
+        private readonly IAwsQueueReceiver awsQueueReceiver;
 
         private readonly ConcurrentDictionary<string, SubscriptionInfo> registeredChannels =
             new ConcurrentDictionary<string, SubscriptionInfo>(StringComparer.InvariantCultureIgnoreCase);
@@ -31,16 +42,6 @@ namespace XDMessaging.Transport.Amazon
         #endregion
 
         #region Constructors and Destructors
-
-        static XDAmazonListener()
-        {
-            var instance = SimpleIoCContainerBootstrapper.GetInstance();
-            instance.Register<ISerializer, SpecializedSerializer>();
-            instance.Register<IAwsQueueReceiver, AwsQueueReceiver>();
-            instance.Register(() => ConfigurationManager.AppSettings);
-            instance.Register(AmazonAccountSettings.GetInstance);
-            instance.Register<IAmazonFacade, AmazonFacade>();
-        }
 
         public XDAmazonListener(ISerializer serializer, IAmazonFacade amazonFacade,
                                 AmazonAccountSettings amazonAccountSettings, IAwsQueueReceiver awsQueueReceiver)
@@ -111,7 +112,7 @@ namespace XDMessaging.Transport.Amazon
             }
             if (registeredChannels.ContainsKey(channelName))
             {
-                registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelNotListening);   
+                registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelNotListening);
             }
         }
 
@@ -121,20 +122,27 @@ namespace XDMessaging.Transport.Amazon
 
         #region Methods
 
-        private void OnMessageReceived(Message message)
+        /// <summary>
+        ///   Initialize method called from XDMessaging.Core before the instance is constructed.
+        ///   This allows external classes to registered dependencies with the IocContainer.
+        /// </summary>
+        /// <param name = "container">The IocContainer instance used to construct this class.</param>
+        private static void Initialize(IocContainer container)
         {
-            var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
-            var dataGram = serializer.Deserialize<DataGram>(notification.Message);
-            if (!disposed && dataGram.IsValid && MessageReceived != null)
-            {
-                MessageReceived(this, new XDMessageEventArgs(dataGram));
-            }
+            Validate.That(container).IsNotNull();
+
+            container.Register<ISerializer, SpecializedSerializer>();
+            container.Register<IAwsQueueReceiver, AwsQueueReceiver>();
+            container.Register(() => ConfigurationManager.AppSettings);
+            container.Register(AmazonAccountSettings.GetInstance);
+            container.Register<IAmazonFacade, AmazonFacade>();
         }
 
         private SubscriptionInfo CreateChannelListener(string channelName)
         {
             var topicName = NameHelper.GetTopicNameFromChannel(amazonAccountSettings.UniqueAppKey, channelName);
-            var queueName = NameHelper.GetQueueNameFromListenerId(amazonAccountSettings.UniqueAppKey, channelName, uniqueInstanceId);
+            var queueName = NameHelper.GetQueueNameFromListenerId(amazonAccountSettings.UniqueAppKey, channelName,
+                                                                  uniqueInstanceId);
 
             // get topic ARN
             var topicArn = amazonFacade.CreateOrRetrieveTopic(topicName);
@@ -145,13 +153,13 @@ namespace XDMessaging.Transport.Amazon
             amazonFacade.SetSqsPolicyForSnsPublish(queueUrl, queueArn, topicArn);
 
             var subscription = new SubscriptionInfo
-                       {
-                           ChannelName = channelName,
-                           QueueUrl = queueUrl,
-                           QueueArn = queueArn,
-                           TopicArn = topicArn,
-                           TopicName = topicName
-                       };
+                                   {
+                                       ChannelName = channelName,
+                                       QueueUrl = queueUrl,
+                                       QueueArn = queueArn,
+                                       TopicArn = topicArn,
+                                       TopicName = topicName
+                                   };
             EnsureChannelListening(channelName, subscription);
             return subscription;
         }
@@ -206,6 +214,17 @@ namespace XDMessaging.Transport.Amazon
                 awsQueueReceiver.Stop(subscriptionInfo);
             }
             return subscriptionInfo;
+        }
+
+        private void OnMessageReceived(Message message)
+        {
+            var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
+            var dataGram = serializer.Deserialize<DataGram>(notification.Message);
+            var regChannel = registeredChannels[dataGram.Channel];
+            if (!disposed && dataGram.IsValid && MessageReceived != null && regChannel != null && regChannel.IsSubscribed)
+            {
+                MessageReceived(this, new XDMessageEventArgs(dataGram));
+            }
         }
 
         #endregion

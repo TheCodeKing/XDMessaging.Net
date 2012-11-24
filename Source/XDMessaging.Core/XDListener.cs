@@ -24,10 +24,9 @@ namespace XDMessaging.Core
         static XDListener()
         {
             Container = SimpleIoCContainerBootstrapper.GetInstance();
-            SimpleIoCContainerBootstrapper.Scan.ScanAllAssemblies<IXDListener>(Container);
         }
 
-        public static IoCContainer Container { get; set; }
+        public static IocContainer Container { get; set; }
 
         #region Delegates
 

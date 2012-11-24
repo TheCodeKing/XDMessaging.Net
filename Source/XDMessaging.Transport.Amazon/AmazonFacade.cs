@@ -1,4 +1,16 @@
-﻿using System;
+﻿/*=============================================================================
+*
+*	(C) Copyright 2011, Michael Carlisle (mike.carlisle@thecodeking.co.uk)
+*
+*   http://www.TheCodeKing.co.uk
+*  
+*	All rights reserved.
+*	The code and information is provided "as-is" without waranty of any kind,
+*	either expressed or implied.
+*
+*=============================================================================
+*/
+using System;
 using System.Collections.Generic;
 using Amazon;
 using Amazon.Auth.AccessControlPolicy;
@@ -8,17 +20,16 @@ using Amazon.SimpleNotificationService.Model;
 using Amazon.SQS;
 using Amazon.SQS.Model;
 using TheCodeKing.Utils.Contract;
-using XDMessaging.Core;
 using Attribute = Amazon.SQS.Model.Attribute;
 
 namespace XDMessaging.Transport.Amazon
 {
     internal sealed class AmazonFacade : IAmazonFacade
     {
-        private readonly AmazonAccountSettings amazonAccountSettings;
-        private RegionEndpoint regionEndpoint = null;
-
         #region Constants and Fields
+
+        private readonly AmazonAccountSettings amazonAccountSettings;
+        private RegionEndpoint regionEndpoint;
 
         private AmazonSimpleNotificationService sns;
         private AmazonSQS sqs;
@@ -26,6 +37,17 @@ namespace XDMessaging.Transport.Amazon
         #endregion
 
         #region Constructors and Destructors
+
+        public AmazonFacade(AmazonAccountSettings amazonAccountSettings)
+        {
+            Validate.That(amazonAccountSettings).IsNotNull();
+
+            this.amazonAccountSettings = amazonAccountSettings;
+        }
+
+        #endregion
+
+        #region Properties
 
         private AmazonSimpleNotificationService Sns
         {
@@ -41,9 +63,12 @@ namespace XDMessaging.Transport.Amazon
                 {
                     return sns;
                 }
-                sns = amazonAccountSettings.RegionEndPoint == null 
-                    ? AWSClientFactory.CreateAmazonSNSClient(amazonAccountSettings.AccessKey, amazonAccountSettings.SecretKey) 
-                    : AWSClientFactory.CreateAmazonSNSClient(amazonAccountSettings.AccessKey, amazonAccountSettings.SecretKey, amazonAccountSettings.RegionEndPoint);
+                sns = amazonAccountSettings.RegionEndPoint == null
+                          ? AWSClientFactory.CreateAmazonSNSClient(amazonAccountSettings.AccessKey,
+                                                                   amazonAccountSettings.SecretKey)
+                          : AWSClientFactory.CreateAmazonSNSClient(amazonAccountSettings.AccessKey,
+                                                                   amazonAccountSettings.SecretKey,
+                                                                   amazonAccountSettings.RegionEndPoint);
                 regionEndpoint = amazonAccountSettings.RegionEndPoint;
                 return sns;
             }
@@ -59,29 +84,26 @@ namespace XDMessaging.Transport.Amazon
                     sqs = null;
                     regionEndpoint = amazonAccountSettings.RegionEndPoint;
                 }
-                if (sqs!=null)
+                if (sqs != null)
                 {
                     return sqs;
                 }
-                sqs = amazonAccountSettings.RegionEndPoint == null 
-                                      ? AWSClientFactory.CreateAmazonSQSClient(amazonAccountSettings.AccessKey, amazonAccountSettings.SecretKey) 
-                                      : AWSClientFactory.CreateAmazonSQSClient(amazonAccountSettings.AccessKey, amazonAccountSettings.SecretKey, amazonAccountSettings.RegionEndPoint);
+                sqs = amazonAccountSettings.RegionEndPoint == null
+                          ? AWSClientFactory.CreateAmazonSQSClient(amazonAccountSettings.AccessKey,
+                                                                   amazonAccountSettings.SecretKey)
+                          : AWSClientFactory.CreateAmazonSQSClient(amazonAccountSettings.AccessKey,
+                                                                   amazonAccountSettings.SecretKey,
+                                                                   amazonAccountSettings.RegionEndPoint);
                 regionEndpoint = amazonAccountSettings.RegionEndPoint;
                 return sqs;
             }
         }
 
-
-        public AmazonFacade(AmazonAccountSettings amazonAccountSettings)
-        {
-            Validate.That(amazonAccountSettings).IsNotNull();
-
-            this.amazonAccountSettings = amazonAccountSettings;
-        }
-
         #endregion
 
-        #region Public Methods
+        #region Implemented Interfaces
+
+        #region IAmazonFacade
 
         public Uri CreateOrRetrieveQueue(string name, out string queueArn)
         {
@@ -102,6 +124,26 @@ namespace XDMessaging.Transport.Amazon
             return new Uri(createQueueResponse.CreateQueueResult.QueueUrl);
         }
 
+        public string CreateOrRetrieveTopic(string name)
+        {
+            Validate.That(name).IsNotNullOrEmpty();
+
+            var topicRequest = new CreateTopicRequest {Name = name};
+            var topicResponse = Sns.CreateTopic(topicRequest);
+            return topicResponse.CreateTopicResult.TopicArn;
+        }
+
+        public string DeleteMessage(Uri queueUrl, string receiptHandle)
+        {
+            Validate.That(queueUrl).IsNotNull();
+            Validate.That(receiptHandle).IsNotNullOrEmpty();
+
+            var deleteMessageRequest =
+                new DeleteMessageRequest().WithQueueUrl(queueUrl.AbsoluteUri).WithReceiptHandle(receiptHandle);
+            var deleteResponseMessage = Sqs.DeleteMessage(deleteMessageRequest);
+            return deleteResponseMessage.ResponseMetadata.RequestId;
+        }
+
         public string DeleteQueue(Uri queueUri)
         {
             Validate.That(queueUri).IsNotNull();
@@ -117,24 +159,28 @@ namespace XDMessaging.Transport.Amazon
                 return null;
             }
         }
-        
-        public string CreateOrRetrieveTopic(string name)
-        {
-            Validate.That(name).IsNotNullOrEmpty();
-
-            var topicRequest = new CreateTopicRequest {Name = name};
-            var topicResponse = Sns.CreateTopic(topicRequest);
-            return topicResponse.CreateTopicResult.TopicArn;
-        }
 
         public string PublishMessageToTopic(string topicArn, string subject, string message)
         {
+            Validate.That(topicArn).IsNotNullOrEmpty();
+            Validate.That(subject).IsNotNullOrEmpty();
+            Validate.That(message).IsNotNullOrEmpty();
+
             var publishRequest = new PublishRequest()
                 .WithSubject(subject)
                 .WithMessage(message)
                 .WithTopicArn(topicArn);
             var result = Sns.Publish(publishRequest);
             return result.PublishResult.MessageId;
+        }
+
+        public IEnumerable<Message> ReadQueue(Uri queueUrl)
+        {
+            Validate.That(queueUrl).IsNotNull();
+
+            var receiveMessageRequest = new ReceiveMessageRequest().WithQueueUrl(queueUrl.AbsoluteUri);
+            var response = Sqs.ReceiveMessage(receiveMessageRequest);
+            return response.ReceiveMessageResult.Message;
         }
 
         public string SetSqsPolicyForSnsPublish(Uri queueUrl, string queueArn, string mytopicArn)
@@ -148,7 +194,8 @@ namespace XDMessaging.Transport.Amazon
                     .WithResources(new Resource(queueArn))
                     .WithPrincipals(Principal.AllUsers)
                     .WithActionIdentifiers(SQSActionIdentifiers.SendMessage)
-                    .WithConditions(ConditionFactory.NewCondition(ConditionFactory.ArnComparisonType.ArnEquals, "aws:SourceArn", mytopicArn)));
+                    .WithConditions(ConditionFactory.NewCondition(ConditionFactory.ArnComparisonType.ArnEquals,
+                                                                  "aws:SourceArn", mytopicArn)));
 
             var setQueueAttributesRequest =
                 new SetQueueAttributesRequest().WithQueueUrl(queueUrl.AbsoluteUri).WithPolicy(sqsPolicy.ToJson());
@@ -161,7 +208,8 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(queueArn).IsNotNullOrEmpty();
             Validate.That(topicArn).IsNotNullOrEmpty();
 
-            var subScribeRequest = new SubscribeRequest().WithEndpoint(queueArn).WithProtocol("sqs").WithTopicArn(topicArn);
+            var subScribeRequest =
+                new SubscribeRequest().WithEndpoint(queueArn).WithProtocol("sqs").WithTopicArn(topicArn);
             var response = Sns.Subscribe(subScribeRequest);
             return response.SubscribeResult.SubscriptionArn;
         }
@@ -175,21 +223,7 @@ namespace XDMessaging.Transport.Amazon
             return response.ResponseMetadata.RequestId;
         }
 
-        public IEnumerable<Message> ReadQueue(Uri queueUrl)
-        {
-            Validate.That(queueUrl).IsNotNull();
-
-            var receiveMessageRequest = new ReceiveMessageRequest().WithQueueUrl(queueUrl.AbsoluteUri);
-            var response = Sqs.ReceiveMessage(receiveMessageRequest);
-            return response.ReceiveMessageResult.Message;
-        }
-
-        public string DeleteMessage(Uri queueUrl, string messageId)
-        {
-            var deleteMessageRequest = new DeleteMessageRequest().WithQueueUrl(queueUrl.AbsoluteUri).WithReceiptHandle(messageId);
-            var deleteResponseMessage = Sqs.DeleteMessage(deleteMessageRequest);
-            return deleteResponseMessage.ResponseMetadata.RequestId;
-        }
+        #endregion
 
         #endregion
 
@@ -198,7 +232,8 @@ namespace XDMessaging.Transport.Amazon
         private string GetQueueArn(Uri queueUrl)
         {
             // get queueArn
-            var attributeRequest = new GetQueueAttributesRequest().WithQueueUrl(queueUrl.AbsoluteUri).WithAttributeName("QueueArn");
+            var attributeRequest =
+                new GetQueueAttributesRequest().WithQueueUrl(queueUrl.AbsoluteUri).WithAttributeName("QueueArn");
             var queueAttributes = Sqs.GetQueueAttributes(attributeRequest);
             return queueAttributes.GetQueueAttributesResult.Attribute[0].Value;
         }

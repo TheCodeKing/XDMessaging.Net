@@ -12,6 +12,8 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Linq;
+using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using XDMessaging.Core.IoC;
 using XDMessaging.Core.Specialized;
@@ -24,10 +26,6 @@ namespace XDMessaging.Core
     /// </summary>
     public static class XDBroadcast
     {
-        #region Constants and Fields
-
-        #endregion
-
         #region Constructors and Destructors
 
         static XDBroadcast()
@@ -48,16 +46,23 @@ namespace XDMessaging.Core
         /// <summary>
         ///   Creates an instance of IXDBroadcast with the otption to propagate over the local network.
         /// </summary>
-        /// <param name = "mode">The broadcast mode.</param>
+        /// <param name = "transportMode">The broadcast mode.</param>
         /// <param name = "propagateNetwork">true to propagate messages over the local network.</param>
         /// <returns></returns>
-        public static IXDBroadcast CreateBroadcast(XDTransportMode mode, bool propagateNetwork)
+        public static IXDBroadcast CreateBroadcast(XDTransportMode transportMode, bool propagateNetwork)
         {
-            if (mode == XDTransportMode.RemoteNetwork)
+            var broadcast = Container.Resolve<IXDBroadcast>(Convert.ToString(transportMode));
+            if (broadcast == null)
             {
-                return CreateBroadcast(mode);
+                throw new NotSupportedException(
+                    string.Format(
+                        "No concrete IXDBroadcast for mode {0} could be loaded. Install the {0} assembly in the program directory.",
+                        transportMode));
             }
-            var broadcast = CreateBroadcast(mode);
+            if (transportMode == XDTransportMode.RemoteNetwork)
+            {
+                return broadcast;
+            }
             /*if (propagateNetwork)
             {
                 var networkRelay = new NetworkRelayBroadcast(serializer,
@@ -71,28 +76,22 @@ namespace XDMessaging.Core
         ///   Creates a concrete instance of IXDBroadcast used to broadcast messages to 
         ///   other processes in one or more modes.
         /// </summary>
-        /// <param name = "modes">One or more transport mechanisms to use for interprocess communication.</param>
+        /// <param name = "transportModes">One or more transport mechanisms to use for interprocess communication.</param>
         /// <returns>The concreate instance of IXDBroadcast</returns>
-        public static IXDBroadcast CreateBroadcast(params XDTransportMode[] modes)
+        public static IXDBroadcast CreateBroadcast(params XDTransportMode[] transportModes)
         {
-            if (modes.Length == 0)
+            Validate.That(transportModes, "At least one transport mode must be defined.").ContainsGreaterThan(0);
+
+            if (transportModes.Length == 1)
             {
-                throw new ArgumentException("At least one transport mode must be defined.");
-            }
-            if (modes.Length == 1)
-            {
-                return Container.Resolve<IXDBroadcast>(Convert.ToString(modes[0]));
+                return CreateBroadcast(transportModes[0], false);
             }
 
             // ensure only one of each type added
             var singleItems = new Dictionary<XDTransportMode, IXDBroadcast>();
-            foreach (var mode in modes)
+            foreach (var mode in transportModes.Where(mode => !singleItems.ContainsKey(mode)))
             {
-                // only add one of each mode
-                if (!singleItems.ContainsKey(mode))
-                {
-                    singleItems.Add(mode, Container.Resolve<IXDBroadcast>(Convert.ToString(mode)));
-                }
+                singleItems.Add(mode, CreateBroadcast(transportModes[0], false));
             }
             return new XDMultiBroadcast(singleItems.Values);
         }

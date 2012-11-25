@@ -23,18 +23,11 @@ namespace XDMessaging.Core.IoC
         #region Constants and Fields
 
         private static readonly Lazy<IocContainer> instance =
-            new Lazy<IocContainer>(() => new SimpleIoCContainer(c => new IoCActivator(c)).Initialize(Configure), true);
-
-        private static readonly Lazy<IoCAssemblyScanner> scanner = new Lazy<IoCAssemblyScanner>();
+            new Lazy<IocContainer>(() => new SimpleIoCContainer(c => new IoCActivator(c), (c) => new IoCAssemblyScanner(c)).Initialize(Configure), true);
 
         #endregion
 
         #region Properties
-
-        public static IoCAssemblyScanner Scan
-        {
-            get { return scanner.Value; }
-        }
 
         #endregion
 
@@ -58,7 +51,7 @@ namespace XDMessaging.Core.IoC
             container.Register<ISerializer>(
                 () => new SpecializedSerializer(container.Resolve<ISerializer>(binarySerializer),
                                                 container.Resolve<ISerializer>(jsonSerializer)));
-            Scan.ScanAllAssemblies(container);
+            container.Scan.ScanAllAssemblies();
         }
 
         #endregion

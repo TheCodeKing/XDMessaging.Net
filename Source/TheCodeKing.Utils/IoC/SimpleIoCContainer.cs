@@ -27,13 +27,29 @@ namespace TheCodeKing.Utils.IoC
         private readonly IDictionary<string, Func<object>> map =
             new Dictionary<string, Func<object>>(StringComparer.InvariantCultureIgnoreCase);
 
+        private readonly IoCScanner scanner;
+
         #endregion
 
         #region Constructors and Destructors
 
-        public SimpleIoCContainer(Func<IocContainer, IoCActivator> activatorFactory)
+        public SimpleIoCContainer(Func<IocContainer, IoCActivator> activatorFactory,
+                                  Func<IocContainer, IoCScanner> scannerFactory)
         {
+            Validate.That(activatorFactory).IsNotNull();
+            Validate.That(scannerFactory).IsNotNull();
+
+            scanner = scannerFactory(this);
             activator = activatorFactory(this);
+        }
+
+        #endregion
+
+        #region Properties
+
+        public IoCScanner Scan
+        {
+            get { return scanner; }
         }
 
         #endregion
@@ -50,7 +66,7 @@ namespace TheCodeKing.Utils.IoC
 
         #region Implemented Interfaces
 
-        #region IoCContainer
+        #region IocContainer
 
         public bool IsRegistered(Type type, string name)
         {

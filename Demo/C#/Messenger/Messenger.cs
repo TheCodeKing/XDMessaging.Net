@@ -14,7 +14,6 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using Amazon;
 using XDMessaging.Core;
 using XDMessaging.Core.Message;
 using XDMessaging.Transport.Amazon;
@@ -78,10 +77,11 @@ namespace TheCodeKing.Demo
         {
             base.OnLoad(e);
             var settings = XDBroadcast.Container.AwsSettings();
-            settings.RegionEndPoint = RegionEndpoint.EUWest1;
+            settings.RegionEndPoint = RegionEndPoint.EUWest1;
             if (string.IsNullOrEmpty(settings.AccessKey) || string.IsNullOrEmpty(settings.SecretKey))
             {
-                MessageBox.Show("Azazon AWS not set. Enter your credentials in the app.config.", "Missing AWS account", MessageBoxButtons.OK,
+                MessageBox.Show("Azazon AWS not set. Enter your credentials in the app.config.", "Missing AWS account",
+                                MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
             }
 
@@ -218,7 +218,7 @@ namespace TheCodeKing.Demo
             {
                 // send FormattedUserMessage object to all channels
                 var message = new FormattedUserMessage("{0} says {1}", Handle.ToString(), inputTextBox.Text);
-                
+
                 broadcast.SendToChannel("BinaryChannel1", message);
                 broadcast.SendToChannel("BinaryChannel2", message);
                 inputTextBox.Text = "";
@@ -335,20 +335,6 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        ///   If the MailSlot checkbox is checked, display info about single-instance limitation.
-        /// </summary>
-        /// <param name = "sender"></param>
-        /// <param name = "e"></param>
-        private void mailRadio_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (mailRadio.Checked)
-            {
-                UpdateDisplayText("MailSlot mode only allows one listener on a single channel at any one time.\r\n",
-                                  Color.Red);
-            }
-        }
-
-        /// <summary>
         ///   On form changed mode.
         /// </summary>
         /// <param name = "sender"></param>
@@ -365,7 +351,7 @@ namespace TheCodeKing.Demo
         {
             if (propagateCheck.Checked)
             {
-                UpdateDisplayText("Messages will be propagated to all machines on the same domain or workgroup.\r\n",
+                UpdateDisplayText("Messages will be propagated across the network to all listeners.\r\n",
                                   Color.Red);
             }
             else

@@ -10,6 +10,7 @@
 *
 *=============================================================================
 */
+using System;
 using TheCodeKing.Utils.IoC;
 using XDMessaging.Core.IoC;
 
@@ -21,12 +22,14 @@ namespace XDMessaging.Core
     /// </summary>
     public static class XDListener
     {
+        #region Constructors and Destructors
+
         static XDListener()
         {
             Container = SimpleIoCContainerBootstrapper.GetInstance();
         }
 
-        public static IocContainer Container { get; set; }
+        #endregion
 
         #region Delegates
 
@@ -39,17 +42,31 @@ namespace XDMessaging.Core
 
         #endregion
 
+        #region Properties
+
+        public static IocContainer Container { get; set; }
+
+        #endregion
+
         #region Public Methods
 
         /// <summary>
         ///   Creates an concrete implementation of IXDListener to listen for messages using
         ///   either a specific XDTransportMode.
         /// </summary>
-        /// <param name="transportMode">The mode to use when listening to broadcasts.</param>
+        /// <param name = "transportMode">The mode to use when listening to broadcasts.</param>
         /// <returns></returns>
         public static IXDListener CreateListener(XDTransportMode transportMode)
         {
-            return Container.Resolve<IXDListener>(transportMode.ToString());
+            var listener = Container.Resolve<IXDListener>(Convert.ToString(transportMode));
+            if (listener == null)
+            {
+                throw new NotSupportedException(
+                    string.Format(
+                        "No concrete IXDListener for mode {0} could be loaded. Install the {0} assembly in the program directory.",
+                        transportMode));
+            }
+            return listener;
         }
 
         #endregion

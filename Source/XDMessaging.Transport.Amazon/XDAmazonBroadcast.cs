@@ -106,6 +106,7 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(container).IsNotNull();
 
+            container.Scan.ScanEmbeddedAssemblies(typeof(XDAmazonBroadcast).Assembly);
             container.Register<ISerializer, SpecializedSerializer>();
             container.Register(() => ConfigurationManager.AppSettings);
             container.Register(AmazonAccountSettings.GetInstance);

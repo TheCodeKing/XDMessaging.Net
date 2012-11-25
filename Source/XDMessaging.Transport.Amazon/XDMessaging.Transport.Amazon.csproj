@@ -35,6 +35,7 @@
     <Reference Include="AWSSDK, Version=1.5.9.0, Culture=neutral, PublicKeyToken=cd2d24cd2bace800, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AWSSDK.1.5.9.0\lib\AWSSDK.dll</HintPath>
+      <Private>False</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -45,6 +46,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
+    <Reference Include="XDMessaging">
+      <HintPath>..\..\Bin\XDMessaging.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmazonAccountSettings.cs" />
@@ -54,6 +58,7 @@
     <Compile Include="IAmazonFacade.cs" />
     <Compile Include="IAwsQueueReceiver.cs" />
     <Compile Include="NameHelper.cs" />
+    <Compile Include="RegionEndPoint.cs" />
     <Compile Include="SubscriptionInfo.cs" />
     <Compile Include="XDAmazonListener.cs" />
     <Compile Include="XDAmazonBroadcast.cs" />
@@ -61,19 +66,23 @@
     <Compile Include="XDAmazonExtensions.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
-      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
-      <Name>TheCodeKing.Utils</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\XDMessaging.Core\XDMessaging.Core.csproj">
-      <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
-      <Name>XDMessaging.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <None Include="packages.config" />
   </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="AWSSDK.dll" />
+  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>set OutputRootName=$(TargetName)
+set OutputDir=..\..\..\..\Bin
+set OutputFile=%25OutputDir%25\
+
+pushd "%25InputDir%25"
+
+copy /Y "$(TargetDir)\*.*" "%25OutputFile%25"
+
+popd</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

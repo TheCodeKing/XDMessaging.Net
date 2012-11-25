@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>XDMessaging.Core</RootNamespace>
-    <AssemblyName>XDMessaging.Core</AssemblyName>
+    <AssemblyName>XDMessaging</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
     <UpgradeBackupLocation>
@@ -42,6 +42,7 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
+    <PlatformTarget>AnyCPU</PlatformTarget>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>none</DebugType>
@@ -118,9 +119,26 @@
     <ProjectReference Include="..\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
       <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
       <Name>TheCodeKing.Utils</Name>
+      <Private>True</Private>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>set ILMerge="$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe"
+set InputDir=$(TargetDir)
+set InputFiles=XDMessaging.dll TheCodeKing.Utils.dll
+set OutputRootName=XDMessaging.dll
+set OutputDir=..\..\..\..\Bin
+set OutputFile=%25OutputDir%25\%25OutputRootName%25
+pushd "%25InputDir%25"
+
+"$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe" /t:library /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /out:%25OutputFile%25 %25InputFiles%25
+
+popd</PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

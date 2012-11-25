@@ -12,7 +12,8 @@
     <AssemblyName>Messenger</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
-    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|x86' ">
     <PlatformTarget>x86</PlatformTarget>
@@ -34,16 +35,18 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="AWSSDK, Version=1.5.8.0, Culture=neutral, PublicKeyToken=cd2d24cd2bace800, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\packages\AWSSDK.1.5.9.0\lib\AWSSDK.dll</HintPath>
-    </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
     <Reference Include="System.Deployment" />
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
+    <Reference Include="XDMessaging">
+      <HintPath>..\..\..\Bin\XDMessaging.dll</HintPath>
+    </Reference>
+    <Reference Include="XDMessaging.Transport.Amazon">
+      <HintPath>..\..\..\Source\XDMessaging.Transport.Amazon\bin\Debug\XDMessaging.Transport.Amazon.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Messenger.cs">
@@ -60,28 +63,6 @@
     </EmbeddedResource>
     <None Include="app.config" />
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\..\Source\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
-      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
-      <Name>TheCodeKing.Utils</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\XDMessaging.Core\XDMessaging.Core.csproj">
-      <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
-      <Name>XDMessaging.Core</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.Amazon\XDMessaging.Transport.Amazon.csproj">
-      <Project>{A7518064-616C-4424-AE27-41EF29D636A3}</Project>
-      <Name>XDMessaging.Transport.Amazon</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.IOStream\XDMessaging.Transport.IOStream.csproj">
-      <Project>{B71BD6E3-D7D7-40EC-9ACD-0A11F27A4E60}</Project>
-      <Name>XDMessaging.Transport.IOStream</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.WindowsMessaging\XDMessaging.Transport.WindowsMessaging.csproj">
-      <Project>{BF6E06B2-7886-4204-89E5-42A5DE6FFCAA}</Project>
-      <Name>XDMessaging.Transport.WindowsMessaging</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
@@ -91,6 +72,7 @@
   </Target>
   -->
   <PropertyGroup>
-    <PostBuildEvent>xcopy /Y "$(TargetPath)" "$(SolutionDir)..\..\Bin\"</PostBuildEvent>
+    <PostBuildEvent>xcopy /Y "$(TargetDir)$(TargetName).exe*" "$(SolutionDir)..\Bin"
+xcopy /Y "$(SolutionDir)..\Bin\XDMessaging.Transport.*" "$(TargetDir)"</PostBuildEvent>
   </PropertyGroup>
 </Project>

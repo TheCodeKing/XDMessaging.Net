@@ -53,7 +53,7 @@ namespace XDMessaging.Transport.Amazon
         {
             get
             {
-                if (regionEndpoint != amazonAccountSettings.RegionEndPoint)
+                if (regionEndpoint != (RegionEndpoint)amazonAccountSettings.RegionEndPoint)
                 {
                     sns = null;
                     sqs = null;
@@ -78,7 +78,7 @@ namespace XDMessaging.Transport.Amazon
         {
             get
             {
-                if (regionEndpoint != amazonAccountSettings.RegionEndPoint)
+                if (regionEndpoint != (RegionEndpoint)amazonAccountSettings.RegionEndPoint)
                 {
                     sns = null;
                     sqs = null;

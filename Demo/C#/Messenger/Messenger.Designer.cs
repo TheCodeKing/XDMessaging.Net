@@ -141,7 +141,6 @@ namespace TheCodeKing.Demo
             this.mailRadio.Text = "RemoteNetwork";
             this.mailRadio.UseVisualStyleBackColor = true;
             this.mailRadio.CheckedChanged += new System.EventHandler(this.mode_CheckedChanged);
-            this.mailRadio.MouseClick += new System.Windows.Forms.MouseEventHandler(this.mailRadio_MouseClick);
             // 
             // ioStreamRadio
             // 

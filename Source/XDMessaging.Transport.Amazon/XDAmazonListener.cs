@@ -131,6 +131,7 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(container).IsNotNull();
 
+            container.Scan.ScanEmbeddedAssemblies(typeof (XDAmazonListener).Assembly);
             container.Register<ISerializer, SpecializedSerializer>();
             container.Register<IAwsQueueReceiver, AwsQueueReceiver>();
             container.Register(() => ConfigurationManager.AppSettings);
@@ -221,7 +222,8 @@ namespace XDMessaging.Transport.Amazon
             var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
             var dataGram = serializer.Deserialize<DataGram>(notification.Message);
             var regChannel = registeredChannels[dataGram.Channel];
-            if (!disposed && dataGram.IsValid && MessageReceived != null && regChannel != null && regChannel.IsSubscribed)
+            if (!disposed && dataGram.IsValid && MessageReceived != null && regChannel != null &&
+                regChannel.IsSubscribed)
             {
                 MessageReceived(this, new XDMessageEventArgs(dataGram));
             }

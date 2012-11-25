@@ -13,8 +13,8 @@
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
-using Amazon;
 using TheCodeKing.Utils.Contract;
+using XDMessaging.Core.IoC;
 
 namespace XDMessaging.Transport.Amazon
 {
@@ -22,10 +22,11 @@ namespace XDMessaging.Transport.Amazon
     {
         #region Constants and Fields
 
-        private static readonly Lazy<AmazonAccountSettings> instance = new Lazy<AmazonAccountSettings>(() => new AmazonAccountSettings(ConfigurationManager.AppSettings));
-
         private const string awsAccessKey = "AWSAccessKey";
         private const string awsSecretKey = "AWSSecretKey";
+
+        private static readonly Lazy<AmazonAccountSettings> instance =
+            new Lazy<AmazonAccountSettings>(() => new AmazonAccountSettings(ConfigurationManager.AppSettings));
 
         #endregion
 
@@ -41,28 +42,33 @@ namespace XDMessaging.Transport.Amazon
             SecretKey = appSettings[awsSecretKey];
         }
 
-        public RegionEndpoint RegionEndPoint { get; set; }
+        #endregion
 
-        public string SecretKey { get; set; }
+        #region Properties
 
         public string AccessKey { get; set; }
 
+        public RegionEndPoint RegionEndPoint { get; set; }
+
+        public string SecretKey { get; set; }
+
         public string UniqueAppKey { get; set; }
+
+        #endregion
+
+        #region Public Methods
 
         public static AmazonAccountSettings GetInstance()
         {
             return instance.Value;
         }
 
-        #endregion
-
-
         public void Configure(string amazonAccessKey, string amazonSecretKey)
         {
             Configure(amazonSecretKey, amazonSecretKey, null);
         }
 
-        public void Configure(string amazonAccessKey, string amazonSecretKey, RegionEndpoint regionEndpoint)
+        public void Configure(string amazonAccessKey, string amazonSecretKey, RegionEndPoint regionEndpoint)
         {
             Validate.That(amazonAccessKey).IsNotNullOrEmpty();
             Validate.That(amazonSecretKey).IsNotNullOrEmpty();
@@ -72,5 +78,7 @@ namespace XDMessaging.Transport.Amazon
 
             RegionEndPoint = regionEndpoint;
         }
+
+        #endregion
     }
 }

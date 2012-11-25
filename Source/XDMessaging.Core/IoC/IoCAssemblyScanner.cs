@@ -11,6 +11,7 @@
 *=============================================================================
 */
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -19,49 +20,87 @@ using TheCodeKing.Utils.IoC;
 
 namespace XDMessaging.Core.IoC
 {
-    public sealed class IoCAssemblyScanner
+    public sealed class IoCAssemblyScanner : IoCScanner
     {
+        private readonly IocContainer container;
+
         #region Constants and Fields
 
         private static readonly Type broadcastType = typeof (IXDBroadcast);
         private static readonly Type listenerType = typeof (IXDListener);
+        private static readonly IDictionary<string, Assembly> dynamicAssemblies = new Dictionary<string, Assembly>(StringComparer.InvariantCultureIgnoreCase);
 
         #endregion
 
-        #region Public Methods
-
-        /// <summary>
-        /// Scan assemblies at the same location as the executing assembly for concrete XD implementations.
-        /// </summary>
-        /// <param name="container">The IocContainer to register the mappings.</param>
-        public void ScanAllAssemblies(IocContainer container)
+        public IoCAssemblyScanner(IocContainer container)
         {
             Validate.That(container).IsNotNull();
 
+            this.container = container;
+        }
+
+        static IoCAssemblyScanner()
+        {
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => dynamicAssemblies.ContainsKey(args.Name) ? dynamicAssemblies[args.Name] : null;    
+        }
+
+        #region Implemented Interfaces
+
+        #region IoCScanner
+
+        /// <summary>
+        ///   Scan assemblies at the same location as the executing assembly for concrete XD implementations.
+        /// </summary>
+        public void ScanAllAssemblies()
+        {
             var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            ScanAllAssemblies(container, location);
+            ScanAllAssemblies(location);
         }
 
         /// <summary>
-        /// Scan assemblies at given location for concrete XD implementations.
+        ///   Scan assemblies at given location for concrete XD implementations.
         /// </summary>
-        /// <param name="container">The IocContainer to register the mappings.</param>
-        /// <param name="location">The search location.</param>
-        public void ScanAllAssemblies(IocContainer container, string location)
+        /// <param name = "location">The search location.</param>
+        public void ScanAllAssemblies(string location)
         {
-            Validate.That(container).IsNotNull();
             Validate.That(location).IsNotNullOrEmpty();
 
             var assemblies =
                 Directory.GetFiles(location, "*.dll").Select(Assembly.LoadFile).Where(
                     a =>
-                    !Path.GetFileName(a.Location).StartsWith("system.", StringComparison.InvariantCultureIgnoreCase)).
+                    !Path.GetFileName(a.Location).StartsWith("system.", StringComparison.InvariantCultureIgnoreCase))
+                    .
                     ToList();
             foreach (var assembly in assemblies)
             {
                 SearchAssemblyForAutoRegistrations(container, assembly);
             }
         }
+
+        public void ScanEmbeddedAssemblies(Assembly assembly)
+        {
+            Validate.That(assembly).IsNotNull();
+
+            foreach (var resource in assembly.GetManifestResourceNames())
+            {
+                if (resource.EndsWith(".dll"))
+                {
+                    using (var input = assembly.GetManifestResourceStream(resource))
+                    {
+                        if (input != null)
+                        {
+                            var dynamicAssembly = Assembly.Load(StreamToBytes(input));
+                            if (dynamicAssembly != null)
+                            {
+                                dynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        #endregion
 
         #endregion
 
@@ -111,6 +150,24 @@ namespace XDMessaging.Core.IoC
             foreach (var type in assembly.GetTypes())
             {
                 RegisterSpecializedImplementation(container, type);
+            }
+        }
+
+        private static byte[] StreamToBytes(Stream input)
+        {
+            var capacity = input.CanSeek ? (int) input.Length : 0;
+            using (var output = new MemoryStream(capacity))
+            {
+                int readLength;
+                var buffer = new byte[4096];
+
+                do
+                {
+                    readLength = input.Read(buffer, 0, buffer.Length);
+                    output.Write(buffer, 0, readLength);
+                } while (readLength != 0);
+
+                return output.ToArray();
             }
         }
 

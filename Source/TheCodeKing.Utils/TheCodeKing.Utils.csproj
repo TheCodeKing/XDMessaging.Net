@@ -42,6 +42,7 @@
   <ItemGroup>
     <Compile Include="Collections\FixedSizeCollection.cs" />
     <Compile Include="Contract\Validate.cs" />
+    <Compile Include="IoC\IoCScanner.cs" />
     <Compile Include="Serialization\BinarySerializer.cs" />
     <Compile Include="IoC\IoCActivator.cs" />
     <Compile Include="IoC\SimpleIoCContainer.cs" />

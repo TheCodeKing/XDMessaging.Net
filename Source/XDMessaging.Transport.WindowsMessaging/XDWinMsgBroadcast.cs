@@ -15,7 +15,6 @@ using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.Core;
-using XDMessaging.Core.IoC;
 using XDMessaging.Core.Specialized;
 
 namespace XDMessaging.Transport.WindowsMessaging

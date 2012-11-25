@@ -74,10 +74,10 @@
   <ItemGroup>
     <Compile Include="XDListenerHintAttribute.cs" />
     <Compile Include="Fluent\Broadcasters.cs" />
-    <Compile Include="Fluent\Implementations.cs" />
+    <Compile Include="Fluent\XDRegisterations.cs" />
     <Compile Include="Fluent\Listeners.cs" />
     <Compile Include="Specialized\SpecializedSerializer.cs" />
-    <Compile Include="IoC\IoCContainerBootstrapper.cs" />
+    <Compile Include="IoC\SimpleIoCContainerBootstrapper.cs" />
     <Compile Include="XDBroadcasterHintAttribute.cs" />
     <Compile Include="Serialization\DataGramSerializer.cs" />
     <Compile Include="Specialized\XDMultiBroadcaster.cs">

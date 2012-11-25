@@ -26,11 +26,18 @@ namespace TheCodeKing.Utils.IoC
         {
         }
 
+        public IocInitializeAttribute(Type registerType)
+        {
+            Validate.That(registerType).IsNotNull();
+
+            this.registerType = registerType;
+        }
+        
         public IocInitializeAttribute(string name, Type registerType=null)
         {
-            this.registerType = registerType;
             Validate.That(name).IsNotNullOrEmpty();
 
+            this.registerType = registerType;
             Name = name;
         }
 

@@ -9,6 +9,9 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{7A3C52DD
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XDMessaging.Core", "XDMessaging.Core\XDMessaging.Core.csproj", "{EFAAE69D-F65D-4247-81AA-440E18C3336F}"
+	ProjectSection(ProjectDependencies) = postProject
+		{7C0BF688-F17B-481E-B37C-211C6D063946} = {7C0BF688-F17B-481E-B37C-211C6D063946}
+	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XDMessaging.Transport.WindowsMessaging", "XDMessaging.Transport.WindowsMessaging\XDMessaging.Transport.WindowsMessaging.csproj", "{BF6E06B2-7886-4204-89E5-42A5DE6FFCAA}"
 	ProjectSection(ProjectDependencies) = postProject

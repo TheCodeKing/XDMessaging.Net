@@ -100,12 +100,8 @@ namespace XDMessaging.Transport.Amazon
         private static void Initialize(IocContainer container)
         {
             Validate.That(container).IsNotNull();
-
-            container.Scan.ScanEmbeddedResources(typeof (XDAmazonBroadcaster).Assembly);
-            container.Register<ISerializer, SpecializedSerializer>();
             container.Register(() => ConfigurationManager.AppSettings);
             container.Register(AmazonAccountSettings.GetInstance);
-            container.Register<IAmazonFacade, AmazonFacade>();
         }
 
         #endregion

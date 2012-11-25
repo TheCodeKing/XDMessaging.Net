@@ -59,7 +59,7 @@
     <Compile Include="IAmazonFacade.cs" />
     <Compile Include="IAwsQueueReceiver.cs" />
     <Compile Include="NameHelper.cs" />
-    <Compile Include="RegionEndPoint.cs" />
+    <Compile Include="AwsRegionEndPoint.cs" />
     <Compile Include="RegisterWithClient.cs" />
     <Compile Include="SubscriptionInfo.cs" />
     <Compile Include="XDAmazonListener.cs" />

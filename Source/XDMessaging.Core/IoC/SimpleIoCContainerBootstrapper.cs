@@ -46,7 +46,7 @@ namespace XDMessaging.IoC
         {
             const string binarySerializer = "Binary";
             const string jsonSerializer = "Json";
-            container.Scan.ScanEmbeddedResources(typeof(SimpleIoCContainer).Assembly);
+            //container.Scan.ScanEmbeddedResources(typeof(SimpleIoCContainer).Assembly);
             container.Register<ISerializer, JsonSerializer>(jsonSerializer);
             container.Register<ISerializer, BinaryBase64Serializer>(binarySerializer);
             container.Register<ISerializer>(

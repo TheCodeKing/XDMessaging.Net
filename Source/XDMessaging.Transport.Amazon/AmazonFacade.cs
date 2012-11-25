@@ -26,13 +26,13 @@ using Attribute = Amazon.SQS.Model.Attribute;
 
 namespace XDMessaging.Transport.Amazon
 {
-    internal sealed class AmazonFacade : IAmazonFacade
+    public sealed class AmazonFacade : IAmazonFacade
     {
         #region Constants and Fields
 
         public static readonly Regex ChannelValidatorRegex = new Regex("^[^0-9a-zA-Z-_]*$", RegexOptions.Compiled);
         private readonly AmazonAccountSettings amazonAccountSettings;
-        private RegionEndpoint regionEndpoint;
+        private RegionEndPoint? regionEndPoint;
 
         private AmazonSimpleNotificationService sns;
         private AmazonSQS sqs;
@@ -56,23 +56,24 @@ namespace XDMessaging.Transport.Amazon
         {
             get
             {
-                if (regionEndpoint != (RegionEndpoint) amazonAccountSettings.RegionEndPoint)
+                if (regionEndPoint != amazonAccountSettings.AwsRegionEndPoint)
                 {
                     sns = null;
                     sqs = null;
-                    regionEndpoint = amazonAccountSettings.RegionEndPoint;
+                    regionEndPoint = amazonAccountSettings.AwsRegionEndPoint;
                 }
                 if (sns != null)
                 {
                     return sns;
                 }
-                sns = amazonAccountSettings.RegionEndPoint == null
+                sns = amazonAccountSettings.AwsRegionEndPoint == null
                           ? AWSClientFactory.CreateAmazonSNSClient(amazonAccountSettings.AccessKey,
                                                                    amazonAccountSettings.SecretKey)
                           : AWSClientFactory.CreateAmazonSNSClient(amazonAccountSettings.AccessKey,
                                                                    amazonAccountSettings.SecretKey,
-                                                                   amazonAccountSettings.RegionEndPoint);
-                regionEndpoint = amazonAccountSettings.RegionEndPoint;
+                                                                   amazonAccountSettings.AwsRegionEndPoint.Value.
+                                                                       ToRegionEndpoint());
+                regionEndPoint = amazonAccountSettings.AwsRegionEndPoint;
                 return sns;
             }
         }
@@ -81,30 +82,33 @@ namespace XDMessaging.Transport.Amazon
         {
             get
             {
-                if (regionEndpoint != (RegionEndpoint) amazonAccountSettings.RegionEndPoint)
+                if (regionEndPoint != amazonAccountSettings.AwsRegionEndPoint)
                 {
                     sns = null;
                     sqs = null;
-                    regionEndpoint = amazonAccountSettings.RegionEndPoint;
+                    regionEndPoint = amazonAccountSettings.AwsRegionEndPoint;
                 }
                 if (sqs != null)
                 {
                     return sqs;
                 }
-                sqs = amazonAccountSettings.RegionEndPoint == null
+                sqs = amazonAccountSettings.AwsRegionEndPoint == null
                           ? AWSClientFactory.CreateAmazonSQSClient(amazonAccountSettings.AccessKey,
                                                                    amazonAccountSettings.SecretKey)
                           : AWSClientFactory.CreateAmazonSQSClient(amazonAccountSettings.AccessKey,
                                                                    amazonAccountSettings.SecretKey,
-                                                                   amazonAccountSettings.RegionEndPoint);
-                regionEndpoint = amazonAccountSettings.RegionEndPoint;
+                                                                   amazonAccountSettings.AwsRegionEndPoint.Value.
+                                                                       ToRegionEndpoint());
+                regionEndPoint = amazonAccountSettings.AwsRegionEndPoint;
                 return sqs;
             }
         }
 
         #endregion
 
-        #region Public Methods
+        #region Implemented Interfaces
+
+        #region IAmazonFacade
 
         public Uri CreateOrRetrieveQueue(string name, out string queueArn)
         {
@@ -266,6 +270,8 @@ namespace XDMessaging.Transport.Amazon
             var response = Sns.Unsubscribe(unsubscribeRequest);
             return response.ResponseMetadata.RequestId;
         }
+
+        #endregion
 
         #endregion
 

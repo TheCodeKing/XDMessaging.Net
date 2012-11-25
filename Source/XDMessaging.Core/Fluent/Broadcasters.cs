@@ -3,7 +3,7 @@ using TheCodeKing.Utils.IoC;
 
 namespace XDMessaging.Fluent
 {
-    public sealed class Broadcasters : Implementations
+    public sealed class Broadcasters : XDRegisterations
     {
         #region Constructors and Destructors
 

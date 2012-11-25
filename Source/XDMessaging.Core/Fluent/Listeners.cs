@@ -3,7 +3,7 @@ using TheCodeKing.Utils.IoC;
 
 namespace XDMessaging.Fluent
 {
-    public sealed class Listeners : Implementations
+    public sealed class Listeners : XDRegisterations
     {
         /// <summary>
         ///   The delegate used for handling cross AppDomain communications.

@@ -24,9 +24,9 @@ namespace XDMessaging.IoC
     {
         protected readonly IocContainer Container;
 
-        private static readonly IList<string> checkedAssemblyResources = new List<string>();
-        private static readonly IList<string> checkedAssemblyTypes = new List<string>();
+        private static readonly IList<string> checkedAssemblies = new List<string>();
         private static readonly IDictionary<string, Assembly> dynamicAssemblies = new Dictionary<string, Assembly>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly IDictionary<string, Type> foundInterfaces = new Dictionary<string, Type>(StringComparer.InvariantCultureIgnoreCase);
 
         static SimpleIoCScanner()
         {
@@ -42,71 +42,6 @@ namespace XDMessaging.IoC
             Container = container;
         }
 
-        public void ScanEmbeddedResources(Assembly assembly)
-        {
-            Validate.That(assembly).IsNotNull();
-
-            if (IsAssemblyResourcesChecked(assembly))
-            {
-                return;
-            }
-
-            foreach (var resource in assembly.GetManifestResourceNames().Where(r => r.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase)))
-            {
-                using (var input = assembly.GetManifestResourceStream(resource))
-                {
-                    if (input != null)
-                    {
-                        var dynamicAssembly = Assembly.Load(StreamToBytes(input));
-                        dynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;
-                        ScanAssembly(dynamicAssembly);
-                    }
-                }
-            }
-        }
-
-        public virtual void ScanAssembly(Assembly assembly)
-        {
-            ScanAssemblyUsingConventions(assembly);
-            InitializeAssembliesWithInitializeAttribute(assembly);
-        }
-
-        private void InitializeAssembliesWithInitializeAttribute(Assembly assembly)
-        {
-            foreach (var item in assembly.GetTypes())
-            {
-                if (item != null)
-                {
-                    var attribute = item.GetCustomAttributes(typeof(IocInitializeAttribute), true).FirstOrDefault() as IocInitializeAttribute;
-                    if (attribute != null)
-                    {
-                        InitializeType(item, attribute);
-                        if (attribute.RegisterType != null && !string.IsNullOrEmpty(attribute.Name))
-                        {
-                            Container.Register(attribute.RegisterType, item, attribute.Name);
-                        }
-                    }
-                }
-            }
-        }
-
-        protected virtual void ScanAssemblyUsingConventions(Assembly assembly)
-        {
-            foreach (var item in assembly.GetTypes())
-            {
-                if (item != null)
-                {
-                    if (item.IsInterface)
-                    {
-                        var concrete = assembly.GetTypes().Where(t => t.Name.StartsWith("I")).Where(t => t.Name == item.Name.Substring(1)).FirstOrDefault();
-                        if (concrete != null)
-                        {
-                            Container.Register(item, concrete);
-                        }
-                    }
-                }
-            }
-        }
 
         public void ScanAllAssemblies()
         {
@@ -117,40 +52,136 @@ namespace XDMessaging.IoC
         public void ScanAllAssemblies(string location)
         {
             Validate.That(location).IsNotNullOrEmpty();
-  
-            Directory.GetFiles(location, "*.dll")
-                .Select(Assembly.LoadFile)
-                .Where(a=>!IsAssemblyTypesChecked(a))
-                .ToList().ForEach(ScanAssembly);
+
+            var assemblies = Directory.GetFiles(location, "*.dll").Select(Assembly.LoadFile);
+            var resources = new List<Assembly>();
+            foreach(var item in assemblies)
+            {
+                if (checkedAssemblies.Contains(item.FullName))
+                {
+                    continue;
+                }
+                resources.AddRange(SearchResourcesForEmbeddedAssemblies(item));
+            }
+            assemblies = assemblies.Concat(resources);
+            SearchAssembliesForAllInterfaces(assemblies);
+            RegisterConcreteBasedOnInitializeAttribute(assemblies);
+            RegisterConcreteBasedOnNamingConvention(assemblies);
+        }
+
+        private void RegisterConcreteBasedOnNamingConvention(IEnumerable<Assembly> assemblies)
+        {
+            foreach (var assembly in assemblies)
+            {
+                foreach (var concrete in assembly.GetTypes())
+                {
+                    if (foundInterfaces.ContainsKey(concrete.Name))
+                    {
+                        var interfaceType = foundInterfaces[concrete.Name];
+                        if (interfaceType.IsAssignableFrom(concrete))
+                        {
+                            Container.Register(interfaceType, concrete);
+                        }
+                        foundInterfaces.Remove(concrete.Name);
+                    }
+                }
+            }
+        }
+
+        private void RegisterConcreteBasedOnInitializeAttribute(IEnumerable<Assembly> assemblies)
+        {
+            foreach(var assembly in assemblies)
+            {
+                foreach (var concrete in assembly.GetTypes())
+                {
+                    var attribute =
+                        concrete.GetCustomAttributes(typeof (IocInitializeAttribute), true).FirstOrDefault() as
+                        IocInitializeAttribute;
+                    if (attribute != null)
+                    {
+                        InitializeType(concrete, attribute);
+                        if (attribute.RegisterType != null)
+                        {
+                            if (string.IsNullOrEmpty(attribute.Name))
+                            {
+                                Container.Register(attribute.RegisterType, concrete);
+                            }
+                            else
+                            {
+                                Container.Register(attribute.RegisterType, concrete, attribute.Name);
+                            }
+
+                        }
+                    }
+                }
+            }
+        }
+
+        private static void SearchAssembliesForAllInterfaces(IEnumerable<Assembly> assemblies)
+        {
+            foreach (var types in assemblies.Select(assembly => assembly.GetTypes()))
+            {
+                foreach (var item in types.Where(a => a.IsInterface).Where(t => t.Name.StartsWith("I")))
+                {
+                    foundInterfaces[item.Name.Substring(1)] = item;   
+                }
+            }
+        }
+
+        private static IEnumerable<Assembly> SearchResourcesForEmbeddedAssemblies(Assembly assembly)
+        {
+            var resources = new List<Assembly>();
+            foreach (var resource in assembly.GetManifestResourceNames().Where(r => r.EndsWith(".dll", StringComparison.InvariantCultureIgnoreCase)))
+            {
+                using (var input = assembly.GetManifestResourceStream(resource))
+                {
+                    if (input != null)
+                    {
+                        var dynamicAssembly = Assembly.Load(StreamToBytes(input));
+                        if (!dynamicAssemblies.ContainsKey(dynamicAssembly.FullName))
+                        {
+                            dynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;   
+                        }
+                        resources.Add(dynamicAssembly);
+                    }
+                }
+            }
+            return resources;
         }
 
         protected virtual void InitializeType(Type type, IocInitializeAttribute attribute)
         {
-            var method = type.GetMethod("Initialize", BindingFlags.NonPublic | BindingFlags.Static, null, new []{typeof(IocContainer)}, null );
+            var method = type.GetMethod("Initialize", BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Static, null, new[] { typeof(IocContainer) }, null);
             if (method != null)
             {
                 method.Invoke(null, new[] { Container });
             }
         }
 
-        private static bool IsAssemblyResourcesChecked(Assembly assembly)
+        public virtual void ScanAssembly(Assembly assembly)
         {
-            if (!checkedAssemblyResources.Contains(assembly.FullName))
-            {
-                checkedAssemblyResources.Add(assembly.FullName);
-                return false;
-            }
-            return true;
-        }
+            Validate.That(assembly).IsNotNull();
 
-        private static bool IsAssemblyTypesChecked(Assembly assembly)
-        {
-            if (!checkedAssemblyTypes.Contains(assembly.FullName))
+            IEnumerable<Assembly> resources;
+            if (!checkedAssemblies.Contains(assembly.FullName))
             {
-                checkedAssemblyTypes.Add(assembly.FullName);
-                return false;
+                checkedAssemblies.Add(assembly.FullName);
+                resources = SearchResourcesForEmbeddedAssemblies(assembly);
+                SearchAssembliesForAllInterfaces(resources.Concat(new[] { assembly }));
+
+                RegisterConcreteBasedOnInitializeAttribute(resources);
+                RegisterConcreteBasedOnNamingConvention(resources);
             }
-            return true;
+
+        }
+        public void ScanEmbeddedResources(Assembly assembly)
+        {
+            Validate.That(assembly).IsNotNull();
+
+            foreach(var resources in SearchResourcesForEmbeddedAssemblies(assembly))
+            {
+                ScanAssembly(resources);
+            }
         }
 
         private static byte[] StreamToBytes(Stream input)

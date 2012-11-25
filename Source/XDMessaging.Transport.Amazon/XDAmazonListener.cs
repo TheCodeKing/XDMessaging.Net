@@ -94,8 +94,7 @@ namespace XDMessaging.Transport.Amazon
             {
                 return;
             }
-            Action asyncTask = () => registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelListening);
-            asyncTask.BeginInvoke(asyncTask.EndInvoke, null);
+            registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelListening);
         }
 
 
@@ -109,8 +108,7 @@ namespace XDMessaging.Transport.Amazon
             }
             if (registeredChannels.ContainsKey(channelName))
             {
-                Action asyncTask = () => registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelNotListening);
-                asyncTask.BeginInvoke(asyncTask.EndInvoke, null);   
+                registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelNotListening);
             }
         }
 
@@ -129,12 +127,8 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(container).IsNotNull();
 
-            container.Scan.ScanEmbeddedResources(typeof (XDAmazonListener).Assembly);
-            container.Register<ISerializer, SpecializedSerializer>();
-            container.Register<IAwsQueueReceiver, AwsQueueReceiver>();
             container.Register(() => ConfigurationManager.AppSettings);
             container.Register(AmazonAccountSettings.GetInstance);
-            container.Register<IAmazonFacade, AmazonFacade>();
         }
 
         private SubscriptionInfo CreateChannelListener(string channelName)

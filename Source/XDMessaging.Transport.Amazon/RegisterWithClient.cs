@@ -34,16 +34,16 @@ namespace XDMessaging
             return client;
         }
 
-        public static XDMessagingClient WithAmazonSettings(this XDMessagingClient client, RegionEndPoint regionEndPoint)
+        public static XDMessagingClient WithAmazonSettings(this XDMessagingClient client, RegionEndPoint awsRegionEndPoint)
         {
             var settings = GetSettings();
-            settings.RegionEndPoint = regionEndPoint;
+            settings.AwsRegionEndPoint = awsRegionEndPoint;
             return client;
         }
 
-        public static XDMessagingClient WithAmazonSettings(this XDMessagingClient client, string accessKey, string accessSecret, RegionEndPoint regionEndPoint)
+        public static XDMessagingClient WithAmazonSettings(this XDMessagingClient client, string accessKey, string accessSecret, RegionEndPoint awsRegionEndPoint)
         {
-            return client.WithAmazonSettings(accessKey, accessSecret).WithAmazonSettings(regionEndPoint);
+            return client.WithAmazonSettings(accessKey, accessSecret).WithAmazonSettings(awsRegionEndPoint);
         }
 
         public static bool HasValidAmazonSettings(this XDMessagingClient client)

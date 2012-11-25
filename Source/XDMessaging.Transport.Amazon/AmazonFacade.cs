@@ -12,6 +12,8 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Text;
+using System.Text.RegularExpressions;
 using Amazon;
 using Amazon.Auth.AccessControlPolicy;
 using Amazon.Auth.AccessControlPolicy.ActionIdentifiers;
@@ -28,6 +30,7 @@ namespace XDMessaging.Transport.Amazon
     {
         #region Constants and Fields
 
+        public static readonly Regex ChannelValidatorRegex = new Regex("^[^0-9a-zA-Z-_]*$", RegexOptions.Compiled);
         private readonly AmazonAccountSettings amazonAccountSettings;
         private RegionEndpoint regionEndpoint;
 
@@ -53,7 +56,7 @@ namespace XDMessaging.Transport.Amazon
         {
             get
             {
-                if (regionEndpoint != (RegionEndpoint)amazonAccountSettings.RegionEndPoint)
+                if (regionEndpoint != (RegionEndpoint) amazonAccountSettings.RegionEndPoint)
                 {
                     sns = null;
                     sqs = null;
@@ -78,7 +81,7 @@ namespace XDMessaging.Transport.Amazon
         {
             get
             {
-                if (regionEndpoint != (RegionEndpoint)amazonAccountSettings.RegionEndPoint)
+                if (regionEndpoint != (RegionEndpoint) amazonAccountSettings.RegionEndPoint)
                 {
                     sns = null;
                     sqs = null;
@@ -101,9 +104,7 @@ namespace XDMessaging.Transport.Amazon
 
         #endregion
 
-        #region Implemented Interfaces
-
-        #region IAmazonFacade
+        #region Public Methods
 
         public Uri CreateOrRetrieveQueue(string name, out string queueArn)
         {
@@ -158,6 +159,49 @@ namespace XDMessaging.Transport.Amazon
             {
                 return null;
             }
+        }
+
+        public string GetQueueNameFromListenerId(string channelName, string listenerId)
+        {
+            Validate.That(channelName).IsNotNullOrEmpty();
+            Validate.That(listenerId).IsNotNullOrEmpty();
+
+            var uniqueQueue = String.Concat(amazonAccountSettings.UniqueAppKey, "-", listenerId, "-", channelName);
+            if (NameRequiresEscape(uniqueQueue))
+            {
+                var toEncodeAsBytes = Encoding.UTF8.GetBytes(amazonAccountSettings.UniqueAppKey + uniqueQueue);
+                uniqueQueue = Convert.ToBase64String(toEncodeAsBytes).Replace("+", "_").Replace("/", "-").TrimEnd('=');
+            }
+            if (uniqueQueue.Length > 80)
+            {
+                throw new ArgumentException(
+                    String.Concat(
+                        "The channelName/uniqueAppKey is too long and cannot be supported due to the AWS queue name length restrictions. Resultant name would be ",
+                        uniqueQueue),
+                    "channelName");
+            }
+            return uniqueQueue;
+        }
+
+        public string GetTopicNameFromChannel(string channelName)
+        {
+            Validate.That(channelName).IsNotNullOrEmpty();
+
+            var topicName = String.Concat(amazonAccountSettings.UniqueAppKey, "-", channelName);
+            if (NameRequiresEscape(topicName))
+            {
+                var toEncodeAsBytes = Encoding.UTF8.GetBytes(topicName);
+                topicName = Convert.ToBase64String(toEncodeAsBytes).Replace("+", "_").Replace("/", "-").TrimEnd('=');
+            }
+            if (topicName.Length > 80)
+            {
+                throw new ArgumentException(
+                    String.Concat(
+                        "The channelName/uniqueAppKey is too long and cannot be supported due to the AWS queue name length restrictions. Resultant name would be ",
+                        topicName),
+                    "channelName");
+            }
+            return topicName;
         }
 
         public string PublishMessageToTopic(string topicArn, string subject, string message)
@@ -225,9 +269,12 @@ namespace XDMessaging.Transport.Amazon
 
         #endregion
 
-        #endregion
-
         #region Methods
+
+        private static bool NameRequiresEscape(string rawTopic)
+        {
+            return ChannelValidatorRegex.IsMatch(rawTopic);
+        }
 
         private string GetQueueArn(Uri queueUrl)
         {

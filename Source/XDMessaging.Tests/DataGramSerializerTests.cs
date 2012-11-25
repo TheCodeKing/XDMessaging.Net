@@ -11,8 +11,8 @@
 *=============================================================================
 */
 using NUnit.Framework;
-using XDMessaging.Core.Message;
-using XDMessaging.Core.Serialization;
+using XDMessaging.Messages;
+using XDMessaging.Serialization;
 
 namespace XDMessaging.Tests
 {

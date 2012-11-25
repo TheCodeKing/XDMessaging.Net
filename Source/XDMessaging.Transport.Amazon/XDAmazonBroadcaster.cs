@@ -16,18 +16,16 @@ using System.Configuration;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core;
-using XDMessaging.Core.Message;
-using XDMessaging.Core.Specialized;
+using XDMessaging.Messages;
+using XDMessaging.Specialized;
 
 namespace XDMessaging.Transport.Amazon
 {
-    [TransportModeHint(XDTransportMode.RemoteNetwork)]
-    public sealed class XDAmazonBroadcast : IXDBroadcast
+    [XDBroadcasterHint(XDTransportMode.RemoteNetwork)]
+    public sealed class XDAmazonBroadcaster : IXDBroadcaster
     {
         #region Constants and Fields
 
-        private readonly AmazonAccountSettings amazonAccountSettings;
         private readonly IAmazonFacade amazonFacade;
 
         private readonly ConcurrentDictionary<string, string> registeredTopics =
@@ -39,16 +37,13 @@ namespace XDMessaging.Transport.Amazon
 
         #region Constructors and Destructors
 
-        public XDAmazonBroadcast(ISerializer serializer, IAmazonFacade amazonFacade,
-                                 AmazonAccountSettings amazonAccountSettings)
+        public XDAmazonBroadcaster(ISerializer serializer, IAmazonFacade amazonFacade)
         {
             Validate.That(serializer).IsNotNull();
             Validate.That(amazonFacade).IsNotNull();
-            Validate.That(amazonAccountSettings).IsNotNull();
 
             this.serializer = serializer;
             this.amazonFacade = amazonFacade;
-            this.amazonAccountSettings = amazonAccountSettings;
         }
 
         #endregion
@@ -59,7 +54,7 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(channelName).IsNotNullOrEmpty();
 
-            var topicName = NameHelper.GetTopicNameFromChannel(amazonAccountSettings.UniqueAppKey, channelName);
+            var topicName = amazonFacade.GetTopicNameFromChannel(channelName);
             return amazonFacade.CreateOrRetrieveTopic(topicName);
         }
 
@@ -67,7 +62,7 @@ namespace XDMessaging.Transport.Amazon
 
         #region Implemented Interfaces
 
-        #region IXDBroadcast
+        #region IXDBroadcaster
 
         public void SendToChannel(string channel, string message)
         {
@@ -106,7 +101,7 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(container).IsNotNull();
 
-            container.Scan.ScanEmbeddedAssemblies(typeof(XDAmazonBroadcast).Assembly);
+            container.Scan.ScanEmbeddedResources(typeof (XDAmazonBroadcaster).Assembly);
             container.Register<ISerializer, SpecializedSerializer>();
             container.Register(() => ConfigurationManager.AppSettings);
             container.Register(AmazonAccountSettings.GetInstance);

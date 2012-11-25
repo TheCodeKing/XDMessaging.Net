@@ -13,8 +13,7 @@
 using System;
 using NUnit.Framework;
 using TheCodeKing.Utils.IoC;
-using XDMessaging.Core;
-using XDMessaging.Core.IoC;
+using XDMessaging.IoC;
 
 namespace XDMessaging.Tests
 {
@@ -32,7 +31,7 @@ namespace XDMessaging.Tests
         [Test]
         public void GivenAssembliesWithXDBroadcastImplementationAssertResolveSuccess()
         {
-            var broadcast = instance.Resolve<IXDBroadcast>(Convert.ToString(XDTransportMode.Compatibility));
+            var broadcast = instance.Resolve<IXDBroadcaster>(Convert.ToString(XDTransportMode.Compatibility));
 
             Assert.That(broadcast, Is.Not.Null);
         }

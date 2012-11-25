@@ -12,6 +12,7 @@
     <AssemblyName>TheCodeKing.Utils</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -42,6 +43,8 @@
   <ItemGroup>
     <Compile Include="Collections\FixedSizeCollection.cs" />
     <Compile Include="Contract\Validate.cs" />
+    <Compile Include="IoC\SimpleIoCScanner.cs" />
+    <Compile Include="IoC\IocInitializeAttribute.cs" />
     <Compile Include="IoC\IoCScanner.cs" />
     <Compile Include="Serialization\BinarySerializer.cs" />
     <Compile Include="IoC\IoCActivator.cs" />
@@ -52,6 +55,10 @@
     <Compile Include="Serialization\ISerializer.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>
+    </PostBuildEvent>
+  </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.
   <Target Name="BeforeBuild">

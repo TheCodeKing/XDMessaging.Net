@@ -14,11 +14,9 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using TheCodeKing.Utils.Contract;
-using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core;
-using XDMessaging.Core.Message;
-using XDMessaging.Core.Specialized;
+using XDMessaging.Fluent;
+using XDMessaging.Messages;
 
 namespace XDMessaging.Transport.IOStream
 {
@@ -28,8 +26,8 @@ namespace XDMessaging.Transport.IOStream
     ///   a single clean up thread removes messages after the specified timeout period. Dispose
     ///   should be called to shut down the listener cleanly and free up resources.
     /// </summary>
-    [TransportModeHint(XDTransportMode.Compatibility)]
-    public sealed class XDIOStreamListener : IXDListener
+    [XDListenerHint(XDTransportMode.Compatibility)]
+    public sealed class XDIoStreamListener : IXDListener
     {
         #region Constants and Fields
 
@@ -57,7 +55,7 @@ namespace XDMessaging.Transport.IOStream
         /// <summary>
         ///   Default constructor.
         /// </summary>
-        internal XDIOStreamListener(ISerializer serializer)
+        internal XDIoStreamListener(ISerializer serializer)
         {
             Validate.That(serializer).IsNotNull();
 
@@ -68,7 +66,7 @@ namespace XDMessaging.Transport.IOStream
         /// <summary>
         ///   Deconstructor, cleans unmanaged resources only
         /// </summary>
-        ~XDIOStreamListener()
+        ~XDIoStreamListener()
         {
             Dispose(false);
         }
@@ -80,7 +78,7 @@ namespace XDMessaging.Transport.IOStream
         /// <summary>
         ///   The MessageReceived event used to broadcast the message to attached instances within the current appDomain.
         /// </summary>
-        public event XDListener.XDMessageHandler MessageReceived;
+        public event Listeners.XDMessageHandler MessageReceived;
 
         #endregion
 
@@ -145,18 +143,6 @@ namespace XDMessaging.Transport.IOStream
         #region Methods
 
         /// <summary>
-        ///   Initialize method called from XDMessaging.Core before the instance is constructed.
-        ///   This allows external classes to registered dependencies with the IocContainer.
-        /// </summary>
-        /// <param name = "container">The IocContainer instance used to construct this class.</param>
-        private static void Initialize(IocContainer container)
-        {
-            Validate.That(container).IsNotNull();
-
-            container.Register<ISerializer, SpecializedSerializer>();
-        }
-
-        /// <summary>
         ///   Dispose implementation, which ensures the native window is destroyed
         /// </summary>
         private void Dispose(bool disposeManaged)
@@ -170,7 +156,7 @@ namespace XDMessaging.Transport.IOStream
                     {
                         // remove all handlers
                         Delegate[] del = MessageReceived.GetInvocationList();
-                        foreach (XDListener.XDMessageHandler msg in del)
+                        foreach (Listeners.XDMessageHandler msg in del)
                         {
                             MessageReceived -= msg;
                         }
@@ -209,7 +195,7 @@ namespace XDMessaging.Transport.IOStream
                     if (!watcherList.TryGetValue(channelName, out watcher))
                     {
                         // create a new watcher for the given channel, by default this is not enabled.
-                        string folder = XDIOStreamBroadcast.GetChannelDirectory(channelName);
+                        string folder = XDIoStreamBroadcaster.GetChannelDirectory(channelName);
                         watcher = new FileSystemWatcher(folder, "*.msg")
                                       {
                                           NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite

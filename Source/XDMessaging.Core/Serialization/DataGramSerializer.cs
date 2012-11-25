@@ -16,7 +16,7 @@ using System.Text;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
 
-namespace XDMessaging.Core.Serialization
+namespace XDMessaging.Serialization
 {
     internal sealed class JsonSerializer : ISerializer
     {

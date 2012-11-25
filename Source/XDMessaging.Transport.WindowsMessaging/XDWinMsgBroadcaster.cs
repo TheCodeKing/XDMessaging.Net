@@ -12,10 +12,7 @@
 */
 using System;
 using TheCodeKing.Utils.Contract;
-using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core;
-using XDMessaging.Core.Specialized;
 
 namespace XDMessaging.Transport.WindowsMessaging
 {
@@ -23,8 +20,8 @@ namespace XDMessaging.Transport.WindowsMessaging
     ///   The implementation of IXDBroadcast used to broadcast messages acorss appDomain and process boundaries
     ///   using the XDTransportMode.WindowsMessaging implementation. Non-form based application are not supported.
     /// </summary>
-    [TransportModeHint(XDTransportMode.HighPerformanceUI)]
-    public sealed class XDWinMsgBroadcast : IXDBroadcast
+    [XDBroadcasterHint(XDTransportMode.HighPerformanceUI)]
+    public sealed class XDWinMsgBroadcaster : IXDBroadcaster
     {
         #region Constants and Fields
 
@@ -34,19 +31,7 @@ namespace XDMessaging.Transport.WindowsMessaging
 
         #region Constructors and Destructors
 
-        /// <summary>
-        /// Initialize method called from XDMessaging.Core before the instance is constructed.
-        /// This allows external classes to registered dependencies with the IocContainer.
-        /// </summary>
-        /// <param name="container">The IocContainer instance used to construct this class.</param>
-        private static void Initialize(IocContainer container)
-        {
-            Validate.That(container).IsNotNull();
-
-            container.Register<ISerializer, SpecializedSerializer>();
-        }
-
-        private XDWinMsgBroadcast(ISerializer serializer)
+        private XDWinMsgBroadcaster(ISerializer serializer)
         {
             Validate.That(serializer).IsNotNull();
 
@@ -57,7 +42,7 @@ namespace XDMessaging.Transport.WindowsMessaging
 
         #region Implemented Interfaces
 
-        #region IXDBroadcast
+        #region IXDBroadcaster
 
         public void SendToChannel(string channelName, object message)
         {

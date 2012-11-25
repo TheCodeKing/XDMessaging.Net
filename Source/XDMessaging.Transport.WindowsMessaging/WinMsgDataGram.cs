@@ -16,8 +16,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.Serialization.Formatters.Binary;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core;
-using XDMessaging.Core.Message;
+using XDMessaging.Messages;
 
 namespace XDMessaging.Transport.WindowsMessaging
 {
@@ -27,14 +26,14 @@ namespace XDMessaging.Transport.WindowsMessaging
     /// </summary>
     internal class WinMsgDataGram : IDisposable
     {
-        private readonly ISerializer serializer;
-
         #region Constants and Fields
 
         /// <summary>
-        /// The encapsulated basic DataGram instance.
+        ///   The encapsulated basic DataGram instance.
         /// </summary>
         private readonly DataGram dataGram;
+
+        private readonly ISerializer serializer;
 
         /// <summary>
         ///   Indicates whether this instance allocated the memory used by the dataStruct instance.
@@ -54,7 +53,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         /// <summary>
         ///   Constructor which creates the data gram from a message and channel name.
         /// </summary>
-        /// <param name="serializer"></param>
+        /// <param name = "serializer"></param>
         /// <param name = "channel">The channel through which the message will be sent.</param>
         /// <param name = "message">The string message to send.</param>
         internal WinMsgDataGram(ISerializer serializer, string channel, string message)
@@ -73,7 +72,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         /// </summary>
         /// <param name = "lpParam">A pointer the a COPYDATASTRUCT containing information required to 
         ///   expand the DataGram.</param>
-        /// <param name="serializer">Serializer to deserialize raw DataGram message.</param>
+        /// <param name = "serializer">Serializer to deserialize raw DataGram message.</param>
         private WinMsgDataGram(IntPtr lpParam, ISerializer serializer)
         {
             Validate.That(serializer).IsNotNull();
@@ -126,9 +125,9 @@ namespace XDMessaging.Transport.WindowsMessaging
         #region Operators
 
         /// <summary>
-        /// Allows implicit casting from WinMsgDataGram to DataGram.
+        ///   Allows implicit casting from WinMsgDataGram to DataGram.
         /// </summary>
-        /// <param name="dataGram"></param>
+        /// <param name = "dataGram"></param>
         /// <returns></returns>
         public static implicit operator DataGram(WinMsgDataGram dataGram)
         {
@@ -140,7 +139,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         #region Public Methods
 
         /// <summary>
-        /// Converts the instance to the string delimited format.
+        ///   Converts the instance to the string delimited format.
         /// </summary>
         /// <returns></returns>
         public override string ToString()
@@ -187,7 +186,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         /// </summary>
         /// <param name = "lpParam">A pointer to a COPYDATASTRUCT object from which the DataGram data
         ///   can be derived.</param>
-        /// <param name="serializer">A serializer used to deserialize the raw DataGram message.</param>
+        /// <param name = "serializer">A serializer used to deserialize the raw DataGram message.</param>
         /// <returns>A DataGram instance containing a message, and the channel through which
         ///   it was sent.</returns>
         internal static WinMsgDataGram FromPointer(IntPtr lpParam, ISerializer serializer)

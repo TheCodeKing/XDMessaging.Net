@@ -12,6 +12,7 @@
     <AssemblyName>XDMessaging.Tests</AssemblyName>
     <TargetFrameworkVersion>v4.0</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>Client</TargetFrameworkProfile>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -45,20 +46,34 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging">
-      <HintPath>..\..\Bin\XDMessaging.dll</HintPath>
-    </Reference>
-    <Reference Include="XDMessaging.Transport.Amazon">
-      <HintPath>..\..\Bin\XDMessaging.Transport.Amazon.dll</HintPath>
+    <Reference Include="XDMessaging, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\XDMessaging.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="XDMessagingClientTests.cs" />
     <Compile Include="DataGramSerializerTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="SimpleIoCContainerTests.cs" />
+    <Compile Include="XDMessagingClientExtensionTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\XDMessaging.Transport.Amazon\XDMessaging.Transport.Amazon.csproj">
+      <Project>{A7518064-616C-4424-AE27-41EF29D636A3}</Project>
+      <Name>XDMessaging.Transport.Amazon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XDMessaging.Transport.IOStream\XDMessaging.Transport.IOStream.csproj">
+      <Project>{B71BD6E3-D7D7-40EC-9ACD-0A11F27A4E60}</Project>
+      <Name>XDMessaging.Transport.IOStream</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XDMessaging.Transport.WindowsMessaging\XDMessaging.Transport.WindowsMessaging.csproj">
+      <Project>{BF6E06B2-7886-4204-89E5-42A5DE6FFCAA}</Project>
+      <Name>XDMessaging.Transport.WindowsMessaging</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

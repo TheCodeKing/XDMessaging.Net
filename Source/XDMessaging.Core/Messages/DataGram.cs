@@ -13,7 +13,7 @@
 using System.Runtime.Serialization;
 using TheCodeKing.Utils.Contract;
 
-namespace XDMessaging.Core.Message
+namespace XDMessaging.Messages
 {
     /// <summary>
     ///   The data class that is passed between AppDomain boundaries. This is

@@ -13,9 +13,9 @@
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core.IoC;
+using XDMessaging.IoC;
 
-namespace XDMessaging.Core.Message
+namespace XDMessaging.Messages
 {
     public class TypedDataGram<T> where T : class
     {
@@ -52,7 +52,7 @@ namespace XDMessaging.Core.Message
 
         public T Message
         {
-            get { return objectSerializer.Deserialize<T>(dataGram.Message) as T; }
+            get { return objectSerializer.Deserialize<T>(dataGram.Message); }
         }
 
         #endregion

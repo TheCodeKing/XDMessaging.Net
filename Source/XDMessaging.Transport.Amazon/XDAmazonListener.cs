@@ -17,18 +17,17 @@ using Amazon.SQS.Model;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core;
-using XDMessaging.Core.Message;
-using XDMessaging.Core.Specialized;
+using XDMessaging.Fluent;
+using XDMessaging.Messages;
+using XDMessaging.Specialized;
 
 namespace XDMessaging.Transport.Amazon
 {
-    [TransportModeHint(XDTransportMode.RemoteNetwork)]
+    [XDListenerHint(XDTransportMode.RemoteNetwork)]
     public sealed class XDAmazonListener : IXDListener
     {
         #region Constants and Fields
 
-        private readonly AmazonAccountSettings amazonAccountSettings;
         private readonly IAmazonFacade amazonFacade;
         private readonly IAwsQueueReceiver awsQueueReceiver;
 
@@ -43,17 +42,14 @@ namespace XDMessaging.Transport.Amazon
 
         #region Constructors and Destructors
 
-        public XDAmazonListener(ISerializer serializer, IAmazonFacade amazonFacade,
-                                AmazonAccountSettings amazonAccountSettings, IAwsQueueReceiver awsQueueReceiver)
+        public XDAmazonListener(ISerializer serializer, IAmazonFacade amazonFacade, IAwsQueueReceiver awsQueueReceiver)
         {
             Validate.That(serializer).IsNotNull();
             Validate.That(amazonFacade).IsNotNull();
-            Validate.That(amazonAccountSettings).IsNotNull();
             Validate.That(awsQueueReceiver).IsNotNull();
 
             this.serializer = serializer;
             this.amazonFacade = amazonFacade;
-            this.amazonAccountSettings = amazonAccountSettings;
             this.awsQueueReceiver = awsQueueReceiver;
         }
 
@@ -69,7 +65,7 @@ namespace XDMessaging.Transport.Amazon
 
         #region Events
 
-        public event XDListener.XDMessageHandler MessageReceived;
+        public event Listeners.XDMessageHandler MessageReceived;
 
         #endregion
 
@@ -98,7 +94,8 @@ namespace XDMessaging.Transport.Amazon
             {
                 return;
             }
-            registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelListening);
+            Action asyncTask = () => registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelListening);
+            asyncTask.BeginInvoke(asyncTask.EndInvoke, null);
         }
 
 
@@ -112,7 +109,8 @@ namespace XDMessaging.Transport.Amazon
             }
             if (registeredChannels.ContainsKey(channelName))
             {
-                registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelNotListening);
+                Action asyncTask = () => registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelNotListening);
+                asyncTask.BeginInvoke(asyncTask.EndInvoke, null);   
             }
         }
 
@@ -131,7 +129,7 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(container).IsNotNull();
 
-            container.Scan.ScanEmbeddedAssemblies(typeof (XDAmazonListener).Assembly);
+            container.Scan.ScanEmbeddedResources(typeof (XDAmazonListener).Assembly);
             container.Register<ISerializer, SpecializedSerializer>();
             container.Register<IAwsQueueReceiver, AwsQueueReceiver>();
             container.Register(() => ConfigurationManager.AppSettings);
@@ -141,9 +139,8 @@ namespace XDMessaging.Transport.Amazon
 
         private SubscriptionInfo CreateChannelListener(string channelName)
         {
-            var topicName = NameHelper.GetTopicNameFromChannel(amazonAccountSettings.UniqueAppKey, channelName);
-            var queueName = NameHelper.GetQueueNameFromListenerId(amazonAccountSettings.UniqueAppKey, channelName,
-                                                                  uniqueInstanceId);
+            var topicName = amazonFacade.GetTopicNameFromChannel(channelName);
+            var queueName = amazonFacade.GetQueueNameFromListenerId(channelName, uniqueInstanceId);
 
             // get topic ARN
             var topicArn = amazonFacade.CreateOrRetrieveTopic(topicName);
@@ -180,7 +177,7 @@ namespace XDMessaging.Transport.Amazon
                     {
                         // remove all handlers
                         var del = MessageReceived.GetInvocationList();
-                        foreach (XDListener.XDMessageHandler msg in del)
+                        foreach (Listeners.XDMessageHandler msg in del)
                         {
                             MessageReceived -= msg;
                         }

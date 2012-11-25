@@ -11,9 +11,9 @@
 *=============================================================================
 */
 using System;
-using XDMessaging.Core.Message;
+using XDMessaging.Messages;
 
-namespace XDMessaging.Core
+namespace XDMessaging
 {
     /// <summary>
     ///   The event args used by the message handler. This enables DataGram data 

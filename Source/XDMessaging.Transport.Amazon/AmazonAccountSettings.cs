@@ -14,7 +14,6 @@ using System;
 using System.Collections.Specialized;
 using System.Configuration;
 using TheCodeKing.Utils.Contract;
-using XDMessaging.Core.IoC;
 
 namespace XDMessaging.Transport.Amazon
 {
@@ -56,27 +55,16 @@ namespace XDMessaging.Transport.Amazon
 
         #endregion
 
+        public bool IsValid
+        {
+            get { return !string.IsNullOrEmpty(AccessKey) && !string.IsNullOrEmpty(SecretKey); }
+        }
+
         #region Public Methods
 
         public static AmazonAccountSettings GetInstance()
         {
             return instance.Value;
-        }
-
-        public void Configure(string amazonAccessKey, string amazonSecretKey)
-        {
-            Configure(amazonSecretKey, amazonSecretKey, null);
-        }
-
-        public void Configure(string amazonAccessKey, string amazonSecretKey, RegionEndPoint regionEndpoint)
-        {
-            Validate.That(amazonAccessKey).IsNotNullOrEmpty();
-            Validate.That(amazonSecretKey).IsNotNullOrEmpty();
-
-            AccessKey = amazonAccessKey;
-            SecretKey = amazonSecretKey;
-
-            RegionEndPoint = regionEndpoint;
         }
 
         #endregion

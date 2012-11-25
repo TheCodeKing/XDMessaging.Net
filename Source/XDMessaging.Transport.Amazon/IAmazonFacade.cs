@@ -31,6 +31,9 @@ namespace XDMessaging.Transport.Amazon
         string SubscribeQueueToTopic(string queueArn, string topicArn);
         string UnsubscribeQueueToTopic(string subscriptionArn);
 
+        string GetQueueNameFromListenerId(string channelName, string listenerId);
+        string GetTopicNameFromChannel(string channelName);
+
         #endregion
     }
 }

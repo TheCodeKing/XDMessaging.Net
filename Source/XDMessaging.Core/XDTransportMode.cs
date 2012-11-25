@@ -10,7 +10,7 @@
 *
 *=============================================================================
 */
-namespace XDMessaging.Core
+namespace XDMessaging
 {
     /// <summary>
     ///   This defines the tranport modes that can be used for interprocess communication.

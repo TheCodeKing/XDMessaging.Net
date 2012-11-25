@@ -17,10 +17,16 @@ namespace TheCodeKing.Utils.IoC
     public interface IoCScanner
     {
         /// <summary>
-        ///   Scan assembly for embedded assembies.
+        ///   Scan embedded resources for assembies.
         /// </summary>
-        /// <param name="assembly">The assembly the scan.</param>
-        void ScanEmbeddedAssemblies(Assembly assembly);
+        /// <param name="assembly">The assembly to scan.</param>
+        void ScanEmbeddedResources(Assembly assembly);
+
+        /// <summary>
+        ///   Scan assembly.
+        /// </summary>
+        /// <param name="assembly">The assembly to scan.</param>
+        void ScanAssembly(Assembly assembly);
 
         /// <summary>
         ///   Scan assemblies at the same location as the executing assembly for concrete XD implementations.

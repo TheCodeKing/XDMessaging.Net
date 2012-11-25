@@ -14,8 +14,8 @@ using System;
 using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
-using XDMessaging.Core;
-using XDMessaging.Core.Message;
+using XDMessaging;
+using XDMessaging.Messages;
 using XDMessaging.Transport.Amazon;
 
 namespace TheCodeKing.Demo
@@ -32,7 +32,12 @@ namespace TheCodeKing.Demo
         /// <summary>
         ///   The instance used to broadcast messages on a particular channel.
         /// </summary>
-        private IXDBroadcast broadcast;
+        private IXDBroadcaster broadcast;
+
+        /// <summary>
+        ///   The XDMessaging client API.
+        /// </summary>
+        private XDMessagingClient client;
 
         /// <summary>
         ///   The instance used to listen to broadcast messages.
@@ -76,11 +81,13 @@ namespace TheCodeKing.Demo
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
-            var settings = XDBroadcast.Container.AwsSettings();
-            settings.RegionEndPoint = RegionEndPoint.EUWest1;
-            if (string.IsNullOrEmpty(settings.AccessKey) || string.IsNullOrEmpty(settings.SecretKey))
+            // create instance of the XDmessaging client and set region, crendentials should be in app.config
+            client = new XDMessagingClient().WithAmazonSettings(RegionEndPoint.EUWest1);
+
+            if (!client.HasValidAmazonSettings())
             {
-                MessageBox.Show("Azazon AWS not set. Enter your credentials in the app.config.", "Missing AWS account",
+                MessageBox.Show("Azazon AWS crendentials not set. Enter your credentials in the app.config.",
+                                "Missing AWS Crendentials",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
             }
@@ -134,7 +141,7 @@ namespace TheCodeKing.Demo
             }
 
             // creates an instance of the IXDListener object using the given implementation  
-            listener = XDListener.CreateListener(mode);
+            listener = client.Listeners.GetListenerForMode(mode);
 
             // attach the message handler
             listener.MessageReceived += OnMessageReceived;
@@ -165,9 +172,15 @@ namespace TheCodeKing.Demo
                 broadcast.SendToChannel("Status", message);
             }
 
-            // create an instance of IXDBroadcast using the given mode, 
-            // note IXDBroadcast does not implement IDisposable
-            broadcast = XDBroadcast.CreateBroadcast(mode, propagateCheck.Checked);
+            // create an instance of IXDBroadcast using the given mode
+            if (propagateCheck.Checked)
+            {
+                broadcast = client.Broadcasters.GetBroadcasterForMode(mode);
+            }
+            else
+            {
+                broadcast = client.Broadcasters.GetBroadcasterForMode(mode);
+            }
         }
 
         /// <summary>

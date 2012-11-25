@@ -10,12 +10,12 @@
 *
 *=============================================================================
 */
-namespace XDMessaging.Core
+namespace XDMessaging
 {
     /// <summary>
     ///   The API defined for dispatching messages interprocess and across appDomains.
     /// </summary>
-    public interface IXDBroadcast
+    public interface IXDBroadcaster
     {
         #region Public Methods
 

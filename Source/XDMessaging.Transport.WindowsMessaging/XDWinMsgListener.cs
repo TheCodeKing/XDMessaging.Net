@@ -13,10 +13,8 @@
 using System;
 using System.Windows.Forms;
 using TheCodeKing.Utils.Contract;
-using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core;
-using XDMessaging.Core.Specialized;
+using XDMessaging.Fluent;
 
 namespace XDMessaging.Transport.WindowsMessaging
 {
@@ -26,7 +24,7 @@ namespace XDMessaging.Transport.WindowsMessaging
     ///   receive messages broadcast using a concrete IXDBroadcast implementation on the same machine. Non-form based 
     ///   application are not supported by this implementation.
     /// </summary>
-    [TransportModeHint(XDTransportMode.HighPerformanceUI)]
+    [XDListenerHint(XDTransportMode.HighPerformanceUI)]
     public sealed class XDWinMsgListener : NativeWindow, IXDListener
     {
         #region Constants and Fields
@@ -78,7 +76,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         /// <summary>
         ///   The event fired when messages are received.
         /// </summary>
-        public event XDListener.XDMessageHandler MessageReceived;
+        public event Listeners.XDMessageHandler MessageReceived;
 
         #endregion
 
@@ -177,18 +175,6 @@ namespace XDMessaging.Transport.WindowsMessaging
         }
 
         /// <summary>
-        ///   Initialize method called from XDMessaging.Core before the instance is constructed.
-        ///   This allows external classes to registered dependencies with the IocContainer.
-        /// </summary>
-        /// <param name = "container">The IocContainer instance used to construct this class.</param>
-        private static void Initialize(IocContainer container)
-        {
-            Validate.That(container).IsNotNull();
-
-            container.Register<ISerializer, SpecializedSerializer>();
-        }
-
-        /// <summary>
         ///   Dispose implementation which ensures the native window is destroyed, and
         ///   managed resources detached.
         /// </summary>
@@ -203,7 +189,7 @@ namespace XDMessaging.Transport.WindowsMessaging
                     {
                         // remove all handlers
                         Delegate[] del = MessageReceived.GetInvocationList();
-                        foreach (XDListener.XDMessageHandler msg in del)
+                        foreach (Listeners.XDMessageHandler msg in del)
                         {
                             MessageReceived -= msg;
                         }

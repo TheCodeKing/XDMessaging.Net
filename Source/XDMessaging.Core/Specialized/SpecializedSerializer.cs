@@ -14,7 +14,7 @@ using System.Runtime.Serialization;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
 
-namespace XDMessaging.Core.Specialized
+namespace XDMessaging.Specialized
 {
     public class SpecializedSerializer : ISerializer
     {

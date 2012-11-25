@@ -39,30 +39,25 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging">
-      <HintPath>..\..\Bin\XDMessaging.dll</HintPath>
+    <Reference Include="XDMessaging, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\lib\XDMessaging.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Native.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegisterWithClient.cs" />
     <Compile Include="WindowEnumFilter.cs" />
     <Compile Include="WindowsEnum.cs" />
     <Compile Include="WinMsgDataGram.cs" />
-    <Compile Include="XDWinMsgBroadcast.cs" />
+    <Compile Include="XDWinMsgBroadcaster.cs" />
     <Compile Include="XDWinMsgListener.cs" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set OutputRootName=$(TargetName)
-set OutputDir=..\..\..\..\Bin
-set OutputFile=%25OutputDir%25\
-
-pushd "%25InputDir%25"
-
-copy /Y "$(TargetDir)\*.*" "%25OutputFile%25"
-
-popd</PostBuildEvent>
+    <PostBuildEvent>
+    </PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -13,20 +13,20 @@
 using System.Collections.Generic;
 using TheCodeKing.Utils.Contract;
 
-namespace XDMessaging.Core.Specialized
+namespace XDMessaging.Specialized
 {
     /// <summary>
     ///   An implementation of IXDBroadcast that encapsulates multiple broadcast instances
     ///   so that messages can be send using multiple modes.
     /// </summary>
-    internal sealed class XDMultiBroadcast : IXDBroadcast
+    internal sealed class XDMultiBroadcaster : IXDBroadcaster
     {
         #region Constants and Fields
 
         /// <summary>
         ///   The list of IXDBraodcast instances used to broadcast from this instance.
         /// </summary>
-        private readonly IEnumerable<IXDBroadcast> broadcastInstances;
+        private readonly IEnumerable<IXDBroadcaster> broadcastInstances;
 
         #endregion
 
@@ -36,12 +36,12 @@ namespace XDMessaging.Core.Specialized
         ///   The constructor which takes an IEnumerable list of IXDBroadcast instances.
         /// </summary>
         /// <param name = "broadcastInstances"></param>
-        internal XDMultiBroadcast(IEnumerable<IXDBroadcast> broadcastInstances)
+        internal XDMultiBroadcaster(IEnumerable<IXDBroadcaster> broadcastInstances)
         {
             this.broadcastInstances = broadcastInstances;
         }
 
-        internal XDMultiBroadcast(params IXDBroadcast[] broadcastInstances)
+        internal XDMultiBroadcaster(params IXDBroadcaster[] broadcastInstances)
         {
             this.broadcastInstances = broadcastInstances;
         }

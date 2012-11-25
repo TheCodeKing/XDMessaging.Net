@@ -11,9 +11,9 @@
 *=============================================================================
 */
 using System;
-using TheCodeKing.Utils.IoC;
+using XDMessaging.Fluent;
 
-namespace XDMessaging.Core
+namespace XDMessaging
 {
     /// <summary>
     ///   The API defined for receiving messages broadcast from a particular implementation
@@ -26,7 +26,7 @@ namespace XDMessaging.Core
         /// <summary>
         ///   The event dispatched when new messages a re received. This contains the broadcast message data.
         /// </summary>
-        event XDListener.XDMessageHandler MessageReceived;
+        event Listeners.XDMessageHandler MessageReceived;
 
         #endregion
 

@@ -8,7 +8,7 @@
     <ProjectGuid>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>XDMessaging.Core</RootNamespace>
+    <RootNamespace>XDMessaging</RootNamespace>
     <AssemblyName>XDMessaging</AssemblyName>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -67,23 +67,27 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
+    <Reference Include="TheCodeKing.Utils">
+      <HintPath>..\TheCodeKing.Utils\bin\Debug\TheCodeKing.Utils.dll</HintPath>
+    </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="XDListenerHintAttribute.cs" />
+    <Compile Include="Fluent\Broadcasters.cs" />
+    <Compile Include="Fluent\Implementations.cs" />
+    <Compile Include="Fluent\Listeners.cs" />
     <Compile Include="Specialized\SpecializedSerializer.cs" />
-    <Compile Include="IoC\IoCAssemblyScanner.cs" />
     <Compile Include="IoC\IoCContainerBootstrapper.cs" />
-    <Compile Include="TransportModeHintAttribute.cs" />
+    <Compile Include="XDBroadcasterHintAttribute.cs" />
     <Compile Include="Serialization\DataGramSerializer.cs" />
-    <Compile Include="Specialized\XDMultiBroadcast.cs">
+    <Compile Include="Specialized\XDMultiBroadcaster.cs">
       <SubType>Code</SubType>
     </Compile>
-    <Compile Include="Message\TypedDataGram.cs" />
-    <Compile Include="IXDBroadcast.cs" />
+    <Compile Include="Messages\TypedDataGram.cs" />
+    <Compile Include="IXDBroadcaster.cs" />
     <Compile Include="IXDListener.cs" />
-    <Compile Include="XDBroadcast.cs" />
-    <Compile Include="XDListener.cs">
-    </Compile>
-    <Compile Include="Message\DataGram.cs" />
+    <Compile Include="Messages\DataGram.cs" />
+    <Compile Include="XDMessagingClient.cs" />
     <Compile Include="XDMessageEventArgs.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="XDTransportMode.cs" />
@@ -115,29 +119,14 @@
       <Install>false</Install>
     </BootstrapperPackage>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
-      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
-      <Name>TheCodeKing.Utils</Name>
-      <Private>True</Private>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="packages.config" />
-  </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>
-    <PostBuildEvent>set ILMerge="$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe"
-set InputDir=$(TargetDir)
-set InputFiles=XDMessaging.dll TheCodeKing.Utils.dll
-set OutputRootName=XDMessaging.dll
-set OutputDir=..\..\..\..\Bin
-set OutputFile=%25OutputDir%25\%25OutputRootName%25
-pushd "%25InputDir%25"
+    <PostBuildEvent>pushd "$(TargetDir)"
 
-"$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe" /t:library /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /out:%25OutputFile%25 %25InputFiles%25
+"$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe" /t:library /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /out:"$(SolutionDir)lib\$(TargetName).dll" XDMessaging.dll TheCodeKing.Utils.dll
 
-popd</PostBuildEvent>
+popd
+</PostBuildEvent>
   </PropertyGroup>
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

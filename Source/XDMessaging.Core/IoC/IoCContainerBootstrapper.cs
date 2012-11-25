@@ -13,17 +13,17 @@
 using System;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core.Serialization;
-using XDMessaging.Core.Specialized;
+using XDMessaging.Serialization;
+using XDMessaging.Specialized;
 
-namespace XDMessaging.Core.IoC
+namespace XDMessaging.IoC
 {
     public sealed class SimpleIoCContainerBootstrapper
     {
         #region Constants and Fields
 
         private static readonly Lazy<IocContainer> instance =
-            new Lazy<IocContainer>(() => new SimpleIoCContainer(c => new IoCActivator(c), (c) => new IoCAssemblyScanner(c)).Initialize(Configure), true);
+            new Lazy<IocContainer>(() => new SimpleIoCContainer(c => new IoCActivator(c), (c) => new SimpleIoCScanner(c)).Initialize(Configure), true);
 
         #endregion
 
@@ -46,6 +46,7 @@ namespace XDMessaging.Core.IoC
         {
             const string binarySerializer = "Binary";
             const string jsonSerializer = "Json";
+            container.Scan.ScanEmbeddedResources(typeof(SimpleIoCContainer).Assembly);
             container.Register<ISerializer, JsonSerializer>(jsonSerializer);
             container.Register<ISerializer, BinaryBase64Serializer>(binarySerializer);
             container.Register<ISerializer>(

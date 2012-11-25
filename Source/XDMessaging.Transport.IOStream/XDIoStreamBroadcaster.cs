@@ -16,11 +16,8 @@ using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
 using TheCodeKing.Utils.Contract;
-using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Core;
-using XDMessaging.Core.Message;
-using XDMessaging.Core.Specialized;
+using XDMessaging.Messages;
 
 namespace XDMessaging.Transport.IOStream
 {
@@ -29,8 +26,8 @@ namespace XDMessaging.Transport.IOStream
     ///   appDomain and process boundaries using file IO streams to a shared directory. Instances
     ///   of XDIOStreamListener can be used to receive the messages in another process.
     /// </summary>
-    [TransportModeHint(XDTransportMode.Compatibility)]
-    public sealed class XDIOStreamBroadcast : IXDBroadcast
+    [XDBroadcasterHint(XDTransportMode.Compatibility)]
+    public sealed class XDIoStreamBroadcaster : IXDBroadcaster
     {
         #region Constants and Fields
 
@@ -63,13 +60,13 @@ namespace XDMessaging.Transport.IOStream
         /// <summary>
         ///   Static constructor gets the path to the temporary directory.
         /// </summary>
-        static XDIOStreamBroadcast()
+        static XDIoStreamBroadcaster()
         {
             temporaryFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                                            "XDMessagingv4");
         }
 
-        internal XDIOStreamBroadcast(ISerializer serializer)
+        internal XDIoStreamBroadcaster(ISerializer serializer)
         {
             Validate.That(serializer).IsNotNull();
 
@@ -80,7 +77,7 @@ namespace XDMessaging.Transport.IOStream
 
         #region Implemented Interfaces
 
-        #region IXDBroadcast
+        #region IXDBroadcaster
 
         public void SendToChannel(string channelName, object message)
         {
@@ -262,18 +259,6 @@ namespace XDMessaging.Transport.IOStream
             catch (UnauthorizedAccessException)
             {
             } // if the file is still in use retry again later.
-        }
-
-        /// <summary>
-        ///   Initialize method called from XDMessaging.Core before the instance is constructed.
-        ///   This allows external classes to registered dependencies with the IocContainer.
-        /// </summary>
-        /// <param name = "container">The IocContainer instance used to construct this class.</param>
-        private static void Initialize(IocContainer container)
-        {
-            Validate.That(container).IsNotNull();
-
-            container.Register<ISerializer, SpecializedSerializer>();
         }
 
         #endregion

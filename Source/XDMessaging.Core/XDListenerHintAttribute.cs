@@ -11,11 +11,12 @@
 *=============================================================================
 */
 using System;
+using TheCodeKing.Utils.IoC;
 
-namespace XDMessaging.Core
+namespace XDMessaging
 {
     [AttributeUsage(AttributeTargets.Class)]
-    public class TransportModeHintAttribute : Attribute
+    public class XDListenerHintAttribute : IocInitializeAttribute
     {
         #region Constants and Fields
 
@@ -25,7 +26,8 @@ namespace XDMessaging.Core
 
         #region Constructors and Destructors
 
-        public TransportModeHintAttribute(XDTransportMode mode)
+        public XDListenerHintAttribute(XDTransportMode mode)
+            : base(Convert.ToString(mode), typeof(IXDListener))
         {
             this.mode = mode;
         }

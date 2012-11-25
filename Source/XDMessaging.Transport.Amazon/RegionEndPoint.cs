@@ -1,16 +1,10 @@
 ﻿using Amazon;
-using XDMessaging.Core.IoC;
+using XDMessaging.IoC;
 
 namespace XDMessaging.Transport.Amazon
 {
     public class RegionEndPoint
     {
-        static RegionEndPoint()
-        {
-            var container = SimpleIoCContainerBootstrapper.GetInstance();
-            container.Scan.ScanEmbeddedAssemblies(typeof(AmazonAccountSettings).Assembly);
-        }
-
         #region Constants and Fields
 
         /// <summary>
@@ -63,6 +57,16 @@ namespace XDMessaging.Transport.Amazon
         #endregion
 
         #region Constructors and Destructors
+
+        /// <summary>
+        ///   Needed to ensure embedded AWS assembly is loaded into the current domain when referrencing
+        ///   this type.
+        /// </summary>
+        static RegionEndPoint()
+        {
+            var container = SimpleIoCContainerBootstrapper.GetInstance();
+            container.Scan.ScanEmbeddedResources(typeof (XDAmazonBroadcaster).Assembly);
+        }
 
         private RegionEndPoint(RegionEndpoint amazonEndPoint)
         {

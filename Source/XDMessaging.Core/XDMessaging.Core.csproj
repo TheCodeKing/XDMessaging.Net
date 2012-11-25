@@ -67,9 +67,6 @@
     <Reference Include="System.Data" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Xml" />
-    <Reference Include="TheCodeKing.Utils">
-      <HintPath>..\TheCodeKing.Utils\bin\Debug\TheCodeKing.Utils.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="XDListenerHintAttribute.cs" />
@@ -118,6 +115,12 @@
       <ProductName>.NET Framework 3.5 SP1</ProductName>
       <Install>false</Install>
     </BootstrapperPackage>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
+      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
+      <Name>TheCodeKing.Utils</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -18,7 +18,7 @@ namespace TheCodeKing.Utils.IoC
     {
         #region Public Methods
 
-        IoCScanner Scan { get; }
+        IocScanner Scan { get; }
 
         bool IsRegistered(Type type);
         bool IsRegistered(Type type, string name);

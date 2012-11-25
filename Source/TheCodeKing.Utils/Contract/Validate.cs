@@ -126,17 +126,25 @@ namespace TheCodeKing.Utils.Contract
         public static IEvaluator<T> That<T>(T value)
         {
             var stackTrace = new StackTrace();
-            var parameter = stackTrace.GetFrame(1).GetMethod().GetParameters().First();
-
-            return new Evaluator<T>(value, parameter.Name);
+            var parameter = "param";
+            if (stackTrace.FrameCount > 0)
+            {
+                var parameters = stackTrace.GetFrame(1).GetMethod().GetParameters().FirstOrDefault();
+                parameter = parameters == null ? "param" : parameters.Name;
+            }
+            return new Evaluator<T>(value, parameter);
         }
 
         public static IEvaluator<T> That<T>(T value, string message)
         {
             var stackTrace = new StackTrace();
-            var parameters = stackTrace.GetFrame(1).GetMethod().GetParameters().First();
-
-            return new Evaluator<T>(value, parameters.Name, message);
+           var parameter = "param";
+            if (stackTrace.FrameCount > 0)
+            {
+                var parameters = stackTrace.GetFrame(1).GetMethod().GetParameters().FirstOrDefault();
+                parameter = parameters == null ? "param" : parameters.Name;
+            }
+            return new Evaluator<T>(value, parameter, message);
         }
 
         #endregion

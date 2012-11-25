@@ -17,12 +17,12 @@ using TheCodeKing.Utils.Contract;
 
 namespace TheCodeKing.Utils.IoC
 {
-    public sealed class IoCActivator
+    public sealed class IocActivator
     {
         #region Constants and Fields
 
         private const BindingFlags bindingFlags = BindingFlags.Public | BindingFlags.NonPublic |
-                                                  BindingFlags.Instance;
+                                                  BindingFlags.CreateInstance | BindingFlags.Instance;
 
         private readonly IocContainer container;
 
@@ -30,7 +30,7 @@ namespace TheCodeKing.Utils.IoC
 
         #region Constructors and Destructors
 
-        public IoCActivator(IocContainer container)
+        public IocActivator(IocContainer container)
         {
             Validate.That(container).IsNotNull();
 

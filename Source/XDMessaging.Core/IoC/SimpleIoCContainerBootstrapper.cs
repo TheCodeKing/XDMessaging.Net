@@ -23,7 +23,7 @@ namespace XDMessaging.IoC
         #region Constants and Fields
 
         private static readonly Lazy<IocContainer> instance =
-            new Lazy<IocContainer>(() => new SimpleIoCContainer(c => new IoCActivator(c), (c) => new SimpleIoCScanner(c)).Initialize(Configure), true);
+            new Lazy<IocContainer>(() => new SimpleIocContainer(c => new IocActivator(c), (c) => new SimpleIocScanner(c)).Initialize(Configure), true);
 
         #endregion
 
@@ -46,7 +46,6 @@ namespace XDMessaging.IoC
         {
             const string binarySerializer = "Binary";
             const string jsonSerializer = "Json";
-            //container.Scan.ScanEmbeddedResources(typeof(SimpleIoCContainer).Assembly);
             container.Register<ISerializer, JsonSerializer>(jsonSerializer);
             container.Register<ISerializer, BinaryBase64Serializer>(binarySerializer);
             container.Register<ISerializer>(

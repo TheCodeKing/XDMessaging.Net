@@ -18,7 +18,7 @@ using XDMessaging.IoC;
 namespace XDMessaging.Tests
 {
     [TestFixture]
-    public class SimpleIoCContainerTests
+    public class SimpleIocContainerTests
     {
         #region Constants and Fields
 

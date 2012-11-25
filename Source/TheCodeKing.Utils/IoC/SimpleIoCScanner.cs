@@ -20,7 +20,7 @@ using TheCodeKing.Utils.IoC;
 
 namespace XDMessaging.IoC
 {
-    public class SimpleIoCScanner : IoCScanner
+    public class SimpleIocScanner : IocScanner
     {
         protected readonly IocContainer Container;
 
@@ -28,14 +28,14 @@ namespace XDMessaging.IoC
         private static readonly IDictionary<string, Assembly> dynamicAssemblies = new Dictionary<string, Assembly>(StringComparer.InvariantCultureIgnoreCase);
         private static readonly IDictionary<string, Type> foundInterfaces = new Dictionary<string, Type>(StringComparer.InvariantCultureIgnoreCase);
 
-        static SimpleIoCScanner()
+        static SimpleIocScanner()
         {
             AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => dynamicAssemblies.ContainsKey(args.Name)
                                                                              ? dynamicAssemblies[args.Name]
                                                                              : null;
         }
 
-        public SimpleIoCScanner(IocContainer container)
+        public SimpleIocScanner(IocContainer container)
         {
             Validate.That(container).IsNotNull();
 
@@ -45,7 +45,7 @@ namespace XDMessaging.IoC
 
         public void ScanAllAssemblies()
         {
-            var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var location = AppDomain.CurrentDomain.BaseDirectory;
             ScanAllAssemblies(location);
         }
 

@@ -10,7 +10,6 @@ namespace XDMessaging
 
         public static IXDBroadcaster GetAmazonBroadcaster(this Broadcasters client)
         {
-            
             return client.Container.Resolve<XDAmazonBroadcaster>();
         }
 

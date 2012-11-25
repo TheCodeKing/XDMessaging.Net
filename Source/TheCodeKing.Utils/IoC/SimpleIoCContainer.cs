@@ -17,24 +17,24 @@ using TheCodeKing.Utils.Contract;
 
 namespace TheCodeKing.Utils.IoC
 {
-    public sealed class SimpleIoCContainer : IocContainer
+    public sealed class SimpleIocContainer : IocContainer
     {
         #region Constants and Fields
 
         private const string defaultName = "IoCDefault";
-        private readonly IoCActivator activator;
+        private readonly IocActivator activator;
 
         private readonly IDictionary<string, Func<object>> map =
             new Dictionary<string, Func<object>>(StringComparer.InvariantCultureIgnoreCase);
 
-        private readonly IoCScanner scanner;
+        private readonly IocScanner scanner;
 
         #endregion
 
         #region Constructors and Destructors
 
-        public SimpleIoCContainer(Func<IocContainer, IoCActivator> activatorFactory,
-                                  Func<IocContainer, IoCScanner> scannerFactory)
+        public SimpleIocContainer(Func<IocContainer, IocActivator> activatorFactory,
+                                  Func<IocContainer, IocScanner> scannerFactory)
         {
             Validate.That(activatorFactory).IsNotNull();
             Validate.That(scannerFactory).IsNotNull();
@@ -47,7 +47,7 @@ namespace TheCodeKing.Utils.IoC
 
         #region Properties
 
-        public IoCScanner Scan
+        public IocScanner Scan
         {
             get { return scanner; }
         }

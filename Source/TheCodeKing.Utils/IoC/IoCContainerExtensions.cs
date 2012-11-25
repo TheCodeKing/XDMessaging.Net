@@ -15,7 +15,7 @@ using System.Linq;
 
 namespace TheCodeKing.Utils.IoC
 {
-    public static class IoCContainerExtensions
+    public static class IocContainerExtensions
     {
         public static bool IsRegistered<T>(this IocContainer container)
         {

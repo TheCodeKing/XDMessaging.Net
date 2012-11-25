@@ -37,7 +37,7 @@ namespace XDMessaging.Transport.Amazon
 
         #region Constructors and Destructors
 
-        public XDAmazonBroadcaster(ISerializer serializer, IAmazonFacade amazonFacade)
+        internal XDAmazonBroadcaster(ISerializer serializer, IAmazonFacade amazonFacade)
         {
             Validate.That(serializer).IsNotNull();
             Validate.That(amazonFacade).IsNotNull();

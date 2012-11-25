@@ -14,7 +14,7 @@ using System.Reflection;
 
 namespace TheCodeKing.Utils.IoC
 {
-    public interface IoCScanner
+    public interface IocScanner
     {
         /// <summary>
         ///   Scan embedded resources for assembies.

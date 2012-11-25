@@ -42,7 +42,7 @@ namespace XDMessaging.Transport.Amazon
 
         #region Constructors and Destructors
 
-        public XDAmazonListener(ISerializer serializer, IAmazonFacade amazonFacade, IAwsQueueReceiver awsQueueReceiver)
+        internal XDAmazonListener(ISerializer serializer, IAmazonFacade amazonFacade, IAwsQueueReceiver awsQueueReceiver)
         {
             Validate.That(serializer).IsNotNull();
             Validate.That(amazonFacade).IsNotNull();

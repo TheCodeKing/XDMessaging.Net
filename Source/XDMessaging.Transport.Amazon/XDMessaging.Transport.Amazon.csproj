@@ -46,8 +46,7 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="XDMessaging">
       <HintPath>..\lib\XDMessaging.dll</HintPath>
     </Reference>
   </ItemGroup>

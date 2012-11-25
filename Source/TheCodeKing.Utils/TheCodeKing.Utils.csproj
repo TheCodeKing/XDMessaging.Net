@@ -43,14 +43,14 @@
   <ItemGroup>
     <Compile Include="Collections\FixedSizeCollection.cs" />
     <Compile Include="Contract\Validate.cs" />
-    <Compile Include="IoC\SimpleIoCScanner.cs" />
+    <Compile Include="IoC\SimpleIocScanner.cs" />
     <Compile Include="IoC\IocInitializeAttribute.cs" />
-    <Compile Include="IoC\IoCScanner.cs" />
+    <Compile Include="IoC\IocScanner.cs" />
     <Compile Include="Serialization\BinarySerializer.cs" />
-    <Compile Include="IoC\IoCActivator.cs" />
-    <Compile Include="IoC\SimpleIoCContainer.cs" />
-    <Compile Include="IoC\IoCContainer.cs" />
-    <Compile Include="IoC\IoCContainerExtensions.cs" />
+    <Compile Include="IoC\IocActivator.cs" />
+    <Compile Include="IoC\SimpleIocContainer.cs" />
+    <Compile Include="IoC\IocContainer.cs" />
+    <Compile Include="IoC\IocContainerExtensions.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Serialization\ISerializer.cs" />
   </ItemGroup>

@@ -14,11 +14,10 @@ using System.IO;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using TheCodeKing.Utils.Contract;
-using TheCodeKing.Utils.Serialization;
 
-namespace XDMessaging.Serialization
+namespace TheCodeKing.Utils.Serialization
 {
-    internal sealed class JsonSerializer : ISerializer
+    public sealed class JsonSerializer : ISerializer
     {
         #region Implemented Interfaces
 

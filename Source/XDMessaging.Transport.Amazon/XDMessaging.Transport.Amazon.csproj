@@ -35,7 +35,7 @@
     <Reference Include="AWSSDK, Version=1.5.9.0, Culture=neutral, PublicKeyToken=cd2d24cd2bace800, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\AWSSDK.1.5.9.0\lib\AWSSDK.dll</HintPath>
-      <Private>False</Private>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -46,9 +46,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging">
-      <HintPath>..\lib\XDMessaging.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="AmazonAccountSettings.cs" />
@@ -66,7 +63,17 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AWSSDK.dll" />
+    <Content Include="AWSSDK.dll" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
+      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
+      <Name>TheCodeKing.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XDMessaging.Core\XDMessaging.Core.csproj">
+      <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
+      <Name>XDMessaging.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

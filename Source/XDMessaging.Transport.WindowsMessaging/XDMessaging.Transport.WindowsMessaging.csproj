@@ -39,10 +39,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\lib\XDMessaging.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Native.cs" />
@@ -53,6 +49,16 @@
     <Compile Include="WinMsgDataGram.cs" />
     <Compile Include="XDWinMsgBroadcaster.cs" />
     <Compile Include="XDWinMsgListener.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
+      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
+      <Name>TheCodeKing.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XDMessaging.Core\XDMessaging.Core.csproj">
+      <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
+      <Name>XDMessaging.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

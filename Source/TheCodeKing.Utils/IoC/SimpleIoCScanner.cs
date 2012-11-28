@@ -45,35 +45,52 @@ namespace XDMessaging.IoC
 
         public void ScanAllAssemblies()
         {
-            var location = AppDomain.CurrentDomain.BaseDirectory;
+            ScanLoadedAssemblies();
+            var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
             ScanAllAssemblies(location);
+            location = AppDomain.CurrentDomain.BaseDirectory;
+            ScanAllAssemblies(location);
+        }
+
+        public void ScanLoadedAssemblies()
+        {
+            ScanAllAssemblies(AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.StartsWith("system.", StringComparison.InvariantCultureIgnoreCase)));
         }
 
         public void ScanAllAssemblies(string location)
         {
             Validate.That(location).IsNotNullOrEmpty();
 
-            var assemblies = Directory.GetFiles(location, "*.dll").Select(Assembly.LoadFile);
+            var assemblies = Directory.GetFiles(location, "*.dll")
+                .Where(a => (!AppDomain.CurrentDomain.GetAssemblies()
+                    .Any(x => AssemblyName.ReferenceMatchesDefinition(AssemblyName.GetAssemblyName(a), x.GetName()))))
+                    .Select(Assembly.LoadFrom);
+            ScanAllAssemblies(assemblies);
+        }
+
+        private void ScanAllAssemblies(IEnumerable<Assembly> assemblies)
+        {
+            var list = assemblies.ToList();
             var resources = new List<Assembly>();
-            foreach(var item in assemblies)
+            foreach (var item in list)
             {
-                if (checkedAssemblies.Contains(item.FullName))
+                if ((Path.GetFileNameWithoutExtension(item.Location)??"").StartsWith("System.", StringComparison.InvariantCultureIgnoreCase) || checkedAssemblies.Contains(item.FullName))
                 {
                     continue;
                 }
                 resources.AddRange(SearchResourcesForEmbeddedAssemblies(item));
             }
-            assemblies = assemblies.Concat(resources);
-            SearchAssembliesForAllInterfaces(assemblies);
-            RegisterConcreteBasedOnInitializeAttribute(assemblies);
-            RegisterConcreteBasedOnNamingConvention(assemblies);
+            list = list.Concat(resources).ToList();
+            SearchAssembliesForAllInterfaces(list);
+            RegisterConcreteBasedOnInitializeAttribute(list);
+            RegisterConcreteBasedOnNamingConvention(list);
         }
 
         private void RegisterConcreteBasedOnNamingConvention(IEnumerable<Assembly> assemblies)
         {
             foreach (var assembly in assemblies)
             {
-                foreach (var concrete in assembly.GetTypes())
+                foreach (var concrete in GetFilteredTypes(assembly))
                 {
                     if (foundInterfaces.ContainsKey(concrete.Name))
                     {
@@ -92,7 +109,7 @@ namespace XDMessaging.IoC
         {
             foreach(var assembly in assemblies)
             {
-                foreach (var concrete in assembly.GetTypes())
+                foreach (var concrete in GetFilteredTypes(assembly))
                 {
                     var attribute =
                         concrete.GetCustomAttributes(typeof (IocInitializeAttribute), true).FirstOrDefault() as
@@ -119,13 +136,18 @@ namespace XDMessaging.IoC
 
         private static void SearchAssembliesForAllInterfaces(IEnumerable<Assembly> assemblies)
         {
-            foreach (var types in assemblies.Select(assembly => assembly.GetTypes()))
+            foreach (var assembly in assemblies)
             {
-                foreach (var item in types.Where(a => a.IsInterface).Where(t => t.Name.StartsWith("I")))
+                foreach (var item in GetFilteredTypes(assembly).Where(a => a.IsInterface).Where(t => t.Name.StartsWith("I")))
                 {
-                    foundInterfaces[item.Name.Substring(1)] = item;   
+                    foundInterfaces[item.Name.Substring(1)] = item;
                 }
             }
+        }
+
+        private static IEnumerable<Type> GetFilteredTypes(Assembly assembly)
+        {
+            return assembly.GetTypes().Where(t => !t.FullName.StartsWith("System.", StringComparison.InvariantCultureIgnoreCase));
         }
 
         private static IEnumerable<Assembly> SearchResourcesForEmbeddedAssemblies(Assembly assembly)
@@ -137,12 +159,16 @@ namespace XDMessaging.IoC
                 {
                     if (input != null)
                     {
-                        var dynamicAssembly = Assembly.Load(StreamToBytes(input));
-                        if (!dynamicAssemblies.ContainsKey(dynamicAssembly.FullName))
+                        var a = AssemblyName.GetAssemblyName(resource);
+                        if (!AppDomain.CurrentDomain.GetAssemblies().Any(x => AssemblyName.ReferenceMatchesDefinition(a, x.GetName())))
                         {
-                            dynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;   
+                            var dynamicAssembly = Assembly.Load(StreamToBytes(input));
+                            if (!dynamicAssemblies.ContainsKey(dynamicAssembly.FullName))
+                            {
+                                dynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;
+                            }
+                            resources.Add(dynamicAssembly);
                         }
-                        resources.Add(dynamicAssembly);
                     }
                 }
             }

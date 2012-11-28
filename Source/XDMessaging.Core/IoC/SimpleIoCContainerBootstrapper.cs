@@ -13,12 +13,11 @@
 using System;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Serialization;
 using XDMessaging.Specialized;
 
 namespace XDMessaging.IoC
 {
-    public sealed class SimpleIoCContainerBootstrapper
+    public sealed class SimpleIocContainerBootstrapper
     {
         #region Constants and Fields
 

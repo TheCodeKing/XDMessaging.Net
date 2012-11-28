@@ -40,10 +40,6 @@
     <Reference Include="System.Drawing" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\Source\lib\XDMessaging.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Messenger.cs">
@@ -61,6 +57,14 @@
     <None Include="app.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\..\..\Source\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
+      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
+      <Name>TheCodeKing.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\..\..\Source\XDMessaging.Core\XDMessaging.Core.csproj">
+      <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
+      <Name>XDMessaging.Core</Name>
+    </ProjectReference>
     <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.Amazon\XDMessaging.Transport.Amazon.csproj">
       <Project>{A7518064-616C-4424-AE27-41EF29D636A3}</Project>
       <Name>XDMessaging.Transport.Amazon</Name>

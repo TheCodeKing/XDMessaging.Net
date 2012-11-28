@@ -32,6 +32,10 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="AWSSDK, Version=1.5.8.0, Culture=neutral, PublicKeyToken=cd2d24cd2bace800, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\AWSSDK.1.5.9.0\lib\AWSSDK.dll</HintPath>
+    </Reference>
     <Reference Include="Moq">
       <HintPath>..\packages\Moq.4.0.10827\lib\NET40\Moq.dll</HintPath>
     </Reference>
@@ -46,22 +50,6 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="XDMessaging, Version=3.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\XDMessaging.dll</HintPath>
-    </Reference>
-    <Reference Include="XDMessaging.Transport.Amazon, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\XDMessaging.Transport.Amazon.dll</HintPath>
-    </Reference>
-    <Reference Include="XDMessaging.Transport.IOStream, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\XDMessaging.Transport.IOStream.dll</HintPath>
-    </Reference>
-    <Reference Include="XDMessaging.Transport.WindowsMessaging, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\Bin\XDMessaging.Transport.WindowsMessaging.dll</HintPath>
-    </Reference>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="XDMessagingClientTests.cs" />
@@ -73,6 +61,28 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\TheCodeKing.Utils\TheCodeKing.Utils.csproj">
+      <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
+      <Name>TheCodeKing.Utils</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XDMessaging.Core\XDMessaging.Core.csproj">
+      <Project>{EFAAE69D-F65D-4247-81AA-440E18C3336F}</Project>
+      <Name>XDMessaging.Core</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XDMessaging.Transport.Amazon\XDMessaging.Transport.Amazon.csproj">
+      <Project>{A7518064-616C-4424-AE27-41EF29D636A3}</Project>
+      <Name>XDMessaging.Transport.Amazon</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XDMessaging.Transport.IOStream\XDMessaging.Transport.IOStream.csproj">
+      <Project>{B71BD6E3-D7D7-40EC-9ACD-0A11F27A4E60}</Project>
+      <Name>XDMessaging.Transport.IOStream</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\XDMessaging.Transport.WindowsMessaging\XDMessaging.Transport.WindowsMessaging.csproj">
+      <Project>{BF6E06B2-7886-4204-89E5-42A5DE6FFCAA}</Project>
+      <Name>XDMessaging.Transport.WindowsMessaging</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

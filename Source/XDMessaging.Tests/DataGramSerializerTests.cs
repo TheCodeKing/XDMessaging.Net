@@ -11,8 +11,8 @@
 *=============================================================================
 */
 using NUnit.Framework;
+using TheCodeKing.Utils.Serialization;
 using XDMessaging.Messages;
-using XDMessaging.Serialization;
 
 namespace XDMessaging.Tests
 {

@@ -127,7 +127,6 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(container).IsNotNull();
 
-            container.Register(() => ConfigurationManager.AppSettings);
             container.Register(AmazonAccountSettings.GetInstance);
         }
 

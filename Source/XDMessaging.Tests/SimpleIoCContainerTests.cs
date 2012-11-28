@@ -11,9 +11,12 @@
 *=============================================================================
 */
 using System;
+using System.Collections.Specialized;
 using NUnit.Framework;
 using TheCodeKing.Utils.IoC;
+using TheCodeKing.Utils.Serialization;
 using XDMessaging.IoC;
+using XDMessaging.Transport.Amazon;
 
 namespace XDMessaging.Tests
 {
@@ -44,10 +47,18 @@ namespace XDMessaging.Tests
             Assert.That(broadcast, Is.Not.Null);
         }
 
+        [Test]
+        public void GivenAmazonFacadeImplementationAssertResolveSuccess()
+        {
+           var amazonFacade = instance.Resolve<IAmazonFacade>();
+            Assert.That(amazonFacade, Is.Not.Null);
+        }
+        
+
         [SetUp]
         public void SetUp()
         {
-            instance = SimpleIoCContainerBootstrapper.GetInstance();
+            instance = SimpleIocContainerBootstrapper.GetInstance();
         }
 
         #endregion

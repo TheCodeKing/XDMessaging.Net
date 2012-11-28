@@ -100,7 +100,6 @@ namespace XDMessaging.Transport.Amazon
         private static void Initialize(IocContainer container)
         {
             Validate.That(container).IsNotNull();
-            container.Register(() => ConfigurationManager.AppSettings);
             container.Register(AmazonAccountSettings.GetInstance);
         }
 

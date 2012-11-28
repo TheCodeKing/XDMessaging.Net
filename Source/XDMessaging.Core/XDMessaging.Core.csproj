@@ -74,9 +74,8 @@
     <Compile Include="Fluent\XDRegisterations.cs" />
     <Compile Include="Fluent\Listeners.cs" />
     <Compile Include="Specialized\SpecializedSerializer.cs" />
-    <Compile Include="IoC\SimpleIoCContainerBootstrapper.cs" />
+    <Compile Include="IoC\SimpleIocContainerBootstrapper.cs" />
     <Compile Include="XDBroadcasterHintAttribute.cs" />
-    <Compile Include="Serialization\DataGramSerializer.cs" />
     <Compile Include="Specialized\XDMultiBroadcaster.cs">
       <SubType>Code</SubType>
     </Compile>
@@ -126,7 +125,7 @@
   <PropertyGroup>
     <PostBuildEvent>pushd "$(TargetDir)"
 
-"$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe" /t:library /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /out:"$(SolutionDir)lib\$(TargetName).dll" XDMessaging.dll TheCodeKing.Utils.dll
+REM "$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe" /t:library /targetplatform:v4,"C:\Program Files (x86)\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /out:"$(SolutionDir)lib\$(TargetName).dll" XDMessaging.dll TheCodeKing.Utils.dll
 
 popd
 </PostBuildEvent>

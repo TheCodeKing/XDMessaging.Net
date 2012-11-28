@@ -74,7 +74,7 @@ namespace XDMessaging.Messages
             {
                 return null;
             }
-            var serializer = SimpleIoCContainerBootstrapper.GetInstance().Resolve<ISerializer>();
+            var serializer = SimpleIocContainerBootstrapper.GetInstance().Resolve<ISerializer>();
             return new TypedDataGram<T>(dataGram, serializer);
         }
 

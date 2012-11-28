@@ -11,7 +11,7 @@ namespace XDMessaging
 
         public XDMessagingClient()
         {
-            var container = SimpleIoCContainerBootstrapper.GetInstance();
+            var container = SimpleIocContainerBootstrapper.GetInstance();
 
             Listeners = new Listeners(container);
             Broadcasters = new Broadcasters(container);

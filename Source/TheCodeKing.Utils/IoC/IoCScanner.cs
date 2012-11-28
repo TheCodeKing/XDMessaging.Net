@@ -23,6 +23,11 @@ namespace TheCodeKing.Utils.IoC
         void ScanEmbeddedResources(Assembly assembly);
 
         /// <summary>
+        /// Scan all loaded assemblies.
+        /// </summary>
+        void ScanLoadedAssemblies();
+
+        /// <summary>
         ///   Scan assembly.
         /// </summary>
         /// <param name="assembly">The assembly to scan.</param>

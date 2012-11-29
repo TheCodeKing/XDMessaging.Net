@@ -159,16 +159,12 @@ namespace XDMessaging.IoC
                 {
                     if (input != null)
                     {
-                        var a = AssemblyName.GetAssemblyName(resource);
-                        if (!AppDomain.CurrentDomain.GetAssemblies().Any(x => AssemblyName.ReferenceMatchesDefinition(a, x.GetName())))
+                        var dynamicAssembly = Assembly.Load(StreamToBytes(input));
+                        if (!dynamicAssemblies.ContainsKey(dynamicAssembly.FullName))
                         {
-                            var dynamicAssembly = Assembly.Load(StreamToBytes(input));
-                            if (!dynamicAssemblies.ContainsKey(dynamicAssembly.FullName))
-                            {
-                                dynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;
-                            }
-                            resources.Add(dynamicAssembly);
+                            dynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;
                         }
+                        resources.Add(dynamicAssembly);
                     }
                 }
             }

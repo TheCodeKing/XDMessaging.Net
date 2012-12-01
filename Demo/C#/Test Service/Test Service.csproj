@@ -126,6 +126,10 @@
       <Project>{BF6E06B2-7886-4204-89E5-42A5DE6FFCAA}</Project>
       <Name>XDMessaging.Transport.WindowsMessaging</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Messenger\Messenger.csproj">
+      <Project>{670B883C-0C86-4AE4-B07E-EC7DEAF788B1}</Project>
+      <Name>Messenger</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

@@ -10,9 +10,15 @@
 *
 *=============================================================================
 */
+using System;
 using System.Diagnostics;
 using System.ServiceProcess;
+using System.Threading;
+using System.Threading.Tasks;
+using TheCodeKing.Demo;
 using XDMessaging;
+using XDMessaging.Messages;
+using XDMessaging.Transport.Amazon.Entities;
 
 namespace Test_Service
 {
@@ -30,12 +36,19 @@ namespace Test_Service
         private IXDBroadcaster broadcast;
 
         /// <summary>
+        ///   Cancellation token for timer.
+        /// </summary>
+        private CancellationTokenSource cancelToken;
+
+        /// <summary>
         ///   The instance of XDmessagingClient used to create listeners and broadcasters.
         /// </summary>
         private XDMessagingClient client;
 
+        private bool isTraceEnabled;
+
         /// <summary>
-        ///   The instance used to listen to broadcast messages.
+        ///   The instance used to listen for broadcast messages.
         /// </summary>
         private IXDListener listener;
 
@@ -62,7 +75,9 @@ namespace Test_Service
         /// <param name = "args"></param>
         protected override void OnStart(string[] args)
         {
-            client = new XDMessagingClient();
+            isTraceEnabled = true;
+
+            client = new XDMessagingClient().WithAmazonSettings(RegionEndPoint.EUWest1);
 
             listener = client.Listeners.GetListenerForMode(XDTransportMode.Compatibility);
             listener.MessageReceived += OnMessageReceived;
@@ -72,8 +87,20 @@ namespace Test_Service
             //only the following mode is supported in windows services
             broadcast = client.Broadcasters.GetBroadcasterForMode(XDTransportMode.Compatibility);
 
-            // broadcast to all processes listening on the status channel that the service has started
             broadcast.SendToChannel("status", "Test Service has started");
+            cancelToken = new CancellationTokenSource();
+            Task.Factory.StartNew(() =>
+                                      {
+                                          while (!cancelToken.IsCancellationRequested)
+                                          {
+                                              if (isTraceEnabled)
+                                              {
+                                                  broadcast.SendToChannel("status",
+                                                                          "The time is: " + DateTime.Now.ToString("f"));
+                                                  Thread.Sleep(5000);
+                                              }
+                                          }
+                                      });
         }
 
         /// <summary>
@@ -81,8 +108,9 @@ namespace Test_Service
         /// </summary>
         protected override void OnStop()
         {
-            // broadcast to all processes listening on the status channel that the service has stoped
             broadcast.SendToChannel("status", "Test Service has stopped");
+            cancelToken.Cancel();
+            cancelToken = null;
             listener.Dispose();
         }
 
@@ -94,7 +122,19 @@ namespace Test_Service
         private void OnMessageReceived(object sender, XDMessageEventArgs e)
         {
             // view these debug messages using SysInternals Dbgview.
-            Debug.WriteLine("Test Service: " + e.DataGram.Channel + " " + e.DataGram.Message);
+            TypedDataGram<FormattedUserMessage> dataGram = e.DataGram;
+
+            Debug.WriteLine("Test Service: " + e.DataGram.Channel + " " + dataGram.Message);
+            if (dataGram.Message.FormattedTextMessage.EndsWith("STOP"))
+            {
+                broadcast.SendToChannel("status", "Stopping trace");
+                isTraceEnabled = false;
+            }
+            else if (dataGram.Message.FormattedTextMessage.EndsWith("START"))
+            {
+                broadcast.SendToChannel("status", "Starting trace");
+                isTraceEnabled = true;
+            }
         }
 
         #endregion

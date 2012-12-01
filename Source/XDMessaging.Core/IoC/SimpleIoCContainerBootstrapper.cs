@@ -21,7 +21,7 @@ namespace XDMessaging.IoC
     {
         #region Constants and Fields
 
-        private static readonly Lazy<IocContainer> instance =
+        private static Lazy<IocContainer> instance =
             new Lazy<IocContainer>(() => new SimpleIocContainer(c => new IocActivator(c), (c) => new SimpleIocScanner(c)).Initialize(Configure), true);
 
         #endregion
@@ -35,6 +35,17 @@ namespace XDMessaging.IoC
         public static IocContainer GetInstance()
         {
             return instance.Value;
+        }
+
+        internal static IocContainer GetInstance(bool clear)
+        {
+            if (clear)
+            {
+                instance = new Lazy<IocContainer>(() => new SimpleIocContainer(c => new IocActivator(c),
+                                                                               c => new SimpleIocScanner(c)).
+                                                            Initialize(Configure), true);
+            }
+            return GetInstance();
         }
 
         #endregion

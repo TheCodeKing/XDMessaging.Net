@@ -2,7 +2,9 @@
 using XDMessaging.Fluent;
 using XDMessaging.Transport.WindowsMessaging;
 
+// ReSharper disable CheckNamespace
 namespace XDMessaging
+// ReSharper restore CheckNamespace
 {
     public static class RegisterWithClient
     {

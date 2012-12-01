@@ -52,22 +52,32 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="AmazonAccountSettings.cs" />
-    <Compile Include="AmazonFacade.cs" />
-    <Compile Include="AmazonSqsNotification.cs" />
-    <Compile Include="AwsQueueReceiver.cs" />
-    <Compile Include="IAmazonFacade.cs" />
-    <Compile Include="IAwsQueueReceiver.cs" />
-    <Compile Include="NameHelper.cs" />
-    <Compile Include="AwsRegionEndPoint.cs" />
+    <Compile Include="Entities\AmazonAccountSettings.cs" />
+    <Compile Include="Facades\AmazonSqsFacade.cs" />
+    <Compile Include="Entities\AmazonSqsNotification.cs" />
+    <Compile Include="IocConfiguration.cs" />
+    <Compile Include="QueuePoller.cs" />
+    <Compile Include="Facades\AmazonSnsFacade.cs" />
+    <Compile Include="Interfaces\IAmazonSqsFacade.cs" />
+    <Compile Include="Interfaces\IAmazonSnsFacade.cs" />
+    <Compile Include="Interfaces\IQueuePoller.cs" />
+    <Compile Include="Entities\RegionEndPoint.cs" />
+    <Compile Include="Interfaces\ISubscriberRepository.cs" />
+    <Compile Include="Interfaces\ISubscriptionService.cs" />
+    <Compile Include="Interfaces\ITopicRepository.cs" />
+    <Compile Include="Repositories\SubscriptionService.cs" />
     <Compile Include="RegisterWithClient.cs" />
-    <Compile Include="SubscriptionInfo.cs" />
+    <Compile Include="Entities\Subscriber.cs" />
+    <Compile Include="Repositories\SubscriberRepository.cs" />
+    <Compile Include="Entities\SubscriptionInfo.cs" />
+    <Compile Include="Entities\Topic.cs" />
+    <Compile Include="Repositories\TopicRepository.cs" />
     <Compile Include="XDAmazonListener.cs" />
     <Compile Include="XDAmazonBroadcaster.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <EmbeddedResource Include="AWSSDK.dll" />
+    <EmbeddedResource Include="ThirdParty\AWSSDK.dll" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

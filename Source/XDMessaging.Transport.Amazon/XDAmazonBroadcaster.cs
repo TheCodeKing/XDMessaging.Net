@@ -10,52 +10,39 @@
 *
 *=============================================================================
 */
-using System;
-using System.Collections.Concurrent;
-using System.Configuration;
 using TheCodeKing.Utils.Contract;
-using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.Messages;
-using XDMessaging.Specialized;
+using XDMessaging.Transport.Amazon.Interfaces;
+using XDMessaging.Transport.Amazon.Repositories;
 
 namespace XDMessaging.Transport.Amazon
 {
     [XDBroadcasterHint(XDTransportMode.RemoteNetwork)]
-    public sealed class XDAmazonBroadcaster : IXDBroadcaster
+// ReSharper disable InconsistentNaming
+    internal sealed class XDAmazonBroadcaster : IXDBroadcaster
+// ReSharper restore InconsistentNaming
     {
         #region Constants and Fields
 
-        private readonly IAmazonFacade amazonFacade;
-
-        private readonly ConcurrentDictionary<string, string> registeredTopics =
-            new ConcurrentDictionary<string, string>(StringComparer.InvariantCultureIgnoreCase);
-
         private readonly ISerializer serializer;
+        private readonly ISubscriptionService subscriptionService;
+        private readonly TopicRepository topicRepository;
 
         #endregion
 
         #region Constructors and Destructors
 
-        internal XDAmazonBroadcaster(ISerializer serializer, IAmazonFacade amazonFacade)
+        internal XDAmazonBroadcaster(ISerializer serializer, ISubscriptionService subscriptionService,
+                                     TopicRepository topicRepository)
         {
             Validate.That(serializer).IsNotNull();
-            Validate.That(amazonFacade).IsNotNull();
+            Validate.That(subscriptionService).IsNotNull();
+            Validate.That(topicRepository).IsNotNull();
 
             this.serializer = serializer;
-            this.amazonFacade = amazonFacade;
-        }
-
-        #endregion
-
-        #region Public Methods
-
-        public string CreateChannel(string channelName)
-        {
-            Validate.That(channelName).IsNotNullOrEmpty();
-
-            var topicName = amazonFacade.GetTopicNameFromChannel(channelName);
-            return amazonFacade.CreateOrRetrieveTopic(topicName);
+            this.subscriptionService = subscriptionService;
+            this.topicRepository = topicRepository;
         }
 
         #endregion
@@ -69,12 +56,11 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(channel).IsNotNull();
             Validate.That(message).IsNotNullOrEmpty();
 
-            var topicArn = registeredTopics.GetOrAdd(channel, CreateChannel);
+            var topic = topicRepository.GetTopic(channel);
             var dataGram = new DataGram(channel, message);
             var data = serializer.Serialize(dataGram);
 
-            Func<string, string, string, string> action = amazonFacade.PublishMessageToTopic;
-            action.BeginInvoke(topicArn, channel, data, (r) => action.EndInvoke(r), null);
+            subscriptionService.Publish(topic, dataGram.Channel, data);
         }
 
         public void SendToChannel(string channel, object message)
@@ -87,21 +73,6 @@ namespace XDMessaging.Transport.Amazon
         }
 
         #endregion
-
-        #endregion
-
-        #region Methods
-
-        /// <summary>
-        ///   Initialize method called from XDMessaging.Core before the instance is constructed.
-        ///   This allows external classes to registered dependencies with the IocContainer.
-        /// </summary>
-        /// <param name = "container">The IocContainer instance used to construct this class.</param>
-        private static void Initialize(IocContainer container)
-        {
-            Validate.That(container).IsNotNull();
-            container.Register(AmazonAccountSettings.GetInstance);
-        }
 
         #endregion
     }

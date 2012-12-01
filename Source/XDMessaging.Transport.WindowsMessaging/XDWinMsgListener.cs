@@ -25,7 +25,9 @@ namespace XDMessaging.Transport.WindowsMessaging
     ///   application are not supported by this implementation.
     /// </summary>
     [XDListenerHint(XDTransportMode.HighPerformanceUI)]
+// ReSharper disable InconsistentNaming
     public sealed class XDWinMsgListener : NativeWindow, IXDListener
+// ReSharper restore InconsistentNaming
     {
         #region Constants and Fields
 

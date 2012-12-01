@@ -17,7 +17,7 @@ using System.Linq;
 
 namespace TheCodeKing.Utils.Contract
 {
-    public interface IEvaluator<out T>
+    public interface IEvaluator<T>
     {
         #region Properties
 
@@ -29,11 +29,11 @@ namespace TheCodeKing.Utils.Contract
 
         #region Public Methods
 
-        void AssertIllegalArgument<T>(IEvaluator<T> evaluator, string defaultMessage=null);
+        void AssertIllegalArgument(IEvaluator<T> evaluator, string defaultMessage=null);
 
-        void AssertNullArgument<T>(IEvaluator<T> evaluator, string defaultMessage=null);
+        void AssertNullArgument(IEvaluator<T> evaluator, string defaultMessage=null);
 
-        void ArgumentOutOfRange<T>(IEvaluator<T> evaluator, string defaultMessage=null);
+        void ArgumentOutOfRange(IEvaluator<T> evaluator, string defaultMessage=null);
 
         #endregion
     }
@@ -87,7 +87,7 @@ namespace TheCodeKing.Utils.Contract
 
         #region IEvaluator<T>
 
-        public void ArgumentOutOfRange<T>(IEvaluator<T> evaluator, string defaultMessage)
+        public void ArgumentOutOfRange(IEvaluator<T> evaluator, string defaultMessage)
         {
             if (string.IsNullOrEmpty(evaluator.Message) || !string.IsNullOrEmpty(defaultMessage))
             {
@@ -96,7 +96,7 @@ namespace TheCodeKing.Utils.Contract
             throw new ArgumentOutOfRangeException(evaluator.Param);
         }
 
-        public void AssertIllegalArgument<T>(IEvaluator<T> evaluator, string defaultMessage = null)
+        public void AssertIllegalArgument(IEvaluator<T> evaluator, string defaultMessage = null)
         {
             if (string.IsNullOrEmpty(evaluator.Message) || !string.IsNullOrEmpty(defaultMessage))
             {
@@ -105,7 +105,7 @@ namespace TheCodeKing.Utils.Contract
             throw new ArgumentException(evaluator.Param);
         }
 
-        public void AssertNullArgument<T>(IEvaluator<T> evaluator, string defaultMessage = "cannot be null")
+        public void AssertNullArgument(IEvaluator<T> evaluator, string defaultMessage = "cannot be null")
         {
             if (string.IsNullOrEmpty(evaluator.Message) || !string.IsNullOrEmpty(defaultMessage))
             {

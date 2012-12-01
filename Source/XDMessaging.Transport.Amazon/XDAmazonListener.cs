@@ -11,30 +11,27 @@
 *=============================================================================
 */
 using System;
-using System.Collections.Concurrent;
-using System.Configuration;
 using Amazon.SQS.Model;
 using TheCodeKing.Utils.Contract;
-using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.Fluent;
 using XDMessaging.Messages;
-using XDMessaging.Specialized;
+using XDMessaging.Transport.Amazon.Entities;
+using XDMessaging.Transport.Amazon.Interfaces;
 
 namespace XDMessaging.Transport.Amazon
 {
     [XDListenerHint(XDTransportMode.RemoteNetwork)]
-    public sealed class XDAmazonListener : IXDListener
+// ReSharper disable InconsistentNaming
+    internal sealed class XDAmazonListener : IXDListener
+// ReSharper restore InconsistentNaming
     {
         #region Constants and Fields
 
-        private readonly IAmazonFacade amazonFacade;
-        private readonly IAwsQueueReceiver awsQueueReceiver;
-
-        private readonly ConcurrentDictionary<string, SubscriptionInfo> registeredChannels =
-            new ConcurrentDictionary<string, SubscriptionInfo>(StringComparer.InvariantCultureIgnoreCase);
-
         private readonly ISerializer serializer;
+        private readonly ISubscriberRepository subscriberRepository;
+        private readonly ISubscriptionService subscriptionService;
+        private readonly ITopicRepository topicRepository;
         private readonly string uniqueInstanceId = Guid.NewGuid().ToString("N");
         private bool disposed;
 
@@ -42,15 +39,18 @@ namespace XDMessaging.Transport.Amazon
 
         #region Constructors and Destructors
 
-        internal XDAmazonListener(ISerializer serializer, IAmazonFacade amazonFacade, IAwsQueueReceiver awsQueueReceiver)
+        internal XDAmazonListener(ISerializer serializer, ITopicRepository topicRepository,
+                                  ISubscriberRepository subscriberRepository, ISubscriptionService subscriptionService)
         {
             Validate.That(serializer).IsNotNull();
-            Validate.That(amazonFacade).IsNotNull();
-            Validate.That(awsQueueReceiver).IsNotNull();
+            Validate.That(topicRepository).IsNotNull();
+            Validate.That(subscriberRepository).IsNotNull();
+            Validate.That(subscriptionService).IsNotNull();
 
             this.serializer = serializer;
-            this.amazonFacade = amazonFacade;
-            this.awsQueueReceiver = awsQueueReceiver;
+            this.topicRepository = topicRepository;
+            this.subscriberRepository = subscriberRepository;
+            this.subscriptionService = subscriptionService;
         }
 
         /// <summary>
@@ -94,7 +94,11 @@ namespace XDMessaging.Transport.Amazon
             {
                 return;
             }
-            registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelListening);
+
+            var topic = topicRepository.GetTopic(channelName);
+            var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId);
+
+            subscriptionService.Subscribe(topic, subscriber, OnMessageReceived);
         }
 
 
@@ -106,10 +110,11 @@ namespace XDMessaging.Transport.Amazon
             {
                 return;
             }
-            if (registeredChannels.ContainsKey(channelName))
-            {
-                registeredChannels.AddOrUpdate(channelName, CreateChannelListener, EnsureChannelNotListening);
-            }
+
+            var topic = topicRepository.GetTopic(channelName);
+            var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId);
+
+            subscriptionService.Unsubscribe(topic, subscriber);
         }
 
         #endregion
@@ -117,43 +122,6 @@ namespace XDMessaging.Transport.Amazon
         #endregion
 
         #region Methods
-
-        /// <summary>
-        ///   Initialize method called from XDMessaging.Core before the instance is constructed.
-        ///   This allows external classes to registered dependencies with the IocContainer.
-        /// </summary>
-        /// <param name = "container">The IocContainer instance used to construct this class.</param>
-        private static void Initialize(IocContainer container)
-        {
-            Validate.That(container).IsNotNull();
-
-            container.Register(AmazonAccountSettings.GetInstance);
-        }
-
-        private SubscriptionInfo CreateChannelListener(string channelName)
-        {
-            var topicName = amazonFacade.GetTopicNameFromChannel(channelName);
-            var queueName = amazonFacade.GetQueueNameFromListenerId(channelName, uniqueInstanceId);
-
-            // get topic ARN
-            var topicArn = amazonFacade.CreateOrRetrieveTopic(topicName);
-            // create queue for subscriber
-            string queueArn;
-            var queueUrl = amazonFacade.CreateOrRetrieveQueue(queueName, out queueArn);
-            // enable SNS to publish to the SQS
-            amazonFacade.SetSqsPolicyForSnsPublish(queueUrl, queueArn, topicArn);
-
-            var subscription = new SubscriptionInfo
-                                   {
-                                       ChannelName = channelName,
-                                       QueueUrl = queueUrl,
-                                       QueueArn = queueArn,
-                                       TopicArn = topicArn,
-                                       TopicName = topicName
-                                   };
-            EnsureChannelListening(channelName, subscription);
-            return subscription;
-        }
 
         /// <summary>
         ///   Dispose implementation which ensures the native window is destroyed, and
@@ -176,44 +144,19 @@ namespace XDMessaging.Transport.Amazon
                         }
                     }
                 }
-                foreach (var queueSubscription in registeredChannels.Values)
-                {
-                    EnsureChannelNotListening(queueSubscription.ChannelName, queueSubscription);
-                    amazonFacade.DeleteQueue(queueSubscription.QueueUrl);
-                }
-                registeredChannels.Clear();
+                subscriptionService.Dispose();
             }
-        }
-
-        private SubscriptionInfo EnsureChannelListening(string channelName, SubscriptionInfo subscriptionInfo)
-        {
-            if (!subscriptionInfo.IsSubscribed)
-            {
-                subscriptionInfo.SubscriptionArn = amazonFacade.SubscribeQueueToTopic(subscriptionInfo.QueueArn,
-                                                                                      subscriptionInfo.TopicArn);
-                awsQueueReceiver.Start(subscriptionInfo, OnMessageReceived);
-            }
-            return subscriptionInfo;
-        }
-
-        private SubscriptionInfo EnsureChannelNotListening(string channelName, SubscriptionInfo subscriptionInfo)
-        {
-            if (subscriptionInfo.IsSubscribed)
-            {
-                amazonFacade.UnsubscribeQueueToTopic(subscriptionInfo.SubscriptionArn);
-                subscriptionInfo.SubscriptionArn = null;
-                awsQueueReceiver.Stop(subscriptionInfo);
-            }
-            return subscriptionInfo;
         }
 
         private void OnMessageReceived(Message message)
         {
             var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
             var dataGram = serializer.Deserialize<DataGram>(notification.Message);
-            var regChannel = registeredChannels[dataGram.Channel];
-            if (!disposed && dataGram.IsValid && MessageReceived != null && regChannel != null &&
-                regChannel.IsSubscribed)
+
+            var topic = topicRepository.GetTopic(dataGram.Channel);
+            var subscriber = subscriberRepository.GetSubscriber(dataGram.Channel, uniqueInstanceId);
+            var isSubscribed = subscriptionService.IsSubscribed(topic, subscriber);
+            if (!disposed && dataGram.IsValid && MessageReceived != null && isSubscribed)
             {
                 MessageReceived(this, new XDMessageEventArgs(dataGram));
             }

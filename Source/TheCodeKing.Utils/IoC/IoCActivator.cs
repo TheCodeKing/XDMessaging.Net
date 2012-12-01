@@ -48,16 +48,22 @@ namespace TheCodeKing.Utils.IoC
                 return null;
             }
             var args = GetConstructorParameters(type);
-            return Activator.CreateInstance(type,
-                                            bindingFlags,
-                                            null, args, null);
+            try
+            {
+                return Activator.CreateInstance(type,
+                                                bindingFlags,
+                                                null, args, null);
+            } catch (TargetInvocationException e)
+            {
+                throw new TargetInvocationException(string.Format("Error constructing {0}",type.Name), e);
+            }
         }
 
         #endregion
 
         #region Methods
 
-        private ConstructorInfo FindConstructorWithLeastParameters(Type type)
+        private static ConstructorInfo FindConstructorWithLeastParameters(Type type)
         {
             return type.GetConstructors(bindingFlags)
                 //.Where(o => !o.GetParameters().Any(p => !(p.ParameterType.IsAbstract && p.ParameterType.IsInterface && container.IsRegistered(p.ParameterType))))

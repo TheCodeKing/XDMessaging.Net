@@ -27,7 +27,9 @@ namespace XDMessaging.Transport.IOStream
     ///   should be called to shut down the listener cleanly and free up resources.
     /// </summary>
     [XDListenerHint(XDTransportMode.Compatibility)]
+// ReSharper disable InconsistentNaming
     public sealed class XDIoStreamListener : IXDListener
+// ReSharper restore InconsistentNaming
     {
         #region Constants and Fields
 

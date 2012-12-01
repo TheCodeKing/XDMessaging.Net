@@ -14,9 +14,8 @@ using System;
 using System.Collections.Specialized;
 using NUnit.Framework;
 using TheCodeKing.Utils.IoC;
-using TheCodeKing.Utils.Serialization;
 using XDMessaging.IoC;
-using XDMessaging.Transport.Amazon;
+using XDMessaging.Transport.Amazon.Interfaces;
 
 namespace XDMessaging.Tests
 {
@@ -30,6 +29,13 @@ namespace XDMessaging.Tests
         #endregion
 
         #region Public Methods
+
+        [Test]
+        public void GivenAmazonFacadeImplementationAssertResolveSuccess()
+        {
+            var amazonFacade = instance.Resolve<IAmazonSnsFacade>();
+            Assert.That(amazonFacade, Is.Not.Null);
+        }
 
         [Test]
         public void GivenAssembliesWithXDBroadcastImplementationAssertResolveSuccess()
@@ -47,18 +53,33 @@ namespace XDMessaging.Tests
             Assert.That(broadcast, Is.Not.Null);
         }
 
+
         [Test]
-        public void GivenAmazonFacadeImplementationAssertResolveSuccess()
+        public void GivenIocSingletonRegistrationWhenResolveTypeSameInstanceSuccess()
         {
-           var amazonFacade = instance.Resolve<IAmazonFacade>();
-            Assert.That(amazonFacade, Is.Not.Null);
+            instance.Register(() => new NameValueCollection(0), LifeTime.Singleton);
+
+            var value1 = instance.Resolve<NameValueCollection>();
+            var value2 = instance.Resolve<NameValueCollection>();
+
+            Assert.That(value1, Is.SameAs(value2));
         }
-        
+
+        [Test]
+        public void GivenIocInstanceRegistrationWhenResolveTypeDifferentInstanceSuccess()
+        {
+            instance.Register(() => new NameValueCollection(0), LifeTime.Instance);
+
+            var value1 = instance.Resolve<NameValueCollection>();
+            var value2 = instance.Resolve<NameValueCollection>();
+
+            Assert.That(value1, Is.Not.SameAs(value2));
+        }
 
         [SetUp]
         public void SetUp()
         {
-            instance = SimpleIocContainerBootstrapper.GetInstance();
+            instance = SimpleIocContainerBootstrapper.GetInstance(true);
         }
 
         #endregion

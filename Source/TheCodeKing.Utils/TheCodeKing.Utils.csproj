@@ -44,6 +44,7 @@
   <ItemGroup>
     <Compile Include="Collections\FixedSizeCollection.cs" />
     <Compile Include="Contract\Validate.cs" />
+    <Compile Include="IoC\LifeTime.cs" />
     <Compile Include="IoC\SimpleIocScanner.cs" />
     <Compile Include="IoC\IocInitializeAttribute.cs" />
     <Compile Include="IoC\IocScanner.cs" />

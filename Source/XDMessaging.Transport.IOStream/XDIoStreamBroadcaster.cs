@@ -27,7 +27,9 @@ namespace XDMessaging.Transport.IOStream
     ///   of XDIOStreamListener can be used to receive the messages in another process.
     /// </summary>
     [XDBroadcasterHint(XDTransportMode.Compatibility)]
+// ReSharper disable InconsistentNaming
     public sealed class XDIoStreamBroadcaster : IXDBroadcaster
+// ReSharper restore InconsistentNaming
     {
         #region Constants and Fields
 

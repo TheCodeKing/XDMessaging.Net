@@ -18,6 +18,7 @@ namespace XDMessaging.Transport.WindowsMessaging
     /// <summary>
     ///   The native Win32 APIs used by the library.
     /// </summary>
+    // ReSharper disable InconsistentNaming
     internal static class Native
     {
         #region Constants and Fields
@@ -25,6 +26,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         /// <summary>
         ///   The WM_COPYDATA constant.
         /// </summary>
+
         public const uint WM_COPYDATA = 0x4A;
 
         #endregion
@@ -150,4 +152,5 @@ namespace XDMessaging.Transport.WindowsMessaging
             public IntPtr lpData;
         }
     }
+    // ReSharper restore InconsistentNaming
 }

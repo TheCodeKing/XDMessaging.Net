@@ -49,6 +49,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XDMessaging.Transport.Amazo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TheCodeKing.Utils", "TheCodeKing.Utils\TheCodeKing.Utils.csproj", "{7C0BF688-F17B-481E-B37C-211C6D063946}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Test Service", "..\Demo\C#\Test Service\Test Service.csproj", "{620A459E-E994-4CA6-8891-58EAF6EA9683}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -167,6 +169,21 @@ Global
 		{7C0BF688-F17B-481E-B37C-211C6D063946}.SignedRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
 		{7C0BF688-F17B-481E-B37C-211C6D063946}.SignedRelease|Mixed Platforms.Build.0 = Release|Any CPU
 		{7C0BF688-F17B-481E-B37C-211C6D063946}.SignedRelease|x86.ActiveCfg = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Debug|Mixed Platforms.ActiveCfg = Debug|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Debug|Mixed Platforms.Build.0 = Debug|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Release|Any CPU.Build.0 = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Release|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Release|Mixed Platforms.Build.0 = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.Release|x86.ActiveCfg = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.SignedRelease|Any CPU.ActiveCfg = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.SignedRelease|Any CPU.Build.0 = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.SignedRelease|Mixed Platforms.ActiveCfg = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.SignedRelease|Mixed Platforms.Build.0 = Release|Any CPU
+		{620A459E-E994-4CA6-8891-58EAF6EA9683}.SignedRelease|x86.ActiveCfg = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

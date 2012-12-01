@@ -64,5 +64,31 @@ namespace TheCodeKing.Utils.IoC
         {
             return container.Resolve(typeof(T), name) as T;
         }
+
+        public static void Register<T>(this IocContainer container, LifeTime lifeTime)
+        {
+            container.Register(typeof(T), lifeTime);
+        }
+
+        public static void Register<T, TC>(this IocContainer container, LifeTime lifeTime)
+        {
+            container.Register(typeof(T), typeof(TC), lifeTime);
+        }
+
+        public static void Register<T, TC>(this IocContainer container, string name, LifeTime lifeTime)
+        {
+            container.Register(typeof(T), typeof(TC), name, lifeTime);
+        }
+
+        public static void Register<T>(this IocContainer container, Func<T> factory, LifeTime lifeTime)
+        {
+            var keyType = factory.GetType().GetGenericArguments().Last();
+            container.Register(keyType, () => factory(), lifeTime);
+        }
+        public static void Register<T>(this IocContainer container, Func<T> factory, string name, LifeTime lifeTime)
+        {
+            var keyType = factory.GetType().GetGenericArguments().Last();
+            container.Register(keyType, () => factory(), name, lifeTime);
+        }
     }
 }

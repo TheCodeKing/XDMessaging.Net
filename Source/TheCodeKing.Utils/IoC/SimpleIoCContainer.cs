@@ -78,34 +78,59 @@ namespace TheCodeKing.Utils.IoC
             return IsRegistered(type, defaultName);
         }
 
+        public void Register(Type abstractType, Type concreteType)
+        {
+            Register(abstractType, concreteType, LifeTime.Instance);
+        }
+
+        public void Register(Type abstractType, Type concreteType, string name)
+        {
+            Register(abstractType, concreteType, name, LifeTime.Instance);
+        }
+
         public void Register(Type abstractType, Func<object> factory)
         {
-            Register(abstractType, factory, defaultName);
+            Register(abstractType, factory, LifeTime.Instance);
         }
 
         public void Register(Type abstractType, Func<object> factory, string name)
+        {
+            Register(abstractType, factory, name, LifeTime.Instance);
+        }
+
+        public void Register(Type abstractType, Func<object> factory, LifeTime lifetime)
+        {
+            Register(abstractType, factory, defaultName, lifetime);
+        }
+
+        public void Register(Type abstractType, Func<object> factory, string name, LifeTime lifetime)
         {
             Validate.That(abstractType).IsNotNull();
             Validate.That(factory).IsNotNull();
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Register(key, factory);
+            Register(key, factory, lifetime);
         }
 
-        public void Register(Type abstractType, Type concreteType)
+        public void Register(Type concreteType, LifeTime lifetime)
         {
-            Register(abstractType, concreteType, defaultName);
+            Register(concreteType, concreteType, defaultName, lifetime);
         }
 
-        public void Register(Type abstractType, Type concreteType, string name)
+        public void Register(Type abstractType, Type concreteType, LifeTime lifetime)
+        {
+            Register(abstractType, concreteType, defaultName, lifetime);
+        }
+
+        public void Register(Type abstractType, Type concreteType, string name, LifeTime lifetime)
         {
             Validate.That(abstractType).IsNotNull();
             Validate.That(concreteType).IsNotNull();
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Register(key, () => activator.CreateInstance(concreteType));
+            Register(key, () => activator.CreateInstance(concreteType), lifetime);
         }
 
         public void RegisterInstance(Type abstractType, object instance)
@@ -130,10 +155,12 @@ namespace TheCodeKing.Utils.IoC
 
         public object Resolve(Type type, string name)
         {
-            if (typeof (Func<>).IsAssignableFrom(type) && type.GetType().GetGenericArguments().Length == 1)
+            if (type.IsGenericType && type.GetGenericTypeDefinition() == typeof (Func<>) &&
+                type.GetGenericArguments().Length == 1)
             {
-                var keyType = type.GetType().GetGenericArguments().Last();
-                return map[GetKey(keyType, name)];
+                var keyType = type.GetGenericArguments().Last();
+                Func<object> value = () => Resolve(keyType, name);
+                return value;
             }
             var key = GetKey(type, name);
             if (map.ContainsKey(key))
@@ -152,6 +179,21 @@ namespace TheCodeKing.Utils.IoC
         private static string GetKey(Type type, string name)
         {
             return string.Concat(name, "-", type.FullName);
+        }
+
+        private void Register(string key, Func<object> factory, LifeTime lifeTime)
+        {
+            Func<object> value;
+            if (lifeTime.Equals(LifeTime.Singleton))
+            {
+                var singleton = new Lazy<object>(factory);
+                value = () => singleton.Value;
+            }
+            else
+            {
+                value = factory;
+            }
+            Register(key, value);
         }
 
         private void Register(string key, Func<object> factory)

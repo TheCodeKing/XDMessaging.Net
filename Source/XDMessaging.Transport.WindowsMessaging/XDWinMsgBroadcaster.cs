@@ -21,7 +21,9 @@ namespace XDMessaging.Transport.WindowsMessaging
     ///   using the XDTransportMode.WindowsMessaging implementation. Non-form based application are not supported.
     /// </summary>
     [XDBroadcasterHint(XDTransportMode.HighPerformanceUI)]
+// ReSharper disable InconsistentNaming
     public sealed class XDWinMsgBroadcaster : IXDBroadcaster
+// ReSharper restore InconsistentNaming
     {
         #region Constants and Fields
 

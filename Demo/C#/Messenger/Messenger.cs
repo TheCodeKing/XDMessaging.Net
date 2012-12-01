@@ -16,7 +16,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using XDMessaging;
 using XDMessaging.Messages;
-using XDMessaging.Transport.Amazon;
+using XDMessaging.Transport.Amazon.Entities;
 
 namespace TheCodeKing.Demo
 {

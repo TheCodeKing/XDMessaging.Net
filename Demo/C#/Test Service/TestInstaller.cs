@@ -26,16 +26,20 @@ namespace Test_Service
         {
             InitializeComponent();
 
-            var si = new ServiceInstaller();
-            si.ServiceName = "Test Service";
-            si.DisplayName = "Test Service";
-            si.StartType = ServiceStartMode.Manual;
+            var si = new ServiceInstaller
+                         {
+                             ServiceName = "Test Service",
+                             DisplayName = "Test Service",
+                             StartType = ServiceStartMode.Manual
+                         };
             Installers.Add(si);
 
-            var spi = new ServiceProcessInstaller();
-            spi.Account = ServiceAccount.LocalSystem;
-            spi.Password = null;
-            spi.Username = null;
+            var spi = new ServiceProcessInstaller
+                          {
+                              Account = ServiceAccount.LocalSystem,
+                              Password = null,
+                              Username = null
+                          };
             Installers.Add(spi);
         }
     }

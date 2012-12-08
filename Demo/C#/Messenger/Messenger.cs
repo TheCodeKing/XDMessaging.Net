@@ -232,8 +232,14 @@ namespace TheCodeKing.Demo
                 // send FormattedUserMessage object to all channels
                 var message = new FormattedUserMessage("{0} says {1}", uniqueInstanceName, inputTextBox.Text);
 
-                broadcast.SendToChannel("BinaryChannel1", message);
-                broadcast.SendToChannel("BinaryChannel2", message);
+                if (channel1Check.Checked)
+                {
+                    broadcast.SendToChannel("BinaryChannel1", message);
+                }
+                if (channel2Check.Checked)
+                {
+                    broadcast.SendToChannel("BinaryChannel2", message);
+                }
                 inputTextBox.Text = "";
             }
         }

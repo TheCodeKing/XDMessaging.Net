@@ -23,7 +23,7 @@ namespace TheCodeKing.Utils.IoC
 
         private const string defaultName = "IoCDefault";
         private readonly IocActivator activator;
-        private readonly IDictionary<string, Func<IocContainer, IocActivator, object>> map;
+        private readonly IDictionary<string, Func<IocActivator, object>> map;
 
         private readonly Func<IocContainer, IocActivator> activatorFactory;
         private readonly Func<IocContainer, IocScanner> scannerFactory;
@@ -43,11 +43,11 @@ namespace TheCodeKing.Utils.IoC
             this.scannerFactory = scannerFactory;
             this.scanner = scannerFactory(this);
             this.activator = activatorFactory(this);
-            this.map = new Dictionary<string, Func<IocContainer, IocActivator, object>>(StringComparer.InvariantCultureIgnoreCase);
+            this.map = new Dictionary<string, Func<IocActivator, object>>(StringComparer.InvariantCultureIgnoreCase);
         }
 
         public SimpleIocContainer(Func<IocContainer, IocActivator> activatorFactory,
-                                  Func<IocContainer, IocScanner> scannerFactory, IDictionary<string, Func<IocContainer, IocActivator, object>> map)
+                                  Func<IocContainer, IocScanner> scannerFactory, IDictionary<string, Func<IocActivator, object>> map)
         {
             Validate.That(activatorFactory).IsNotNull();
             Validate.That(scannerFactory).IsNotNull();
@@ -127,7 +127,7 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Register(key, (c,a) => factory(), lifetime);
+            Register(key, a => factory(), lifetime);
         }
 
         public void Register(Type concreteType, LifeTime lifetime)
@@ -147,7 +147,7 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Register(key, (c, a) => a.CreateInstance(concreteType), lifetime);
+            Register(key, a => a.CreateInstance(concreteType), lifetime);
         }
 
         public void UpdateRegistration(Type abstractType, Type concreteType)
@@ -182,7 +182,7 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Update(key, (c, a) => factory(), lifetime);
+            Update(key, a => factory(), lifetime);
         }
 
         public void UpdateRegistration(Type concreteType, LifeTime lifetime)
@@ -202,7 +202,7 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Update(key, (c, a) => a.CreateInstance(concreteType), lifetime);
+            Update(key, a => a.CreateInstance(concreteType), lifetime);
         }
 
         public void RegisterInstance(Type abstractType, object instance)
@@ -217,7 +217,7 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Register(key, (c, a) => instance);
+            Register(key, a => instance);
         }
 
         public object Resolve(Type type)
@@ -237,7 +237,7 @@ namespace TheCodeKing.Utils.IoC
             var key = GetKey(type, name);
             if (map.ContainsKey(key))
             {
-                return map[key](this, activator);
+                return map[key](activator);
             }
             return activator.CreateInstance(type);
         }
@@ -253,22 +253,22 @@ namespace TheCodeKing.Utils.IoC
             return string.Concat(name, "-", type.FullName);
         }
 
-        private void Register(string key, Func<IocContainer, IocActivator, object> factory, LifeTime lifeTime)
+        private void Register(string key, Func<IocActivator, object> factory, LifeTime lifeTime)
         {
-            Func<IocContainer, IocActivator,object> value;
+            Func<IocActivator,object> value;
             if (lifeTime.Equals(LifeTime.Singleton))
             {
-                var singleton = new Lazy<object>(() => factory(this, activator));
-                value = (c, a) => singleton.Value;
+                var singleton = new Lazy<object>(() => factory(activator));
+                value = a => singleton.Value;
             }
             else
             {
-                value = (c, a) => factory(c, a);
+                value = a => factory(a);
             }
             Register(key, value);
         }
 
-        private void Register(string key, Func<IocContainer, IocActivator, object> factory)
+        private void Register(string key, Func<IocActivator, object> factory)
         {
             if (!map.ContainsKey(key))
             {
@@ -276,13 +276,13 @@ namespace TheCodeKing.Utils.IoC
             }
         }
 
-        private void Update(string key, Func<IocContainer, IocActivator, object> factory, LifeTime lifeTime)
+        private void Update(string key, Func<IocActivator, object> factory, LifeTime lifeTime)
         {
-            Func<IocContainer, IocActivator, object> value;
+            Func<IocActivator, object> value;
             if (lifeTime.Equals(LifeTime.Singleton))
             {
-                var singleton = new Lazy<object>(() => factory(this, activator));
-                value = (c,a) => singleton.Value;
+                var singleton = new Lazy<object>(() => factory(activator));
+                value = a => singleton.Value;
             }
             else
             {
@@ -291,7 +291,7 @@ namespace TheCodeKing.Utils.IoC
             Update(key, value);
         }
 
-        private void Update(string key, Func<IocContainer, IocActivator, object> factory)
+        private void Update(string key, Func<IocActivator, object> factory)
         {
             map[key] = factory;
         }
@@ -302,7 +302,7 @@ namespace TheCodeKing.Utils.IoC
         {
             return new SimpleIocContainer(activatorFactory, 
                 scannerFactory,
-                new Dictionary<string, Func<IocContainer, IocActivator, object>>(map, StringComparer.InvariantCultureIgnoreCase));
+                new Dictionary<string, Func<IocActivator, object>>(map, StringComparer.InvariantCultureIgnoreCase));
         }
 
         object ICloneable.Clone()

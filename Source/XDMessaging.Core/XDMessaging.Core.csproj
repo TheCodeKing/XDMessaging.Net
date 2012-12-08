@@ -69,16 +69,23 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IdentityProviders\IIdentityProvider.cs" />
+    <Compile Include="IdentityProviders\MachineNameIdentityProvider.cs" />
+    <Compile Include="Specialized\NetworkRelayBroadcaster.cs" />
+    <Compile Include="Specialized\MulticastBroadcaster.cs" />
+    <Compile Include="Entities\XDRegisterBase.cs">
+      <SubType>Code</SubType>
+    </Compile>
+    <Compile Include="Messages\NetworkRelayMessage.cs" />
+    <Compile Include="Specialized\NetworkRelayListener.cs" />
+    <Compile Include="Specialized\RegisterWithClient.cs" />
+    <Compile Include="IdentityProviders\UniqueIdentityProvider.cs" />
     <Compile Include="XDListenerHintAttribute.cs" />
-    <Compile Include="Fluent\Broadcasters.cs" />
-    <Compile Include="Fluent\XDRegisterations.cs" />
-    <Compile Include="Fluent\Listeners.cs" />
+    <Compile Include="Entities\Broadcasters.cs" />
+    <Compile Include="Entities\Listeners.cs" />
     <Compile Include="Specialized\SpecializedSerializer.cs" />
     <Compile Include="IoC\SimpleIocContainerBootstrapper.cs" />
     <Compile Include="XDBroadcasterHintAttribute.cs" />
-    <Compile Include="Specialized\XDMultiBroadcaster.cs">
-      <SubType>Code</SubType>
-    </Compile>
     <Compile Include="Messages\TypedDataGram.cs" />
     <Compile Include="IXDBroadcaster.cs" />
     <Compile Include="IXDListener.cs" />
@@ -120,6 +127,9 @@
       <Project>{7C0BF688-F17B-481E-B37C-211C6D063946}</Project>
       <Name>TheCodeKing.Utils</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
   </ItemGroup>
   <Import Project="$(MSBuildBinPath)\Microsoft.CSharp.targets" />
   <PropertyGroup>

@@ -14,7 +14,7 @@ using System;
 using System.Windows.Forms;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Fluent;
+using XDMessaging.Entities;
 
 namespace XDMessaging.Transport.WindowsMessaging
 {

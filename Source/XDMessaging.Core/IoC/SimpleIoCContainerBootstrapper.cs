@@ -13,6 +13,7 @@
 using System;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
+using XDMessaging.IdentityProviders;
 using XDMessaging.Specialized;
 
 namespace XDMessaging.IoC
@@ -56,6 +57,7 @@ namespace XDMessaging.IoC
         {
             const string binarySerializer = "Binary";
             const string jsonSerializer = "Json";
+            container.Register<IIdentityProvider, UniqueIdentityProvider>();
             container.Register<ISerializer, JsonSerializer>(jsonSerializer);
             container.Register<ISerializer, BinaryBase64Serializer>(binarySerializer);
             container.Register<ISerializer>(

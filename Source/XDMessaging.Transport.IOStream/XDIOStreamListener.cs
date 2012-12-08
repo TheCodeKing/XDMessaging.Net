@@ -15,7 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Fluent;
+using XDMessaging.Entities;
 using XDMessaging.Messages;
 
 namespace XDMessaging.Transport.IOStream
@@ -197,7 +197,7 @@ namespace XDMessaging.Transport.IOStream
                     if (!watcherList.TryGetValue(channelName, out watcher))
                     {
                         // create a new watcher for the given channel, by default this is not enabled.
-                        string folder = XDIoStreamBroadcaster.GetChannelDirectory(channelName);
+                        string folder = XDIOStreamBroadcaster.GetChannelDirectory(channelName);
                         watcher = new FileSystemWatcher(folder, "*.msg")
                                       {
                                           NotifyFilter = NotifyFilters.CreationTime | NotifyFilters.LastWrite

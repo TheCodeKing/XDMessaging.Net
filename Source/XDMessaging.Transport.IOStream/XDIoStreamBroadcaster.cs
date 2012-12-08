@@ -28,7 +28,7 @@ namespace XDMessaging.Transport.IOStream
     /// </summary>
     [XDBroadcasterHint(XDTransportMode.Compatibility)]
 // ReSharper disable InconsistentNaming
-    public sealed class XDIoStreamBroadcaster : IXDBroadcaster
+    public sealed class XDIOStreamBroadcaster : IXDBroadcaster
 // ReSharper restore InconsistentNaming
     {
         #region Constants and Fields
@@ -62,13 +62,13 @@ namespace XDMessaging.Transport.IOStream
         /// <summary>
         ///   Static constructor gets the path to the temporary directory.
         /// </summary>
-        static XDIoStreamBroadcaster()
+        static XDIOStreamBroadcaster()
         {
             temporaryFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData),
                                            "XDMessagingv4");
         }
 
-        internal XDIoStreamBroadcaster(ISerializer serializer)
+        internal XDIOStreamBroadcaster(ISerializer serializer)
         {
             Validate.That(serializer).IsNotNull();
 

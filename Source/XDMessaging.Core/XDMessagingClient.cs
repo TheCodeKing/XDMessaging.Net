@@ -1,4 +1,4 @@
-﻿using XDMessaging.Fluent;
+﻿using XDMessaging.Entities;
 using XDMessaging.IoC;
 
 namespace XDMessaging
@@ -13,8 +13,8 @@ namespace XDMessaging
         {
             var container = SimpleIocContainerBootstrapper.GetInstance();
 
-            Listeners = new Listeners(container);
-            Broadcasters = new Broadcasters(container);
+            Listeners = new Listeners(this, container);
+            Broadcasters = new Broadcasters(this, container);
         }
     }
 }

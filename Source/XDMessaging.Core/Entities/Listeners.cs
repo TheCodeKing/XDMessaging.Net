@@ -1,10 +1,16 @@
 ﻿using System;
+using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
+using XDMessaging.IdentityProviders;
+using XDMessaging.IoC;
+using XDMessaging.Specialized;
 
-namespace XDMessaging.Fluent
+namespace XDMessaging.Entities
 {
-    public sealed class Listeners : XDRegisterations
+    public sealed class Listeners : XDRegisterBase
     {
+        private readonly XDMessagingClient client;
+
         /// <summary>
         ///   The delegate used for handling cross AppDomain communications.
         /// </summary>
@@ -22,14 +28,27 @@ namespace XDMessaging.Fluent
                         "No concrete IXDListener for mode {0} could be loaded. Install the {0} assembly in the program directory.",
                         transportMode));
             }
+            if (transportMode != XDTransportMode.RemoteNetwork)
+            {
+                var networkListener = Container.Use<IIdentityProvider, MachineNameIdentityProvider>()
+                    .Resolve<IXDListener>(Convert.ToString(XDTransportMode.RemoteNetwork));
+                if (networkListener != null)
+                {
+                    var networkBroadcaster = client.Broadcasters.GetBroadcasterForMode(transportMode, false);
+                    listener = new NetworkRelayListener(networkBroadcaster, listener, networkListener, transportMode);
+                }
+            }
             return listener;
         }
 
         #region Constructors and Destructors
 
-        public Listeners(IocContainer container)
+        public Listeners(XDMessagingClient client, IocContainer container)
             : base(container)
         {
+            Validate.That(client).IsNotNull();
+
+            this.client = client;
         }
 
         #endregion

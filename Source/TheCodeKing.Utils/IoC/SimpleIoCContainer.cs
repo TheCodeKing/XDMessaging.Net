@@ -23,10 +23,10 @@ namespace TheCodeKing.Utils.IoC
 
         private const string defaultName = "IoCDefault";
         private readonly IocActivator activator;
+        private readonly IDictionary<string, Func<IocContainer, IocActivator, object>> map;
 
-        private readonly IDictionary<string, Func<object>> map =
-            new Dictionary<string, Func<object>>(StringComparer.InvariantCultureIgnoreCase);
-
+        private readonly Func<IocContainer, IocActivator> activatorFactory;
+        private readonly Func<IocContainer, IocScanner> scannerFactory;
         private readonly IocScanner scanner;
 
         #endregion
@@ -39,8 +39,25 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(activatorFactory).IsNotNull();
             Validate.That(scannerFactory).IsNotNull();
 
-            scanner = scannerFactory(this);
-            activator = activatorFactory(this);
+            this.activatorFactory = activatorFactory;
+            this.scannerFactory = scannerFactory;
+            this.scanner = scannerFactory(this);
+            this.activator = activatorFactory(this);
+            this.map = new Dictionary<string, Func<IocContainer, IocActivator, object>>(StringComparer.InvariantCultureIgnoreCase);
+        }
+
+        public SimpleIocContainer(Func<IocContainer, IocActivator> activatorFactory,
+                                  Func<IocContainer, IocScanner> scannerFactory, IDictionary<string, Func<IocContainer, IocActivator, object>> map)
+        {
+            Validate.That(activatorFactory).IsNotNull();
+            Validate.That(scannerFactory).IsNotNull();
+            Validate.That(map).IsNotNull();
+
+            this.activatorFactory = activatorFactory;
+            this.scannerFactory = scannerFactory;
+            this.scanner = scannerFactory(this);
+            this.activator = activatorFactory(this);
+            this.map = map;
         }
 
         #endregion
@@ -110,7 +127,7 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Register(key, factory, lifetime);
+            Register(key, (c,a) => factory(), lifetime);
         }
 
         public void Register(Type concreteType, LifeTime lifetime)
@@ -130,7 +147,62 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Register(key, () => activator.CreateInstance(concreteType), lifetime);
+            Register(key, (c, a) => a.CreateInstance(concreteType), lifetime);
+        }
+
+        public void UpdateRegistration(Type abstractType, Type concreteType)
+        {
+            UpdateRegistration(abstractType, concreteType, LifeTime.Instance);
+        }
+
+        public void UpdateRegistration(Type abstractType, Type concreteType, string name)
+        {
+            UpdateRegistration(abstractType, concreteType, name, LifeTime.Instance);
+        }
+
+        public void UpdateRegistration(Type abstractType, Func<object> factory)
+        {
+            UpdateRegistration(abstractType, factory, LifeTime.Instance);
+        }
+
+        public void UpdateRegistration(Type abstractType, Func<object> factory, string name)
+        {
+            UpdateRegistration(abstractType, factory, name, LifeTime.Instance);
+        }
+
+        public void UpdateRegistration(Type abstractType, Func<object> factory, LifeTime lifetime)
+        {
+            UpdateRegistration(abstractType, factory, defaultName, lifetime);
+        }
+
+        public void UpdateRegistration(Type abstractType, Func<object> factory, string name, LifeTime lifetime)
+        {
+            Validate.That(abstractType).IsNotNull();
+            Validate.That(factory).IsNotNull();
+            Validate.That(name).IsNotNullOrEmpty();
+
+            var key = GetKey(abstractType, name);
+            Update(key, (c, a) => factory(), lifetime);
+        }
+
+        public void UpdateRegistration(Type concreteType, LifeTime lifetime)
+        {
+            UpdateRegistration(concreteType, concreteType, defaultName, lifetime);
+        }
+
+        public void UpdateRegistration(Type abstractType, Type concreteType, LifeTime lifetime)
+        {
+            UpdateRegistration(abstractType, concreteType, defaultName, lifetime);
+        }
+
+        public void UpdateRegistration(Type abstractType, Type concreteType, string name, LifeTime lifetime)
+        {
+            Validate.That(abstractType).IsNotNull();
+            Validate.That(concreteType).IsNotNull();
+            Validate.That(name).IsNotNullOrEmpty();
+
+            var key = GetKey(abstractType, name);
+            Update(key, (c, a) => a.CreateInstance(concreteType), lifetime);
         }
 
         public void RegisterInstance(Type abstractType, object instance)
@@ -145,7 +217,7 @@ namespace TheCodeKing.Utils.IoC
             Validate.That(name).IsNotNullOrEmpty();
 
             var key = GetKey(abstractType, name);
-            Register(key, () => instance);
+            Register(key, (c, a) => instance);
         }
 
         public object Resolve(Type type)
@@ -159,13 +231,13 @@ namespace TheCodeKing.Utils.IoC
                 type.GetGenericArguments().Length == 1)
             {
                 var keyType = type.GetGenericArguments().Last();
-                Func<object> value = () => Resolve(keyType, name);
+                Func<IocActivator,object> value = a => Resolve(keyType, name);
                 return value;
             }
             var key = GetKey(type, name);
             if (map.ContainsKey(key))
             {
-                return map[key]();
+                return map[key](this, activator);
             }
             return activator.CreateInstance(type);
         }
@@ -181,22 +253,22 @@ namespace TheCodeKing.Utils.IoC
             return string.Concat(name, "-", type.FullName);
         }
 
-        private void Register(string key, Func<object> factory, LifeTime lifeTime)
+        private void Register(string key, Func<IocContainer, IocActivator, object> factory, LifeTime lifeTime)
         {
-            Func<object> value;
+            Func<IocContainer, IocActivator,object> value;
             if (lifeTime.Equals(LifeTime.Singleton))
             {
-                var singleton = new Lazy<object>(factory);
-                value = () => singleton.Value;
+                var singleton = new Lazy<object>(() => factory(this, activator));
+                value = (c, a) => singleton.Value;
             }
             else
             {
-                value = factory;
+                value = (c, a) => factory(c, a);
             }
             Register(key, value);
         }
 
-        private void Register(string key, Func<object> factory)
+        private void Register(string key, Func<IocContainer, IocActivator, object> factory)
         {
             if (!map.ContainsKey(key))
             {
@@ -204,6 +276,38 @@ namespace TheCodeKing.Utils.IoC
             }
         }
 
+        private void Update(string key, Func<IocContainer, IocActivator, object> factory, LifeTime lifeTime)
+        {
+            Func<IocContainer, IocActivator, object> value;
+            if (lifeTime.Equals(LifeTime.Singleton))
+            {
+                var singleton = new Lazy<object>(() => factory(this, activator));
+                value = (c,a) => singleton.Value;
+            }
+            else
+            {
+                value = factory;
+            }
+            Update(key, value);
+        }
+
+        private void Update(string key, Func<IocContainer, IocActivator, object> factory)
+        {
+            map[key] = factory;
+        }
+
         #endregion
+
+        public IocContainer Clone()
+        {
+            return new SimpleIocContainer(activatorFactory, 
+                scannerFactory,
+                new Dictionary<string, Func<IocContainer, IocActivator, object>>(map, StringComparer.InvariantCultureIgnoreCase));
+        }
+
+        object ICloneable.Clone()
+        {
+            return this.Clone();
+        }
     }
 }

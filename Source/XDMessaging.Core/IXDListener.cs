@@ -11,7 +11,7 @@
 *=============================================================================
 */
 using System;
-using XDMessaging.Fluent;
+using XDMessaging.Entities;
 
 namespace XDMessaging
 {

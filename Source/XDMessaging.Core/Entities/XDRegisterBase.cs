@@ -13,9 +13,9 @@
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 
-namespace XDMessaging.Fluent
+namespace XDMessaging.Entities
 {
-    public abstract class XDRegisterations
+    public abstract class XDRegisterBase
     {
         #region Constants and Fields
 
@@ -25,7 +25,7 @@ namespace XDMessaging.Fluent
 
         #region Constructors and Destructors
 
-        protected XDRegisterations(IocContainer container)
+        protected XDRegisterBase(IocContainer container)
         {
             Validate.That(container).IsNotNull();
 

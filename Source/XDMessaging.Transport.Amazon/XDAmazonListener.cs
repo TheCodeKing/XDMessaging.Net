@@ -14,7 +14,8 @@ using System;
 using Amazon.SQS.Model;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Fluent;
+using XDMessaging.Entities;
+using XDMessaging.IdentityProviders;
 using XDMessaging.Messages;
 using XDMessaging.Transport.Amazon.Entities;
 using XDMessaging.Transport.Amazon.Interfaces;
@@ -39,14 +40,16 @@ namespace XDMessaging.Transport.Amazon
 
         #region Constructors and Destructors
 
-        internal XDAmazonListener(ISerializer serializer, ITopicRepository topicRepository,
+        internal XDAmazonListener(IIdentityProvider identityProvider, ISerializer serializer, ITopicRepository topicRepository,
                                   ISubscriberRepository subscriberRepository, ISubscriptionService subscriptionService)
         {
+            Validate.That(identityProvider).IsNotNull();
             Validate.That(serializer).IsNotNull();
             Validate.That(topicRepository).IsNotNull();
             Validate.That(subscriberRepository).IsNotNull();
             Validate.That(subscriptionService).IsNotNull();
 
+            this.uniqueInstanceId = identityProvider.GetUniqueId();
             this.serializer = serializer;
             this.topicRepository = topicRepository;
             this.subscriberRepository = subscriberRepository;

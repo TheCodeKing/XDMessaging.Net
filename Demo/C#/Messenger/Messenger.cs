@@ -173,14 +173,7 @@ namespace TheCodeKing.Demo
             }
 
             // create an instance of IXDBroadcast using the given mode
-            if (propagateCheck.Checked)
-            {
-                broadcast = client.Broadcasters.GetBroadcasterForMode(mode);
-            }
-            else
-            {
-                broadcast = client.Broadcasters.GetBroadcasterForMode(mode);
-            }
+            broadcast = client.Broadcasters.GetBroadcasterForMode(mode, propagateCheck.Checked);
         }
 
         /// <summary>

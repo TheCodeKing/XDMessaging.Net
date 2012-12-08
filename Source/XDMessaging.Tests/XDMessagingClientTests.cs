@@ -1,4 +1,7 @@
 ﻿using NUnit.Framework;
+using XDMessaging.Transport.Amazon.Entities;
+using TheCodeKing.Utils.IoC;
+using XDMessaging.Transport.Amazon.Interfaces;
 
 namespace XDMessaging.Tests
 {
@@ -8,16 +11,19 @@ namespace XDMessaging.Tests
         #region Public Methods
 
         [Test]
-        public void GivenCompatibilityListenerImplThenShouldResolveSuccess()
+        public void GivenAmazonSettingsThenShouldResolveSuccess()
         {
             // arrange
-            var client = new XDMessagingClient();
+            var client = new XDMessagingClient().WithAmazonSettings("xx", "xx");
 
             // act
-            var instance = client.Listeners.GetListenerForMode(XDTransportMode.Compatibility);
+            var accessKey = AmazonAccountSettings.GetInstance().AccessKey;
+            var accessKey2 = client.Broadcasters.Container.Resolve<AmazonAccountSettings>().AccessKey;
+
 
             // assert
-            Assert.That(instance, Is.Not.Null);
+            Assert.That(accessKey, Is.EqualTo("xx"));
+            Assert.That(accessKey2, Is.EqualTo("xx"));
         }
 
         [Test]
@@ -41,19 +47,6 @@ namespace XDMessaging.Tests
 
             // act
             var instance = client.Broadcasters.GetBroadcasterForMode(XDTransportMode.HighPerformanceUI);
-
-            // assert
-            Assert.That(instance, Is.Not.Null);
-        }
-
-        [Test]
-        public void GivenHighPerformanceUiModeListenerImplThenShouldResolveInstanceSuccess()
-        {
-            // arrange
-            var client = new XDMessagingClient();
-
-            // act
-            var instance = client.Listeners.GetListenerForMode(XDTransportMode.HighPerformanceUI);
 
             // assert
             Assert.That(instance, Is.Not.Null);

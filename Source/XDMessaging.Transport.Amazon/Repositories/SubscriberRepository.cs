@@ -12,6 +12,7 @@
 */
 using System;
 using System.Collections.Generic;
+using System.Security.Cryptography;
 using System.Text;
 using System.Text.RegularExpressions;
 using TheCodeKing.Utils.Contract;
@@ -25,7 +26,7 @@ namespace XDMessaging.Transport.Amazon.Repositories
         #region Constants and Fields
 
         private readonly IDictionary<string, Subscriber> subscribers = new Dictionary<string, Subscriber>(StringComparer.InvariantCultureIgnoreCase);
-        private static readonly Regex channelValidatorRegex = new Regex("^[^0-9a-zA-Z-_]*$", RegexOptions.Compiled);
+        private static readonly Regex channelValidatorRegex = new Regex("[^0-9a-zA-Z-_]", RegexOptions.Compiled);
         private readonly AmazonAccountSettings amazonAccountSettings;
         private readonly IAmazonSqsFacade amazonSqsFacade;
 
@@ -92,8 +93,7 @@ namespace XDMessaging.Transport.Amazon.Repositories
             var uniqueQueue = String.Concat(amazonAccountSettings.UniqueAppKey, "-", subscriber, "-", channelName);
             if (DoesNameRequireEscape(uniqueQueue))
             {
-                var encodeAsBytes = Encoding.UTF8.GetBytes(amazonAccountSettings.UniqueAppKey + uniqueQueue);
-                uniqueQueue = Convert.ToBase64String(encodeAsBytes).Replace("+", "_").Replace("/", "-").TrimEnd('=');
+                uniqueQueue = CalculateMd5Hash(uniqueQueue);
             }
             if (uniqueQueue.Length > 80)
             {
@@ -104,6 +104,22 @@ namespace XDMessaging.Transport.Amazon.Repositories
                     "channelName");
             }
             return uniqueQueue.ToLowerInvariant();
+        }
+
+        public string CalculateMd5Hash(string input)
+        {
+            // step 1, calculate MD5 hash from input
+            var md5 = MD5.Create();
+            byte[] inputBytes = Encoding.ASCII.GetBytes(input);
+            byte[] hash = md5.ComputeHash(inputBytes);
+
+            // step 2, convert byte array to hex string
+            var sb = new StringBuilder();
+            for (var i = 0; i < hash.Length; i++)
+            {
+                sb.Append(hash[i].ToString("X2"));
+            }
+            return sb.ToString();
         }
 
         #endregion

@@ -14,7 +14,7 @@ using System;
 
 namespace TheCodeKing.Utils.IoC
 {
-    public interface IocContainer
+    public interface IocContainer : ICloneable 
     {
         #region Public Methods
 
@@ -39,6 +39,19 @@ namespace TheCodeKing.Utils.IoC
         void Register(Type abstractType, Type concreteType, string name, LifeTime lifetime);
         void Register(Type abstractType, Func<object> factory, LifeTime lifetime);
         void Register(Type abstractType, Func<object> factory, string name, LifeTime lifetime);
+
+        void UpdateRegistration(Type abstractType, Type concreteType);
+        void UpdateRegistration(Type abstractType, Type concreteType, string name);
+        void UpdateRegistration(Type abstractType, Func<object> factory);
+        void UpdateRegistration(Type abstractType, Func<object> factory, string name);
+
+        void UpdateRegistration(Type concreteType, LifeTime lifetime);
+        void UpdateRegistration(Type abstractType, Type concreteType, LifeTime lifetime);
+        void UpdateRegistration(Type abstractType, Type concreteType, string name, LifeTime lifetime);
+        void UpdateRegistration(Type abstractType, Func<object> factory, LifeTime lifetime);
+        void UpdateRegistration(Type abstractType, Func<object> factory, string name, LifeTime lifetime);
+
+        new IocContainer Clone();
 
         #endregion
     }

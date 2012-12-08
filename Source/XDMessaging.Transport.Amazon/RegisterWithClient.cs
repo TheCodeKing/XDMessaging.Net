@@ -11,7 +11,7 @@
 *=============================================================================
 */
 using TheCodeKing.Utils.IoC;
-using XDMessaging.Fluent;
+using XDMessaging.Entities;
 using XDMessaging.Transport.Amazon;
 using XDMessaging.Transport.Amazon.Entities;
 

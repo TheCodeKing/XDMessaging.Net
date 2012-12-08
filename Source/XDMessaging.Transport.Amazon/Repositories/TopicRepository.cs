@@ -26,7 +26,7 @@ namespace XDMessaging.Transport.Amazon.Repositories
 
         private readonly IDictionary<string, Topic> topics =
             new Dictionary<string, Topic>(StringComparer.InvariantCultureIgnoreCase);
-        private static readonly Regex channelValidatorRegex = new Regex("^[^0-9a-zA-Z-_]*$", RegexOptions.Compiled);
+        private static readonly Regex channelValidatorRegex = new Regex("[^0-9a-zA-Z-_]", RegexOptions.Compiled);
         private readonly AmazonAccountSettings amazonAccountSettings;
         private readonly IAmazonSnsFacade amazonSnsFacade;
 

@@ -55,6 +55,7 @@
     <Compile Include="Entities\AmazonAccountSettings.cs" />
     <Compile Include="Facades\AmazonSqsFacade.cs" />
     <Compile Include="Entities\AmazonSqsNotification.cs" />
+    <Compile Include="Interfaces\IPublisherService.cs" />
     <Compile Include="IocConfiguration.cs" />
     <Compile Include="QueuePoller.cs" />
     <Compile Include="Facades\AmazonSnsFacade.cs" />
@@ -65,6 +66,7 @@
     <Compile Include="Interfaces\ISubscriberRepository.cs" />
     <Compile Include="Interfaces\ISubscriptionService.cs" />
     <Compile Include="Interfaces\ITopicRepository.cs" />
+    <Compile Include="Repositories\PublisherService.cs" />
     <Compile Include="Repositories\SubscriptionService.cs" />
     <Compile Include="RegisterWithClient.cs" />
     <Compile Include="Entities\Subscriber.cs" />

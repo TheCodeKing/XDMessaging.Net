@@ -12,6 +12,7 @@
 */
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 
@@ -29,11 +30,11 @@ namespace TheCodeKing.Utils.Contract
 
         #region Public Methods
 
-        void AssertIllegalArgument(IEvaluator<T> evaluator, string defaultMessage=null);
+        void AssertIllegalArgument(string defaultMessage=null);
 
-        void AssertNullArgument(IEvaluator<T> evaluator, string defaultMessage=null);
+        void AssertNullArgument(string defaultMessage=null);
 
-        void ArgumentOutOfRange(IEvaluator<T> evaluator, string defaultMessage=null);
+        void ArgumentOutOfRange(string defaultMessage=null);
 
         #endregion
     }
@@ -87,31 +88,31 @@ namespace TheCodeKing.Utils.Contract
 
         #region IEvaluator<T>
 
-        public void ArgumentOutOfRange(IEvaluator<T> evaluator, string defaultMessage)
+        public void ArgumentOutOfRange(string defaultMessage)
         {
-            if (string.IsNullOrEmpty(evaluator.Message) || !string.IsNullOrEmpty(defaultMessage))
+            if (string.IsNullOrEmpty(Message) || !string.IsNullOrEmpty(defaultMessage))
             {
-                throw new ArgumentOutOfRangeException(evaluator.Param, evaluator.Message ?? defaultMessage);
+                throw new ArgumentOutOfRangeException(Param, Message ?? defaultMessage);
             }
-            throw new ArgumentOutOfRangeException(evaluator.Param);
+            throw new ArgumentOutOfRangeException(Param);
         }
 
-        public void AssertIllegalArgument(IEvaluator<T> evaluator, string defaultMessage = null)
+        public void AssertIllegalArgument(string defaultMessage = null)
         {
-            if (string.IsNullOrEmpty(evaluator.Message) || !string.IsNullOrEmpty(defaultMessage))
+            if (string.IsNullOrEmpty(Message) || !string.IsNullOrEmpty(defaultMessage))
             {
-                throw new ArgumentException(evaluator.Message ?? defaultMessage, evaluator.Param);
+                throw new ArgumentException(Message ?? defaultMessage, Param);
             }
-            throw new ArgumentException(evaluator.Param);
+            throw new ArgumentException(Param);
         }
 
-        public void AssertNullArgument(IEvaluator<T> evaluator, string defaultMessage = "cannot be null")
+        public void AssertNullArgument(string defaultMessage = "cannot be null")
         {
-            if (string.IsNullOrEmpty(evaluator.Message) || !string.IsNullOrEmpty(defaultMessage))
+            if (string.IsNullOrEmpty(Message) || !string.IsNullOrEmpty(defaultMessage))
             {
-                throw new ArgumentNullException(evaluator.Param, evaluator.Message ?? defaultMessage);
+                throw new ArgumentNullException(Param, Message ?? defaultMessage);
             }
-            throw new ArgumentNullException(evaluator.Param);
+            throw new ArgumentNullException(Param);
         }
 
         #endregion
@@ -158,11 +159,11 @@ namespace TheCodeKing.Utils.Contract
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator);
+                evaluator.AssertNullArgument();
             }
             if (evaluator.Value.IsAbsoluteUri)
             {
-                evaluator.AssertIllegalArgument(evaluator, "must be an AbsoluteUri");
+                evaluator.AssertIllegalArgument("must be an AbsoluteUri");
             }
         }
 
@@ -170,7 +171,7 @@ namespace TheCodeKing.Utils.Contract
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator);
+                evaluator.AssertNullArgument();
             }
         }
 
@@ -178,7 +179,7 @@ namespace TheCodeKing.Utils.Contract
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator);
+                evaluator.AssertNullArgument();
             }
         }
 
@@ -186,11 +187,11 @@ namespace TheCodeKing.Utils.Contract
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator, "string cannot be null");
+                evaluator.AssertNullArgument("string cannot be null");
             }
             if (evaluator.Value == string.Empty)
             {
-                evaluator.AssertIllegalArgument(evaluator, "string cannot be empty");
+                evaluator.AssertIllegalArgument("string cannot be empty");
             }
         }
 
@@ -198,11 +199,11 @@ namespace TheCodeKing.Utils.Contract
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator);
+                evaluator.AssertNullArgument();
             }
-            if (evaluator.Value.Count > count)
+            if (evaluator.Value.Count >= count)
             {
-                evaluator.ArgumentOutOfRange(evaluator, string.Format("expected less than {0} items", count));
+                evaluator.ArgumentOutOfRange(string.Format("expected less than {0} items", count));
             }
         }
 
@@ -210,23 +211,11 @@ namespace TheCodeKing.Utils.Contract
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator);
+                evaluator.AssertNullArgument();
             }
-            if (evaluator.Value.Count < count)
+            if (evaluator.Value.Count >= count)
             {
-                evaluator.ArgumentOutOfRange(evaluator, string.Format("expected less than {0} items", count));
-            }
-        }
-
-        public static void ContainsLessThan(this IEvaluator<IEnumerable> evaluator, int count)
-        {
-            if (evaluator.Value == null)
-            {
-                evaluator.AssertNullArgument(evaluator);
-            }
-            if (evaluator.Value.Cast<object>().Count() < count)
-            {
-                evaluator.ArgumentOutOfRange(evaluator, string.Format("expected less than {0} items", count));
+                evaluator.ArgumentOutOfRange(string.Format("expected less than {0} items", count));
             }
         }
 
@@ -234,11 +223,11 @@ namespace TheCodeKing.Utils.Contract
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator);
+                evaluator.AssertNullArgument();
             }
-            if (evaluator.Value.Count > count)
+            if (evaluator.Value.Count <= count)
             {
-                evaluator.ArgumentOutOfRange(evaluator, string.Format("expected greater than {0} items", count));
+                evaluator.ArgumentOutOfRange(string.Format("expected greater than {0} items", count));
             }
         }
 
@@ -246,23 +235,132 @@ namespace TheCodeKing.Utils.Contract
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator);
+                evaluator.AssertNullArgument();
             }
-            if (evaluator.Value.Count > count)
+            if (evaluator.Value.Count <= count)
             {
-                evaluator.ArgumentOutOfRange(evaluator, string.Format("expected greater than {0} items", count));
+                evaluator.ArgumentOutOfRange(string.Format("expected greater than {0} items", count));
             }
         }
 
-        public static void ContainsGreaterThan(this IEvaluator<IEnumerable> evaluator, int count)
+        public static void ContainsGreaterThan(this IEvaluator<Array> evaluator, uint size)
         {
             if (evaluator.Value == null)
             {
-                evaluator.AssertNullArgument(evaluator);
+                evaluator.AssertNullArgument();
             }
-            if (evaluator.Value.Cast<object>().Count()>count)
+            if (evaluator.Value.Length <= size)
             {
-                evaluator.ArgumentOutOfRange(evaluator, string.Format("expected greater than {0} items", count));
+                evaluator.ArgumentOutOfRange();
+            }
+        }
+
+        public static void ContainsLessThan(this IEvaluator<Array> evaluator, uint size)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Length >= size)
+            {
+                evaluator.ArgumentOutOfRange();
+            }
+        }
+
+
+        public static void ContainsGreaterThan<TE>(this IEvaluator<ICollection<TE>> evaluator, int count)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Count <= count)
+            {
+                evaluator.ArgumentOutOfRange(string.Format("expected greater than {0} items", count));
+            }
+        }
+
+        public static void ContainsGreaterThan<TE>(this IEvaluator<IList<TE>> evaluator, int count)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Count <= count)
+            {
+                evaluator.ArgumentOutOfRange(string.Format("expected greater than {0} items", count));
+            }
+        }
+
+        public static void ContainsGreaterThan<TE>(this IEvaluator<IEnumerable<TE>> evaluator, int count)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Count() <= count)
+            {
+                evaluator.ArgumentOutOfRange(string.Format("expected greater than {0} items", count));
+            }
+        }
+
+        public static void ContainsGreaterThan<TE>(this IEvaluator<TE[]> evaluator, uint size)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Length <= size)
+            {
+                evaluator.ArgumentOutOfRange();
+            }
+        }
+
+        public static void ContainsLessThan<TE>(this IEvaluator<ICollection<TE>> evaluator, int count)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Count >= count)
+            {
+                evaluator.ArgumentOutOfRange(string.Format("expected less than {0} items", count));
+            }
+        }
+
+        public static void ContainsLessThan<TE>(this IEvaluator<IList<TE>> evaluator, int count)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Count >= count)
+            {
+                evaluator.ArgumentOutOfRange(string.Format("expected less than {0} items", count));
+            }
+        }
+
+        public static void ContainsLessThan<TE>(this IEvaluator<IEnumerable<TE>> evaluator, int count)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Count() >= count)
+            {
+                evaluator.ArgumentOutOfRange(string.Format("expected less than {0} items", count));
+            }
+        }
+
+        public static void ContainsLessThan<TE>(this IEvaluator<TE[]> evaluator, uint size)
+        {
+            if (evaluator.Value == null)
+            {
+                evaluator.AssertNullArgument();
+            }
+            if (evaluator.Value.Length >= size)
+            {
+                evaluator.ArgumentOutOfRange();
             }
         }
         

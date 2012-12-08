@@ -10,20 +10,14 @@
 *
 *=============================================================================
 */
-using System;
-using Amazon.SQS.Model;
-using XDMessaging.Transport.Amazon.Entities;
 
-namespace XDMessaging.Transport.Amazon.Interfaces
+namespace XDMessaging.IdentityProviders
 {
-    internal interface ISubscriptionService : IDisposable
+    public interface IIdentityProvider
     {
         #region Public Methods
 
-        bool IsSubscribed(Topic topic, Subscriber subscriber);
-        SubscriptionInfo Subscribe(Topic topic, Subscriber subscriber, Action<Message> onMessageReceived);
-
-        SubscriptionInfo Unsubscribe(Topic topic, Subscriber subscriber);
+        string GetUniqueId();
 
         #endregion
     }

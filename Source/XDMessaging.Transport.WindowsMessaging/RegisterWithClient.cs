@@ -1,5 +1,5 @@
 ﻿using TheCodeKing.Utils.IoC;
-using XDMessaging.Fluent;
+using XDMessaging.Entities;
 using XDMessaging.Transport.WindowsMessaging;
 
 // ReSharper disable CheckNamespace

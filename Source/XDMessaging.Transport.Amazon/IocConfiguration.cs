@@ -33,7 +33,7 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(container).IsNotNull();
 
-            container.Register(AmazonAccountSettings.GetInstance);
+            container.Register(AmazonAccountSettings.GetInstance, LifeTime.Singleton);
             container.Register<ITopicRepository, TopicRepository>(LifeTime.Singleton);
             container.Register<ISubscriberRepository, SubscriberRepository>(LifeTime.Singleton);
             container.Register<IQueuePoller, QueuePoller>(LifeTime.Singleton);

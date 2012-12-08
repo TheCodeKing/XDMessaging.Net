@@ -1,5 +1,5 @@
 ﻿using TheCodeKing.Utils.IoC;
-using XDMessaging.Fluent;
+using XDMessaging.Entities;
 using XDMessaging.Transport.IOStream;
 
 namespace XDMessaging
@@ -10,7 +10,7 @@ namespace XDMessaging
 
         public static IXDBroadcaster GetIoStreamBroadcaster(this Broadcasters client)
         {
-            return client.Container.Resolve<XDIoStreamBroadcaster>();
+            return client.Container.Resolve<XDIOStreamBroadcaster>();
         }
 
         public static IXDListener GetIoStreamListener(this Listeners client)

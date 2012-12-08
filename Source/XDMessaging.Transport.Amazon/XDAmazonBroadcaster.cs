@@ -26,22 +26,22 @@ namespace XDMessaging.Transport.Amazon
         #region Constants and Fields
 
         private readonly ISerializer serializer;
-        private readonly ISubscriptionService subscriptionService;
+        private readonly IPublisherService publisherService;
         private readonly TopicRepository topicRepository;
 
         #endregion
 
         #region Constructors and Destructors
 
-        internal XDAmazonBroadcaster(ISerializer serializer, ISubscriptionService subscriptionService,
+        internal XDAmazonBroadcaster(ISerializer serializer, IPublisherService publisherService,
                                      TopicRepository topicRepository)
         {
             Validate.That(serializer).IsNotNull();
-            Validate.That(subscriptionService).IsNotNull();
+            Validate.That(publisherService).IsNotNull();
             Validate.That(topicRepository).IsNotNull();
 
             this.serializer = serializer;
-            this.subscriptionService = subscriptionService;
+            this.publisherService = publisherService;
             this.topicRepository = topicRepository;
         }
 
@@ -60,7 +60,7 @@ namespace XDMessaging.Transport.Amazon
             var dataGram = new DataGram(channel, message);
             var data = serializer.Serialize(dataGram);
 
-            subscriptionService.Publish(topic, dataGram.Channel, data);
+            publisherService.Publish(topic, dataGram.Channel, data);
         }
 
         public void SendToChannel(string channel, object message)

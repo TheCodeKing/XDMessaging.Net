@@ -5,7 +5,7 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Build", "Build", "{7A3C52DD
 	ProjectSection(SolutionItems) = preProject
 		CommonAssemblyInfo.cs = CommonAssemblyInfo.cs
 		..\pack-nuget.bat = ..\pack-nuget.bat
-		XDMessaging.Core\XDMessaging.Core.csproj.nuspec = XDMessaging.Core\XDMessaging.Core.csproj.nuspec
+		XDMessaging.Core\XDMessaging.Core.nuspec = XDMessaging.Core\XDMessaging.Core.nuspec
 	EndProjectSection
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "XDMessaging.Core", "XDMessaging.Core\XDMessaging.Core.csproj", "{EFAAE69D-F65D-4247-81AA-440E18C3336F}"

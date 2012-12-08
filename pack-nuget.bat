@@ -1,4 +1,4 @@
 copy LICENSE bin
 pushd source 
-..\..\..\..\NuGet\NuGet.exe pack XDMessaging.csproj -Prop Configuration=SignedRelease -o ..\bin
+..\..\..\..\NuGet\NuGet.exe pack XDMessaging.Core\XDMessaging.Core.csproj -Prop Configuration=SignedRelease -o ..\bin
 popd

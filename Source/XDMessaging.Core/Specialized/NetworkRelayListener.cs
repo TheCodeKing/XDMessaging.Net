@@ -11,6 +11,7 @@
 *=============================================================================
 */
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 using TheCodeKing.Utils.Contract;
 using XDMessaging.Entities;
@@ -25,6 +26,9 @@ namespace XDMessaging.Specialized
     internal sealed class NetworkRelayListener : IXDListener
     {
         #region Constants and Fields
+
+        private const int networkReTryTimeoutMilliSeconds = 10000;
+        private bool disposed;
 
         /// <summary>
         /// 	The factory instance used to create broadcast instances in order to re-send network messages natively.
@@ -61,13 +65,33 @@ namespace XDMessaging.Specialized
             this.propagateListener = propagateListener;
             this.nativeListener = nativeListener;
             this.nativeListener.MessageReceived += OnMessageReceived;
+            RegisterNetworkListener(mode);
+        }
+
+        private void RegisterNetworkListener(XDTransportMode mode)
+        {
+            if (disposed)
+            {
+                return;
+            }
+
             // listen on the network channel for this mode
             Task.Factory.StartNew(() =>
                                       {
                                           this.propagateListener.RegisterChannel(
                                               NetworkRelayBroadcaster.GetNetworkListenerName(mode));
                                           this.propagateListener.MessageReceived += OnNetworkMessageReceived;
-                                      });
+                                      }).ContinueWith(t =>
+                                                          {
+                                                              var e = t.Exception;
+                                                              if (!disposed)
+                                                              {
+                                                                  Thread.Sleep(networkReTryTimeoutMilliSeconds);
+                                                                  // retry attach listener
+                                                                  RegisterNetworkListener(mode);
+                                                              }
+         
+                                                          }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         #endregion
@@ -80,20 +104,45 @@ namespace XDMessaging.Specialized
 
         #region Implemented Interfaces
 
+        /// <summary>
+        ///   Deconstructor, cleans unmanaged resources only
+        /// </summary>
+        ~NetworkRelayListener()
+        {
+            Dispose(false);
+        }
+
         #region IDisposable
+
+        /// <summary>
+        ///   Dispose implementation, which ensures the native window is destroyed
+        /// </summary>
+        public void Dispose()
+        {
+            Dispose(true);
+            GC.SuppressFinalize(this);
+        }
+
 
         /// <summary>
         /// 	Implementation of IDisposable used to clean up the listener instance.
         /// </summary>
-        public void Dispose()
+        public void Dispose(bool disposeManaged)
         {
-            if (nativeListener != null)
+            if (!disposed)
             {
-                nativeListener.Dispose();
-            }
-            if (propagateListener != null)
-            {
-                propagateListener.Dispose();
+                disposed = true;
+                if (disposeManaged)
+                {
+                    if (nativeListener != null)
+                    {
+                        nativeListener.Dispose();
+                    }
+                    if (propagateListener != null)
+                    {
+                        propagateListener.Dispose();
+                    }
+                }
             }
         }
 
@@ -103,11 +152,21 @@ namespace XDMessaging.Specialized
 
         public void RegisterChannel(string channelName)
         {
+            if (disposed)
+            {
+                return;
+            }
+
             nativeListener.RegisterChannel(channelName);
         }
 
         public void UnRegisterChannel(string channelName)
         {
+            if (disposed)
+            {
+                return;
+            }
+
             nativeListener.UnRegisterChannel(channelName);
         }
 
@@ -132,6 +191,11 @@ namespace XDMessaging.Specialized
         /// <param name = "e"></param>
         private void OnNetworkMessageReceived(object sender, XDMessageEventArgs e)
         {
+            if (disposed)
+            {
+                return;
+            }
+
             if (e.DataGram.IsValid)
             {
                 TypedDataGram<NetworkRelayMessage> dataGram = e.DataGram;

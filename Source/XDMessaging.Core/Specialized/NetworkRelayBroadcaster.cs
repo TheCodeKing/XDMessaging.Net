@@ -52,7 +52,10 @@ namespace XDMessaging.Specialized
                                                                                        originalTransportMode, channel,
                                                                                        message);
                                           networkBroadcaster.SendToChannel(networkChannel, networkMessage);
-                                      });
+                                      }).ContinueWith(t =>
+                                                          {
+                                                              var e = t.Exception;
+                                                          }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
         public void SendToChannel(string channel, object message)
@@ -63,7 +66,11 @@ namespace XDMessaging.Specialized
                                                                                        originalTransportMode, channel,
                                                                                        serializer.Serialize(message));
                                           networkBroadcaster.SendToChannel(networkChannel, networkMessage);
-                                      });
+                                      }).ContinueWith(t =>
+                                                          {
+                                                              var e = t.Exception;
+                                                          }, TaskContinuationOptions.OnlyOnFaulted);
+            ;
         }
 
         #endregion

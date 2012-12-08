@@ -1,0 +1,16 @@
+<?xml version="1.0"?>
+<package >
+	<metadata>
+		<id>$id$</id>
+		<version>$version$</version>
+		<title>$title$</title>
+		<authors>$author$</authors>
+		<owners>$author$</owners>
+		<licenseUrl>https://github.com/TheCodeKing/XDMessaging.Net/blob/master/License</licenseUrl>
+		<projectUrl>https://github.com/TheCodeKing/XDMessaging.Net</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>The XDMessaging library provides an easy-to-use, zero configuration solution to same-box communications. It provides a simple API for broadcasting and receiving messages across application domain, process and network boundaries.</description>
+		<copyright>Copyright 2012</copyright>
+		<tags>IPC crossdomain interprocess communication messaging amazon queuing messaging</tags>
+	</metadata>
+</package>

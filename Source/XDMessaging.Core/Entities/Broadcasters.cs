@@ -2,7 +2,6 @@
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.IoC;
 using XDMessaging.Specialized;
 
 namespace XDMessaging.Entities
@@ -43,7 +42,8 @@ namespace XDMessaging.Entities
             if (propagateNetwork && transportMode != XDTransportMode.RemoteNetwork)
             {
                 var remoteBroadcaster = messagingClient.Broadcasters.GetBroadcasterForMode(XDTransportMode.RemoteNetwork);
-                var relayBroadcaster = new NetworkRelayBroadcaster(Container.Resolve<ISerializer>(), transportMode, remoteBroadcaster);
+                var relayBroadcaster = new NetworkRelayBroadcaster(Container.Resolve<ISerializer>(), transportMode,
+                                                                   remoteBroadcaster);
                 broadcaster = messagingClient.Broadcasters.GetMulticastBroadcaster(broadcaster, relayBroadcaster);
             }
             return broadcaster;

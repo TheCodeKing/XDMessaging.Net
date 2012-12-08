@@ -35,7 +35,7 @@ namespace XDMessaging.Transport.Amazon
 
             container.Register(AmazonAccountSettings.GetInstance, LifeTime.Singleton);
             container.Register<ITopicRepository, TopicRepository>(LifeTime.Singleton);
-            container.Register<ISubscriberRepository, SubscriberRepository>(LifeTime.Singleton);
+            container.Register<ISubscriberRepository, SubscriberRepository>(LifeTime.Instance);
             container.Register<IQueuePoller, QueuePoller>(LifeTime.Singleton);
             container.Register<IAmazonSqsFacade, AmazonSqsFacade>(LifeTime.Singleton);
             container.Register<IAmazonSnsFacade, AmazonSnsFacade>(LifeTime.Singleton);

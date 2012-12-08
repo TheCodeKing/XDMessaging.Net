@@ -63,6 +63,7 @@
     <ErrorReport>prompt</ErrorReport>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
     <CodeAnalysisIgnoreBuiltInRules>false</CodeAnalysisIgnoreBuiltInRules>
+    <NoWarn>SIGNED</NoWarn>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
@@ -71,6 +72,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
     <Compile Include="IdentityProviders\IdentityScope.cs" />
     <Compile Include="IdentityProviders\IIdentityProvider.cs" />
     <Compile Include="IdentityProviders\MachineNameIdentityProvider.cs" />
@@ -138,7 +142,11 @@
   <PropertyGroup>
     <PostBuildEvent>pushd "$(TargetDir)"
 
+if "$(ConfigurationName)" == "SignedRelease" (
+"$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe" /t:library /targetplatform:v4,"$(MSBuildExtensionsPath)\..\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /keyfile:..\..\..\..\..\TheCodeKing.snk /out:"$(SolutionDir)lib\$(TargetName).dll" XDMessaging.dll TheCodeKing.Utils.dll
+) else (
 "$(SolutionDir)packages\ilmerge.2.12.0803\ILMerge.exe" /t:library /targetplatform:v4,"$(MSBuildExtensionsPath)\..\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /out:"$(SolutionDir)lib\$(TargetName).dll" XDMessaging.dll TheCodeKing.Utils.dll
+)
 
 popd
 </PostBuildEvent>

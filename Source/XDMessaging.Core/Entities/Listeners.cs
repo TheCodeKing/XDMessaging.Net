@@ -2,21 +2,24 @@
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using XDMessaging.IdentityProviders;
-using XDMessaging.IoC;
 using XDMessaging.Specialized;
 
 namespace XDMessaging.Entities
 {
     public sealed class Listeners : XDRegisterBase
     {
-        private readonly XDMessagingClient client;
+        #region Delegates
 
         /// <summary>
-        ///   The delegate used for handling cross AppDomain communications.
+        /// 	The delegate used for handling cross AppDomain communications.
         /// </summary>
         /// <param name = "sender">The event sender.</param>
         /// <param name = "e">The event args containing the DataGram data.</param>
         public delegate void XDMessageHandler(object sender, XDMessageEventArgs e);
+
+        #endregion
+
+        private readonly XDMessagingClient client;
 
         public IXDListener GetListenerForMode(XDTransportMode transportMode)
         {

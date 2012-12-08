@@ -11,6 +11,7 @@
 *=============================================================================
 */
 using System;
+using System.Threading.Tasks;
 using TheCodeKing.Utils.Contract;
 using XDMessaging.Entities;
 using XDMessaging.Messages;
@@ -18,22 +19,22 @@ using XDMessaging.Messages;
 namespace XDMessaging.Specialized
 {
     /// <summary>
-    ///   The implementation used to listen for and relay network messages for all
-    ///   instances of IXDListener.
+    /// 	The implementation used to listen for and relay network messages for all
+    /// 	instances of IXDListener.
     /// </summary>
     internal sealed class NetworkRelayListener : IXDListener
     {
         #region Constants and Fields
 
         /// <summary>
-        ///   The factory instance used to create broadcast instances in order to re-send network messages natively.
+        /// 	The factory instance used to create broadcast instances in order to re-send network messages natively.
         /// </summary>
         private readonly IXDBroadcaster nativeBroadcast;
 
         private readonly IXDListener nativeListener;
 
         /// <summary>
-        ///   The instance of MailSlot used to receive network messages from other machines.
+        /// 	The instance of MailSlot used to receive network messages from other machines.
         /// </summary>
         private readonly IXDListener propagateListener;
 
@@ -42,7 +43,7 @@ namespace XDMessaging.Specialized
         #region Constructors and Destructors
 
         /// <summary>
-        ///   Default constructor.
+        /// 	Default constructor.
         /// </summary>
         /// <param name = "nativeBroadcast"></param>
         /// <param name = "nativeListener"></param>
@@ -60,7 +61,7 @@ namespace XDMessaging.Specialized
             this.propagateListener = propagateListener;
             this.nativeListener = nativeListener;
             // listen on the network channel for this mode
-            this.propagateListener.RegisterChannel(string.Concat(mode, NetworkRelayBroadcaster.RelayChannel));
+            this.propagateListener.RegisterChannel(NetworkRelayBroadcaster.GetNetworkListenerName(mode));
             this.propagateListener.MessageReceived += OnNetworkMessageReceived;
             this.nativeListener.MessageReceived += OnMessageReceived;
         }
@@ -78,7 +79,7 @@ namespace XDMessaging.Specialized
         #region IDisposable
 
         /// <summary>
-        ///   Implementation of IDisposable used to clean up the listener instance.
+        /// 	Implementation of IDisposable used to clean up the listener instance.
         /// </summary>
         public void Dispose()
         {
@@ -86,6 +87,8 @@ namespace XDMessaging.Specialized
             {
                 nativeListener.Dispose();
             }
+            // don't dispose propagateListener
+            // as network relay queue is machine specific 
         }
 
         #endregion
@@ -117,7 +120,7 @@ namespace XDMessaging.Specialized
         }
 
         /// <summary>
-        ///   Handles messages received from other machines on the network and dispatches them locally.
+        /// 	Handles messages received from other machines on the network and dispatches them locally.
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
@@ -130,7 +133,8 @@ namespace XDMessaging.Specialized
                 if (dataGram != null && dataGram.IsValid && dataGram.Message.MachineName != Environment.MachineName)
                 {
                     // rebroadcast locally
-                    nativeBroadcast.SendToChannel(dataGram.Message.Channel, dataGram.Message.Message);
+                    Task.Factory.StartNew(
+                        () => nativeBroadcast.SendToChannel(dataGram.Message.Channel, dataGram.Message.Message));
                 }
             }
         }

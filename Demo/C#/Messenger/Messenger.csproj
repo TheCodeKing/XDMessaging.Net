@@ -58,7 +58,7 @@
     <EmbeddedResource Include="Messenger.resx">
       <DependentUpon>Messenger.cs</DependentUpon>
     </EmbeddedResource>
-    <None Include="app.config" />
+    <None Include="app.config.template" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\..\..\Source\XDMessaging.Transport.Amazon\XDMessaging.Transport.Amazon.csproj">

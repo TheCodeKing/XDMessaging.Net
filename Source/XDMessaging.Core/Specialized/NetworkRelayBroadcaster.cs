@@ -11,25 +11,27 @@
 *=============================================================================
 */
 using System;
+using System.Threading.Tasks;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
-using XDMessaging.Entities;
 using XDMessaging.Messages;
 
 namespace XDMessaging.Specialized
 {
     /// <summary>
-    ///   The implementation used to listen for and relay network messages for all
-    ///   instances of IXDListener.
+    /// 	The implementation used to listen for and relay network messages for all
+    /// 	instances of IXDListener.
     /// </summary>
     internal sealed class NetworkRelayBroadcaster : IXDBroadcaster
     {
-        public const string RelayChannel = "XDMessaging.Relay.Channel";
-        private readonly ISerializer serializer;
-        private readonly XDTransportMode originalTransportMode;
+        private const string RelayChannel = "XDMessaging_RelayChannel";
         private readonly IXDBroadcaster networkBroadcaster;
+        private readonly string networkChannel;
+        private readonly XDTransportMode originalTransportMode;
+        private readonly ISerializer serializer;
 
-        public NetworkRelayBroadcaster(ISerializer serializer, XDTransportMode originalTransportMode, IXDBroadcaster networkBroadcaster)
+        public NetworkRelayBroadcaster(ISerializer serializer, XDTransportMode originalTransportMode,
+                                       IXDBroadcaster networkBroadcaster)
         {
             Validate.That(serializer).IsNotNull();
             Validate.That(networkBroadcaster).IsNotNull();
@@ -37,18 +39,38 @@ namespace XDMessaging.Specialized
             this.serializer = serializer;
             this.originalTransportMode = originalTransportMode;
             this.networkBroadcaster = networkBroadcaster;
+            networkChannel = GetNetworkListenerName(originalTransportMode);
         }
+
+        #region IXDBroadcaster Members
 
         public void SendToChannel(string channel, string message)
         {
-            var networkMessage = new NetworkRelayMessage(Environment.MachineName, originalTransportMode, channel, message);
-            networkBroadcaster.SendToChannel(RelayChannel, networkMessage);
+            Task.Factory.StartNew(() =>
+                                      {
+                                          var networkMessage = new NetworkRelayMessage(Environment.MachineName,
+                                                                                       originalTransportMode, channel,
+                                                                                       message);
+                                          networkBroadcaster.SendToChannel(networkChannel, networkMessage);
+                                      });
         }
 
         public void SendToChannel(string channel, object message)
         {
-            var networkMessage = new NetworkRelayMessage(Environment.MachineName, originalTransportMode, channel, serializer.Serialize(message));
-            networkBroadcaster.SendToChannel(string.Concat(originalTransportMode, RelayChannel), networkMessage);
+            Task.Factory.StartNew(() =>
+                                      {
+                                          var networkMessage = new NetworkRelayMessage(Environment.MachineName,
+                                                                                       originalTransportMode, channel,
+                                                                                       serializer.Serialize(message));
+                                          networkBroadcaster.SendToChannel(networkChannel, networkMessage);
+                                      });
+        }
+
+        #endregion
+
+        internal static string GetNetworkListenerName(XDTransportMode transportMode)
+        {
+            return string.Concat(transportMode, "_", RelayChannel);
         }
     }
 }

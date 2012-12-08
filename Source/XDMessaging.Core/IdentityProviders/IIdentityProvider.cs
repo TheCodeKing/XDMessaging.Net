@@ -17,6 +17,8 @@ namespace XDMessaging.IdentityProviders
     {
         #region Public Methods
 
+        IdentityScope Scope { get; }
+
         string GetUniqueId();
 
         #endregion

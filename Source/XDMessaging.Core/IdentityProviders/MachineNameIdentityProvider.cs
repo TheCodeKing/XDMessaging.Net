@@ -18,6 +18,11 @@ namespace XDMessaging.IdentityProviders
     {
         #region Public Methods
 
+        public IdentityScope Scope
+        {
+            get { return IdentityScope.Machine; }
+        }
+
         public string GetUniqueId()
         {
             return Environment.MachineName;

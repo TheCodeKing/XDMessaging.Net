@@ -15,12 +15,11 @@ using System.Diagnostics;
 using System.ServiceProcess;
 using System.Threading;
 using System.Threading.Tasks;
-using TheCodeKing.Demo;
 using XDMessaging;
 using XDMessaging.Messages;
 using XDMessaging.Transport.Amazon.Entities;
 
-namespace Test_Service
+namespace TheCodeKing.Demo
 {
     /// <summary>
     ///   A sample Windows Service that demonstrates interprocess communication from a Windows Service. Run an
@@ -87,7 +86,7 @@ namespace Test_Service
             //only the following mode is supported in windows services
             broadcast = client.Broadcasters.GetBroadcasterForMode(XDTransportMode.Compatibility);
 
-            broadcast.SendToChannel("status", "Test Service has started");
+            broadcast.SendToChannel("Status", "Test Service has started: Send STOP on Channel 1/2 to halt timer. Send START to Channel 1/2 to restart.");
             cancelToken = new CancellationTokenSource();
             Task.Factory.StartNew(() =>
                                       {
@@ -95,7 +94,7 @@ namespace Test_Service
                                           {
                                               if (isTraceEnabled)
                                               {
-                                                  broadcast.SendToChannel("status",
+                                                  broadcast.SendToChannel("Status",
                                                                           "The time is: " + DateTime.Now.ToString("f"));
                                                   Thread.Sleep(5000);
                                               }
@@ -108,7 +107,7 @@ namespace Test_Service
         /// </summary>
         protected override void OnStop()
         {
-            broadcast.SendToChannel("status", "Test Service has stopped");
+            broadcast.SendToChannel("Status", "Test Service has stopped");
             cancelToken.Cancel();
             cancelToken = null;
             listener.Dispose();
@@ -127,12 +126,12 @@ namespace Test_Service
             Debug.WriteLine("Test Service: " + e.DataGram.Channel + " " + dataGram.Message);
             if (dataGram.Message.FormattedTextMessage.EndsWith("STOP"))
             {
-                broadcast.SendToChannel("status", "Stopping trace");
+                broadcast.SendToChannel("Status", "Stopping trace");
                 isTraceEnabled = false;
             }
             else if (dataGram.Message.FormattedTextMessage.EndsWith("START"))
             {
-                broadcast.SendToChannel("status", "Starting trace");
+                broadcast.SendToChannel("Status", "Starting trace");
                 isTraceEnabled = true;
             }
         }

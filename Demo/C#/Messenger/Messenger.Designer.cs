@@ -70,7 +70,7 @@ namespace TheCodeKing.Demo
             this.propagateCheck.TabIndex = 3;
             this.propagateCheck.Text = "Propagate messages to RemoteNetwork";
             this.propagateCheck.UseVisualStyleBackColor = true;
-            this.propagateCheck.CheckedChanged += new System.EventHandler(this.propagateCheck_CheckedChanged);
+            this.propagateCheck.CheckedChanged += new System.EventHandler(this.PropagateCheckCheckedChanged);
             // 
             // groupBox1
             // 
@@ -94,7 +94,7 @@ namespace TheCodeKing.Demo
             this.statusCheckBox.TabIndex = 5;
             this.statusCheckBox.Text = "Status";
             this.statusCheckBox.UseVisualStyleBackColor = true;
-            this.statusCheckBox.Click += new System.EventHandler(this.statusChannel_CheckedChanged);
+            this.statusCheckBox.Click += new System.EventHandler(this.StatusChannelCheckedChanged);
             // 
             // channel1Check
             // 
@@ -106,7 +106,7 @@ namespace TheCodeKing.Demo
             this.channel1Check.TabIndex = 3;
             this.channel1Check.Text = "Channel 1";
             this.channel1Check.UseVisualStyleBackColor = true;
-            this.channel1Check.Click += new System.EventHandler(this.channel1_CheckedChanged);
+            this.channel1Check.Click += new System.EventHandler(this.Channel1CheckedChanged);
             // 
             // channel2Check
             // 
@@ -116,7 +116,7 @@ namespace TheCodeKing.Demo
             this.channel2Check.TabIndex = 4;
             this.channel2Check.Text = "Channel 2";
             this.channel2Check.UseVisualStyleBackColor = true;
-            this.channel2Check.Click += new System.EventHandler(this.channel2_CheckedChanged);
+            this.channel2Check.Click += new System.EventHandler(this.Channel2CheckedChanged);
             // 
             // Mode
             // 
@@ -140,7 +140,7 @@ namespace TheCodeKing.Demo
             this.mailRadio.TabStop = true;
             this.mailRadio.Text = "RemoteNetwork";
             this.mailRadio.UseVisualStyleBackColor = true;
-            this.mailRadio.CheckedChanged += new System.EventHandler(this.mode_CheckedChanged);
+            this.mailRadio.CheckedChanged += new System.EventHandler(this.ModeCheckedChanged);
             // 
             // ioStreamRadio
             // 
@@ -152,7 +152,7 @@ namespace TheCodeKing.Demo
             this.ioStreamRadio.TabStop = true;
             this.ioStreamRadio.Text = "Compatibility";
             this.ioStreamRadio.UseVisualStyleBackColor = true;
-            this.ioStreamRadio.CheckedChanged += new System.EventHandler(this.mode_CheckedChanged);
+            this.ioStreamRadio.CheckedChanged += new System.EventHandler(this.ModeCheckedChanged);
             // 
             // wmRadio
             // 
@@ -165,7 +165,7 @@ namespace TheCodeKing.Demo
             this.wmRadio.TabStop = true;
             this.wmRadio.Text = "HighPerformanceUI";
             this.wmRadio.UseVisualStyleBackColor = true;
-            this.wmRadio.CheckedChanged += new System.EventHandler(this.mode_CheckedChanged);
+            this.wmRadio.CheckedChanged += new System.EventHandler(this.ModeCheckedChanged);
             // 
             // inputTextBox
             // 
@@ -182,7 +182,7 @@ namespace TheCodeKing.Demo
             this.sendBtn.TabIndex = 2;
             this.sendBtn.Text = "Send";
             this.sendBtn.UseVisualStyleBackColor = true;
-            this.sendBtn.Click += new System.EventHandler(this.sendBtn_Click);
+            this.sendBtn.Click += new System.EventHandler(this.SendBtnClick);
             // 
             // displayTextBox
             // 

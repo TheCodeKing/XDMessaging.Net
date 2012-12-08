@@ -12,7 +12,7 @@
 */
 using System.ServiceProcess;
 
-namespace Test_Service
+namespace TheCodeKing.Demo
 {
     internal static class Program
     {

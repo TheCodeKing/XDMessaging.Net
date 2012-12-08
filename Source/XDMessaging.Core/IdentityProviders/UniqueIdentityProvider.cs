@@ -18,6 +18,11 @@ namespace XDMessaging.IdentityProviders
     {
         #region Public Methods
 
+        public IdentityScope Scope
+        {
+            get { return IdentityScope.Instance; }
+        }
+
         public string GetUniqueId()
         {
             return Guid.NewGuid().ToString("N");

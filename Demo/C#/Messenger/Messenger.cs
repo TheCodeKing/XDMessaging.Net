@@ -21,35 +21,40 @@ using XDMessaging.Transport.Amazon.Entities;
 namespace TheCodeKing.Demo
 {
     /// <summary>
-    ///   A demo messaging application which demostrates the cross AppDomain Messaging API.
-    ///   This independent instances of the application to receive and send messages between
-    ///   each other.
+    /// 	A demo messaging application which demostrates the cross AppDomain Messaging API.
+    /// 	This independent instances of the application to receive and send messages between
+    /// 	each other.
     /// </summary>
     public partial class Messenger : Form
     {
         #region Constants and Fields
 
         /// <summary>
-        ///   The instance used to broadcast messages on a particular channel.
+        /// 	The instance used to broadcast messages on a particular channel.
         /// </summary>
         private IXDBroadcaster broadcast;
 
         /// <summary>
-        ///   The XDMessaging client API.
+        /// 	The XDMessaging client API.
         /// </summary>
         private XDMessagingClient client;
 
         /// <summary>
-        ///   The instance used to listen to broadcast messages.
+        /// 	The instance used to listen to broadcast messages.
         /// </summary>
         private IXDListener listener;
+
+        /// <summary>
+        /// 	Uniqe name for this application instance.
+        /// </summary>
+        private string uniqueInstanceName;
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        ///   Default constructor.
+        /// 	Default constructor.
         /// </summary>
         public Messenger()
         {
@@ -61,8 +66,8 @@ namespace TheCodeKing.Demo
         #region Methods
 
         /// <summary>
-        ///   The closing overrride used to broadcast on the status channel that the window is
-        ///   closing.
+        /// 	The closing overrride used to broadcast on the status channel that the window is
+        /// 	closing.
         /// </summary>
         /// <param name = "e"></param>
         protected override void OnClosing(CancelEventArgs e)
@@ -73,14 +78,15 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        ///   The onload event which initializes the messaging API by registering
-        ///   for the Status and Message channels. This also assigns a delegate for
-        ///   processing messages received.
+        /// 	The onload event which initializes the messaging API by registering
+        /// 	for the Status and Message channels. This also assigns a delegate for
+        /// 	processing messages received.
         /// </summary>
         /// <param name = "e"></param>
         protected override void OnLoad(EventArgs e)
         {
             base.OnLoad(e);
+            uniqueInstanceName = string.Format("{0}-{1}", Environment.MachineName, Handle);
             // create instance of the XDmessaging client and set region, crendentials should be in app.config
             client = new XDMessagingClient().WithAmazonSettings(RegionEndPoint.EUWest1);
 
@@ -97,21 +103,22 @@ namespace TheCodeKing.Demo
             tooltips.SetToolTip(groupBox1, "Choose which channels\r\nthis instance will\r\nlisten on");
             tooltips.SetToolTip(Mode, "Choose which mode\r\nto use for sending\r\nand receiving");
 
-            UpdateDisplayText("Launch multiple instances of this application to demo interprocess communication.\r\n",
-                              Color.Gray);
+            UpdateDisplayText(
+                "Launch multiple instances of this application to demo interprocess communication. Run multiple instances on different machines to demo network propogation.\r\n",
+                Color.Gray);
 
             // set the handle id in the form title
-            Text += string.Format(" - Window {0}", Handle);
+            Text += string.Format(" - {0}", uniqueInstanceName);
 
             InitializeMode(XDTransportMode.HighPerformanceUI);
 
             // broadcast on the status channel that we have loaded
-            var message = string.Format("{0} has joined", Handle);
+            var message = string.Format("{0} has joined", uniqueInstanceName);
             broadcast.SendToChannel("Status", message);
         }
 
         /// <summary>
-        ///   Wire up the enter key to submit a message.
+        /// 	Wire up the enter key to submit a message.
         /// </summary>
         /// <param name = "m"></param>
         /// <param name = "k"></param>
@@ -128,7 +135,7 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        ///   Initialize the broadcast and listener mode.
+        /// 	Initialize the broadcast and listener mode.
         /// </summary>
         /// <param name = "mode">The new mode.</param>
         private void InitializeMode(XDTransportMode mode)
@@ -168,7 +175,7 @@ namespace TheCodeKing.Demo
             if (broadcast != null)
             {
                 // send in plain text
-                var message = string.Format("{0} is changing mode to {1}", Handle, mode);
+                var message = string.Format("{0} is changing mode to {1}", uniqueInstanceName, mode);
                 broadcast.SendToChannel("Status", message);
             }
 
@@ -177,7 +184,7 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        ///   The delegate which processes all cross AppDomain messages and writes them to screen.
+        /// 	The delegate which processes all cross AppDomain messages and writes them to screen.
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
@@ -216,14 +223,14 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        ///   Helper method for sending message.
+        /// 	Helper method for sending message.
         /// </summary>
         private void SendMessage()
         {
             if (inputTextBox.Text.Length > 0)
             {
                 // send FormattedUserMessage object to all channels
-                var message = new FormattedUserMessage("{0} says {1}", Handle.ToString(), inputTextBox.Text);
+                var message = new FormattedUserMessage("{0} says {1}", uniqueInstanceName, inputTextBox.Text);
 
                 broadcast.SendToChannel("BinaryChannel1", message);
                 broadcast.SendToChannel("BinaryChannel2", message);
@@ -248,7 +255,7 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        ///   A helper method used to update the Windows Form.
+        /// 	A helper method used to update the Windows Form.
         /// </summary>
         /// <param name = "channelName">The channel to display</param>
         /// <param name = "displayText">The message to display</param>
@@ -269,12 +276,12 @@ namespace TheCodeKing.Demo
                     textColor = Color.Blue;
                     break;
             }
-            string msg = string.Format("{0}: {1}\r\n", channelName, displayText);
+            var msg = string.Format("{0}: {1}\r\n", channelName, displayText);
             UpdateDisplayText(msg, textColor);
         }
 
         /// <summary>
-        ///   A helper method used to update the Windows Form.
+        /// 	A helper method used to update the Windows Form.
         /// </summary>
         /// <param name = "message">The message to be displayed on the form.</param>
         /// <param name = "textColor">The colour text to use for the message.</param>
@@ -291,61 +298,61 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        ///   Adds or removes the Message channel from the messaging API. This effects whether messages 
-        ///   sent on this channel will be received by the application. Status messages are broadcast 
-        ///   on the Status channel whenever this setting is changed.
+        /// 	Adds or removes the Message channel from the messaging API. This effects whether messages 
+        /// 	sent on this channel will be received by the application. Status messages are broadcast 
+        /// 	on the Status channel whenever this setting is changed.
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
-        private void channel1_CheckedChanged(object sender, EventArgs e)
+        private void Channel1CheckedChanged(object sender, EventArgs e)
         {
             if (channel1Check.Checked)
             {
                 listener.RegisterChannel("BinaryChannel1");
                 // send in pain text
-                var message = string.Format("{0} is registering Channel1.", Handle);
+                var message = string.Format("{0} is registering Channel1.", uniqueInstanceName);
                 broadcast.SendToChannel("Status", message);
             }
             else
             {
                 listener.UnRegisterChannel("BinaryChannel1");
                 // send in pain text
-                var message = string.Format("{0} is unregistering Channel1.", Handle);
+                var message = string.Format("{0} is unregistering Channel1.", uniqueInstanceName);
                 broadcast.SendToChannel("Status", message);
             }
         }
 
         /// <summary>
-        ///   Adds or removes the Message channel from the messaging API. This effects whether messages 
-        ///   sent on this channel will be received by the application. Status messages are broadcast 
-        ///   on the Status channel whenever this setting is changed.
+        /// 	Adds or removes the Message channel from the messaging API. This effects whether messages 
+        /// 	sent on this channel will be received by the application. Status messages are broadcast 
+        /// 	on the Status channel whenever this setting is changed.
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
-        private void channel2_CheckedChanged(object sender, EventArgs e)
+        private void Channel2CheckedChanged(object sender, EventArgs e)
         {
             if (channel2Check.Checked)
             {
                 listener.RegisterChannel("BinaryChannel2");
                 // send in pain text
-                var message = string.Format("{0} is registering Channel2.", Handle);
+                var message = string.Format("{0} is registering Channel2.", uniqueInstanceName);
                 broadcast.SendToChannel("Status", message);
             }
             else
             {
                 listener.UnRegisterChannel("BinaryChannel2");
                 // send in pain text
-                var message = string.Format("{0} is unregistering Channel2.", Handle);
+                var message = string.Format("{0} is unregistering Channel2.", uniqueInstanceName);
                 broadcast.SendToChannel("Status", message);
             }
         }
 
         /// <summary>
-        ///   On form changed mode.
+        /// 	On form changed mode.
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
-        private void mode_CheckedChanged(object sender, EventArgs e)
+        private void ModeCheckedChanged(object sender, EventArgs e)
         {
             if (((RadioButton) sender).Checked)
             {
@@ -353,7 +360,7 @@ namespace TheCodeKing.Demo
             }
         }
 
-        private void propagateCheck_CheckedChanged(object sender, EventArgs e)
+        private void PropagateCheckCheckedChanged(object sender, EventArgs e)
         {
             if (propagateCheck.Checked)
             {
@@ -368,37 +375,37 @@ namespace TheCodeKing.Demo
         }
 
         /// <summary>
-        ///   Sends a user input string on the Message channel. A message is not sent if
-        ///   the string is empty.
+        /// 	Sends a user input string on the Message channel. A message is not sent if
+        /// 	the string is empty.
         /// </summary>
         /// <param name = "sender">The event sender.</param>
         /// <param name = "e">The event args.</param>
-        private void sendBtn_Click(object sender, EventArgs e)
+        private void SendBtnClick(object sender, EventArgs e)
         {
             SendMessage();
         }
 
         /// <summary>
-        ///   Adds or removes the Status channel from the messaging API. This effects whether messages 
-        ///   sent on this channel will be received by the application. Status messages are broadcast 
-        ///   on the Status channel whenever this setting is changed.
+        /// 	Adds or removes the Status channel from the messaging API. This effects whether messages 
+        /// 	sent on this channel will be received by the application. Status messages are broadcast 
+        /// 	on the Status channel whenever this setting is changed.
         /// </summary>
         /// <param name = "sender"></param>
         /// <param name = "e"></param>
-        private void statusChannel_CheckedChanged(object sender, EventArgs e)
+        private void StatusChannelCheckedChanged(object sender, EventArgs e)
         {
             if (statusCheckBox.Checked)
             {
                 listener.RegisterChannel("Status");
                 // send in plain text
-                var message = string.Format("{0} is registering Status.", Handle);
+                var message = string.Format("{0} is registering Status.", uniqueInstanceName);
                 broadcast.SendToChannel("Status", message);
             }
             else
             {
                 listener.UnRegisterChannel("Status");
                 // send in plain text
-                var message = string.Format("{0} is unregistering Status.", Handle);
+                var message = string.Format("{0} is unregistering Status.", uniqueInstanceName);
                 broadcast.SendToChannel("Status", message);
             }
         }

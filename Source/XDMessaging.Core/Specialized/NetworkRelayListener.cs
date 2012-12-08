@@ -60,10 +60,14 @@ namespace XDMessaging.Specialized
             this.nativeBroadcast = nativeBroadcast;
             this.propagateListener = propagateListener;
             this.nativeListener = nativeListener;
-            // listen on the network channel for this mode
-            this.propagateListener.RegisterChannel(NetworkRelayBroadcaster.GetNetworkListenerName(mode));
-            this.propagateListener.MessageReceived += OnNetworkMessageReceived;
             this.nativeListener.MessageReceived += OnMessageReceived;
+            // listen on the network channel for this mode
+            Task.Factory.StartNew(() =>
+                                      {
+                                          this.propagateListener.RegisterChannel(
+                                              NetworkRelayBroadcaster.GetNetworkListenerName(mode));
+                                          this.propagateListener.MessageReceived += OnNetworkMessageReceived;
+                                      });
         }
 
         #endregion
@@ -87,8 +91,10 @@ namespace XDMessaging.Specialized
             {
                 nativeListener.Dispose();
             }
-            // don't dispose propagateListener
-            // as network relay queue is machine specific 
+            if (propagateListener != null)
+            {
+                propagateListener.Dispose();
+            }
         }
 
         #endregion

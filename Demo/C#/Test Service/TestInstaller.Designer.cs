@@ -1,4 +1,4 @@
-﻿namespace Test_Service
+﻿namespace TheCodeKing.Demo
 {
     partial class TestInstaller
     {

@@ -71,6 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="IdentityProviders\IdentityScope.cs" />
     <Compile Include="IdentityProviders\IIdentityProvider.cs" />
     <Compile Include="IdentityProviders\MachineNameIdentityProvider.cs" />
     <Compile Include="Specialized\NetworkRelayBroadcaster.cs" />

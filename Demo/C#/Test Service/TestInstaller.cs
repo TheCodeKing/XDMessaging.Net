@@ -14,7 +14,7 @@ using System.ComponentModel;
 using System.Configuration.Install;
 using System.ServiceProcess;
 
-namespace Test_Service
+namespace TheCodeKing.Demo
 {
     /// <summary>
     /// The demo installer for deploying the test service. Install using the Install.bat provided.

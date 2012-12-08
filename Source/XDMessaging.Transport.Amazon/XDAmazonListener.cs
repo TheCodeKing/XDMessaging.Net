@@ -29,11 +29,12 @@ namespace XDMessaging.Transport.Amazon
     {
         #region Constants and Fields
 
+        private readonly bool disposeQueues;
         private readonly ISerializer serializer;
         private readonly ISubscriberRepository subscriberRepository;
         private readonly ISubscriptionService subscriptionService;
         private readonly ITopicRepository topicRepository;
-        private readonly string uniqueInstanceId = Guid.NewGuid().ToString("N");
+        private readonly string uniqueInstanceId;
         private bool disposed;
 
         #endregion
@@ -49,6 +50,7 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(subscriberRepository).IsNotNull();
             Validate.That(subscriptionService).IsNotNull();
 
+            this.disposeQueues = (identityProvider.Scope == IdentityScope.Instance);
             this.uniqueInstanceId = identityProvider.GetUniqueId();
             this.serializer = serializer;
             this.topicRepository = topicRepository;
@@ -147,7 +149,10 @@ namespace XDMessaging.Transport.Amazon
                         }
                     }
                 }
-                subscriptionService.Dispose();
+                if (disposeQueues)
+                {
+                    subscriptionService.Dispose();
+                }
             }
         }
 

@@ -26,7 +26,7 @@ namespace XDMessaging.Transport.Amazon.Repositories
         #region Constants and Fields
 
         private readonly IDictionary<string, Subscriber> subscribers = new Dictionary<string, Subscriber>(StringComparer.InvariantCultureIgnoreCase);
-        private static readonly Regex channelValidatorRegex = new Regex("[^0-9a-zA-Z-_]", RegexOptions.Compiled);
+        private static readonly Regex ChannelValidatorRegex = new Regex("[^0-9a-zA-Z-_]", RegexOptions.Compiled);
         private readonly AmazonAccountSettings amazonAccountSettings;
         private readonly IAmazonSqsFacade amazonSqsFacade;
 
@@ -51,6 +51,11 @@ namespace XDMessaging.Transport.Amazon.Repositories
 
         public Subscriber GetSubscriber(string channelName, string subscriberId)
         {
+            return GetSubscriber(channelName, subscriberId, false);
+        }
+
+        public Subscriber GetSubscriber(string channelName, string subscriberId, bool longLived)
+        {
             Validate.That(channelName).IsNotNullOrEmpty();
             Validate.That(subscriberId).IsNotNullOrEmpty();
 
@@ -59,10 +64,11 @@ namespace XDMessaging.Transport.Amazon.Repositories
             {
                 return subscribers[uniqueQueue];
             }
+
             var queueUrl = amazonSqsFacade.CreateOrRetrieveQueue(uniqueQueue);
             var queueArn = amazonSqsFacade.GetQueueArn(queueUrl);
 
-            var subscriber = new Subscriber(uniqueQueue, queueUrl, queueArn);
+            var subscriber = new Subscriber(uniqueQueue, queueUrl, queueArn, longLived);
             subscribers[uniqueQueue] = subscriber;
             return subscriber;
         }
@@ -72,7 +78,10 @@ namespace XDMessaging.Transport.Amazon.Repositories
             if (subscribers.ContainsKey(subscriber.Name))
             {
                 subscribers.Remove(subscriber.Name);
-                amazonSqsFacade.DeleteQueue(subscriber.QueueUrl);
+                if (!subscriber.LongLived)
+                {
+                    amazonSqsFacade.DeleteQueue(subscriber.QueueUrl);
+                }
             }
 
         }
@@ -85,7 +94,7 @@ namespace XDMessaging.Transport.Amazon.Repositories
 
         private static bool DoesNameRequireEscape(string rawTopic)
         {
-            return channelValidatorRegex.IsMatch(rawTopic);
+            return ChannelValidatorRegex.IsMatch(rawTopic);
         }
 
         private string GetQueueName(string channelName, string subscriber)

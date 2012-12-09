@@ -70,6 +70,8 @@
     <Compile Include="Entities\AmazonAccountSettings.cs" />
     <Compile Include="Facades\AmazonSqsFacade.cs" />
     <Compile Include="Entities\AmazonSqsNotification.cs" />
+    <Compile Include="Interfaces\IResourceCounter.cs" />
+    <Compile Include="ResourceCounter.cs" />
     <Compile Include="Interfaces\IPublisherService.cs" />
     <Compile Include="IocConfiguration.cs" />
     <Compile Include="QueuePoller.cs" />

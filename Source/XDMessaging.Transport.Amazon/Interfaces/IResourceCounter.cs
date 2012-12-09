@@ -10,16 +10,11 @@
 *
 *=============================================================================
 */
-using XDMessaging.Transport.Amazon.Entities;
-
 namespace XDMessaging.Transport.Amazon.Interfaces
 {
-    internal interface ISubscriberRepository
+    public interface IResourceCounter
     {
-        Subscriber GetSubscriber(string channelName, string subscriberId, bool longLived);
-
-        Subscriber GetSubscriber(string channelName, string subscriber);
-
-        void ExpireSubscriber(Subscriber subscriber);
+        int Decrement(string name);
+        void Increment(string name);
     }
 }

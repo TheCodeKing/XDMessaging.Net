@@ -29,7 +29,7 @@ namespace XDMessaging.Transport.Amazon
     {
         #region Constants and Fields
 
-        private readonly bool disposeQueues;
+        private readonly bool useLongLiveQueues;
         private readonly ISerializer serializer;
         private readonly ISubscriberRepository subscriberRepository;
         private readonly ISubscriptionService subscriptionService;
@@ -50,7 +50,7 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(subscriberRepository).IsNotNull();
             Validate.That(subscriptionService).IsNotNull();
 
-            this.disposeQueues = (identityProvider.Scope == IdentityScope.Instance);
+            this.useLongLiveQueues = (identityProvider.Scope == IdentityScope.Machine);
             this.uniqueInstanceId = identityProvider.GetUniqueId();
             this.serializer = serializer;
             this.topicRepository = topicRepository;
@@ -101,7 +101,7 @@ namespace XDMessaging.Transport.Amazon
             }
 
             var topic = topicRepository.GetTopic(channelName);
-            var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId);
+            var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId, useLongLiveQueues);
 
             subscriptionService.Subscribe(topic, subscriber, OnMessageReceived);
         }
@@ -117,7 +117,7 @@ namespace XDMessaging.Transport.Amazon
             }
 
             var topic = topicRepository.GetTopic(channelName);
-            var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId);
+            var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId, useLongLiveQueues);
 
             subscriptionService.Unsubscribe(topic, subscriber);
         }
@@ -149,15 +149,17 @@ namespace XDMessaging.Transport.Amazon
                         }
                     }
                 }
-                if (disposeQueues)
-                {
-                    subscriptionService.Dispose();
-                }
+                subscriptionService.Dispose();
             }
         }
 
         private void OnMessageReceived(Message message)
         {
+            if (disposed)
+            {
+                return;
+            }
+
             var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
             var dataGram = serializer.Deserialize<DataGram>(notification.Message);
 

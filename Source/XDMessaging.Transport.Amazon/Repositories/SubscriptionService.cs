@@ -24,18 +24,21 @@ namespace XDMessaging.Transport.Amazon.Repositories
     {
         private readonly ConcurrentDictionary<string, SubscriptionInfo> subscriptions = new ConcurrentDictionary<string, SubscriptionInfo>(StringComparer.InvariantCultureIgnoreCase);
         private bool isDisposed;
+        private readonly IResourceCounter resourceCounter;
         private readonly IAmazonSnsFacade amazonSnsFacade;
         private readonly IAmazonSqsFacade amazonSqsFacade;
         private readonly ISubscriberRepository subscriberRespoitroy;
         private readonly QueuePoller queuePoller;
 
-        public SubscriptionService(IAmazonSnsFacade amazonSnsFacade, IAmazonSqsFacade amazonSqsFacade, ISubscriberRepository subscriberRespoitroy, QueuePoller queuePoller)
+        public SubscriptionService(IResourceCounter resourceCounter, IAmazonSnsFacade amazonSnsFacade, IAmazonSqsFacade amazonSqsFacade, ISubscriberRepository subscriberRespoitroy, QueuePoller queuePoller)
         {
+            Validate.That(resourceCounter).IsNotNull();
             Validate.That(amazonSnsFacade).IsNotNull();
             Validate.That(amazonSqsFacade).IsNotNull();
             Validate.That(queuePoller).IsNotNull();
             Validate.That(subscriberRespoitroy).IsNotNull();
 
+            this.resourceCounter = resourceCounter;
             this.amazonSnsFacade = amazonSnsFacade;
             this.amazonSqsFacade = amazonSqsFacade;
             this.subscriberRespoitroy = subscriberRespoitroy;
@@ -130,7 +133,10 @@ namespace XDMessaging.Transport.Amazon.Repositories
             if (subscriptions.TryRemove(key, out subscriptionInfo))
             {
                 subscriptionInfo.CancelToken.Cancel();
-                amazonSnsFacade.UnsubscribeQueueFromTopic(subscriptionInfo.SubscriptionArn);
+                if (!subscriber.LongLived || resourceCounter.Decrement(subscriptionInfo.Subscriber.Name) == 0)
+                {
+                    amazonSnsFacade.UnsubscribeQueueFromTopic(subscriptionInfo.SubscriptionArn);
+                }
                 subscriptionInfo.CancelToken = null;
                 subscriptionInfo.SubscriptionArn = null;
             }
@@ -147,6 +153,10 @@ namespace XDMessaging.Transport.Amazon.Repositories
 
             amazonSqsFacade.SetSqsPolicyForSnsPublish(subscriber.QueueUrl, subscriber.QueueArn, topic.TopicArn);
             subscriptionInfo.SubscriptionArn = amazonSnsFacade.SubscribeQueueToTopic(subscriptionInfo.Subscriber.QueueArn, subscriptionInfo.Topic.TopicArn);
+            if (subscriptionInfo.Subscriber.LongLived)
+            {
+                resourceCounter.Increment(subscriptionInfo.Subscriber.Name);
+            }
             subscriptionInfo.CancelToken = queuePoller.Start(subscriptionInfo, messageHandler);
 
             return subscriptionInfo;
@@ -183,22 +193,20 @@ namespace XDMessaging.Transport.Amazon.Repositories
             if (!isDisposed)
             {
                 isDisposed = true;
-                foreach(var subscription in subscriptions.Values)
-                {
-                    if (subscription.CancelToken!=null)
-                    {
-                        subscription.CancelToken.Cancel(true);
-                    }
-                    if (subscription.IsSubscribed)
-                    {
-                        amazonSnsFacade.UnsubscribeQueueFromTopic(subscription.SubscriptionArn);
-                    }
-                    subscriberRespoitroy.ExpireSubscriber(subscription.Subscriber);
-                }
                 if (disposeManaged)
                 {
-                    //dispose managed
-
+                    foreach (var subscription in subscriptions.Values)
+                    {
+                        if (subscription.CancelToken != null)
+                        {
+                            subscription.CancelToken.Cancel(true);
+                        }
+                        if (subscription.IsSubscribed && (!subscription.Subscriber.LongLived || resourceCounter.Decrement(subscription.Subscriber.Name) == 0))
+                        {
+                            amazonSnsFacade.UnsubscribeQueueFromTopic(subscription.SubscriptionArn);
+                        }
+                        subscriberRespoitroy.ExpireSubscriber(subscription.Subscriber);
+                    }
                 }
             }
 

@@ -31,7 +31,9 @@ namespace XDMessaging.Transport.Amazon.Facades
         private const string conditionSourceArn = "aws:SourceArn";
         private const string queueArnAttributeName = "QueueArn";
         private const int receiveMessageWaitTimeSeconds = 20;
+        private const int messageRetentionPeriodSeconds = 60;
         private const string receiveMessageWaitTimeSecondsAttributeName = "ReceiveMessageWaitTimeSeconds";
+        private const string messageRetentionPeriodAttributeName = "MessageRetentionPeriod";
         private readonly Func<AmazonSQS> amazonSqsFactory;
 
         #endregion
@@ -61,7 +63,9 @@ namespace XDMessaging.Transport.Amazon.Facades
 
             var longPollAttribute = new Attribute().WithName(receiveMessageWaitTimeSecondsAttributeName)
                 .WithValue(Convert.ToString(receiveMessageWaitTimeSeconds));
-            var sqsRequest = new CreateQueueRequest().WithQueueName(name).WithAttribute(longPollAttribute);
+            var messageRetainAttribute = new Attribute().WithName(messageRetentionPeriodAttributeName)
+                .WithValue(Convert.ToString(messageRetentionPeriodSeconds));
+            var sqsRequest = new CreateQueueRequest().WithQueueName(name).WithAttribute(longPollAttribute, messageRetainAttribute);
             using (var sqs = amazonSqsFactory())
             {
                 var createQueueResponse = sqs.CreateQueue(sqsRequest);

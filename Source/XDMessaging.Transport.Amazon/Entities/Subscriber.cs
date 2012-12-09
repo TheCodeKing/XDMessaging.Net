@@ -22,12 +22,13 @@ namespace XDMessaging.Transport.Amazon.Entities
         private readonly string name;
         private readonly Uri queueUrl;
         private readonly string queueArn;
+        private readonly bool longLived;
 
         #endregion
 
         #region Constructors and Destructors
 
-        public Subscriber(string name, Uri queueUrl, string queueArn)
+        public Subscriber(string name, Uri queueUrl, string queueArn, bool longLived)
         {
             Validate.That(name).IsNotNull();
             Validate.That(queueUrl).IsNotNull();
@@ -36,11 +37,17 @@ namespace XDMessaging.Transport.Amazon.Entities
             this.name = name;
             this.queueUrl = queueUrl;
             this.queueArn = queueArn;
+            this.longLived = longLived;
         }
 
         #endregion
 
         #region Properties
+
+        public bool LongLived
+        {
+            get { return longLived; }
+        }
 
         public string QueueArn
         {

@@ -132,16 +132,17 @@ namespace XDMessaging.Specialized
             if (!disposed)
             {
                 disposed = true;
+                if (propagateListener != null)
+                {
+                    propagateListener.Dispose();
+                }
                 if (disposeManaged)
                 {
                     if (nativeListener != null)
                     {
                         nativeListener.Dispose();
                     }
-                    if (propagateListener != null)
-                    {
-                        propagateListener.Dispose();
-                    }
+      
                 }
             }
         }

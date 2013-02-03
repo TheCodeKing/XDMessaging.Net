@@ -206,6 +206,7 @@ namespace XDMessaging.Transport.Amazon.Repositories
                             amazonSnsFacade.UnsubscribeQueueFromTopic(subscription.SubscriptionArn);
                         }
                         subscriberRespoitroy.ExpireSubscriber(subscription.Subscriber);
+                    
                     }
                 }
             }

@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
 [assembly: AssemblyCompany("TheCodeKing")]
-[assembly: AssemblyCopyright("Copyright © 2012")]
+[assembly: AssemblyCopyright("Copyright © 2013")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 [assembly: AssemblyDescription("The XDMessaging library provides an easy-to-use, zero configuration solution to same-box communications. It provides a simple API for broadcasting and receiving messages across application domain, process and network boundaries.")]

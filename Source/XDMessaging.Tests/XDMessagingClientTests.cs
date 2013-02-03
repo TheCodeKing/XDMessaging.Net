@@ -1,15 +1,12 @@
 ﻿using NUnit.Framework;
-using XDMessaging.Transport.Amazon.Entities;
 using TheCodeKing.Utils.IoC;
-using XDMessaging.Transport.Amazon.Interfaces;
+using XDMessaging.Transport.Amazon.Entities;
 
 namespace XDMessaging.Tests
 {
     [TestFixture]
     public class XDMessagingClientTests
     {
-        #region Public Methods
-
         [Test]
         public void GivenAmazonSettingsThenShouldResolveSuccess()
         {
@@ -77,7 +74,5 @@ namespace XDMessaging.Tests
             // assert
             Assert.That(instance, Is.Not.Null);
         }
-
-        #endregion
     }
 }

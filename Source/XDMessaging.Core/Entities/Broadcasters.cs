@@ -11,6 +11,7 @@
 *=============================================================================
 */
 using System;
+using System.Configuration;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
@@ -53,7 +54,11 @@ namespace XDMessaging.Entities
             }
             if (propagateNetwork && transportMode != XDTransportMode.RemoteNetwork)
             {
-                var remoteBroadcaster = messagingClient.Broadcasters.GetBroadcasterForMode(XDTransportMode.RemoteNetwork);
+                var remoteBroadcaster = messagingClient.Broadcasters.GetBroadcasterForMode(XDTransportMode.RemoteNetwork);              
+                if (!remoteBroadcaster.IsAlive)
+                {
+                    throw new ConfigurationErrorsException("The RemoteNetwork Broadcaster is not configured. Check the configuration settings.");
+                }
                 var relayBroadcaster = new NetworkRelayBroadcaster(Container.Resolve<ISerializer>(), transportMode,
                                                                    remoteBroadcaster);
                 broadcaster = messagingClient.Broadcasters.GetMulticastBroadcaster(broadcaster, relayBroadcaster);

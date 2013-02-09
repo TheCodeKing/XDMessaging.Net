@@ -17,8 +17,8 @@ using TheCodeKing.Utils.Serialization;
 namespace XDMessaging.Transport.WindowsMessaging
 {
     /// <summary>
-    ///   The implementation of IXDBroadcast used to broadcast messages acorss appDomain and process boundaries
-    ///   using the XDTransportMode.WindowsMessaging implementation. Non-form based application are not supported.
+    /// 	The implementation of IXDBroadcast used to broadcast messages acorss appDomain and process boundaries
+    /// 	using the XDTransportMode.WindowsMessaging implementation. Non-form based application are not supported.
     /// </summary>
     [XDBroadcasterHint(XDTransportMode.HighPerformanceUI)]
 // ReSharper disable InconsistentNaming
@@ -41,6 +41,14 @@ namespace XDMessaging.Transport.WindowsMessaging
         }
 
         #endregion
+
+        /// <summary>
+        /// 	Is this instance capable
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return true; }
+        }
 
         #region Implemented Interfaces
 

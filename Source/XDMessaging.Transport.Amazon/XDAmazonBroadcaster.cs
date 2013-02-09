@@ -13,6 +13,7 @@
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.Messages;
+using XDMessaging.Transport.Amazon.Entities;
 using XDMessaging.Transport.Amazon.Interfaces;
 using XDMessaging.Transport.Amazon.Repositories;
 
@@ -25,8 +26,8 @@ namespace XDMessaging.Transport.Amazon
     {
         #region Constants and Fields
 
-        private readonly ISerializer serializer;
         private readonly IPublisherService publisherService;
+        private readonly ISerializer serializer;
         private readonly TopicRepository topicRepository;
 
         #endregion
@@ -43,6 +44,14 @@ namespace XDMessaging.Transport.Amazon
             this.serializer = serializer;
             this.publisherService = publisherService;
             this.topicRepository = topicRepository;
+        }
+
+        /// <summary>
+        /// 	Is this instance capable
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return AmazonAccountSettings.GetInstance().IsValid; }
         }
 
         #endregion

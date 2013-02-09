@@ -47,7 +47,7 @@ namespace XDMessaging.Entities
             {
                 var networkListener = Container.Use<IIdentityProvider, MachineNameIdentityProvider>()
                     .Resolve<IXDListener>(Convert.ToString(XDTransportMode.RemoteNetwork));
-                if (networkListener != null)
+                if (networkListener != null && networkListener.IsAlive)
                 {
                     var networkBroadcaster = client.Broadcasters.GetBroadcasterForMode(transportMode, false);
                     listener = new NetworkRelayListener(networkBroadcaster, listener, networkListener, transportMode);

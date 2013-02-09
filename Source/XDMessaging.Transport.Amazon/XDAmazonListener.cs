@@ -36,10 +36,19 @@ namespace XDMessaging.Transport.Amazon
         private readonly ITopicRepository topicRepository;
         private readonly string uniqueInstanceId;
         private bool disposed;
+        private readonly object disposeLock = new object();
 
         #endregion
 
         #region Constructors and Destructors
+
+        /// <summary>
+        /// Is this instance capable 
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return AmazonAccountSettings.GetInstance().IsValid; }
+        }
 
         internal XDAmazonListener(IIdentityProvider identityProvider, ISerializer serializer, ITopicRepository topicRepository,
                                   ISubscriberRepository subscriberRepository, ISubscriptionService subscriptionService)
@@ -95,15 +104,23 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(channelName).IsNotNull();
 
-            if (disposed)
+            if (!disposed)
             {
-                return;
+                lock (disposeLock)
+                {
+                    if (!disposed)
+                    {
+
+                        var topic = topicRepository.GetTopic(channelName);
+                        var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId,
+                                                                            useLongLiveQueues);
+
+                        subscriptionService.Subscribe(topic, subscriber, OnMessageReceived);
+                        return;
+                    }
+                }
             }
-
-            var topic = topicRepository.GetTopic(channelName);
-            var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId, useLongLiveQueues);
-
-            subscriptionService.Subscribe(topic, subscriber, OnMessageReceived);
+            throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
         }
 
 
@@ -111,15 +128,23 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(channelName).IsNotNull();
 
-            if (disposed)
+            if (!disposed)
             {
-                return;
+                lock (disposeLock)
+                {
+                    if (!disposed)
+                    {
+
+                        var topic = topicRepository.GetTopic(channelName);
+                        var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId,
+                                                                            useLongLiveQueues);
+
+                        subscriptionService.Unsubscribe(topic, subscriber);
+                        return;
+                    }
+                }
             }
-
-            var topic = topicRepository.GetTopic(channelName);
-            var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId, useLongLiveQueues);
-
-            subscriptionService.Unsubscribe(topic, subscriber);
+            throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
         }
 
         #endregion
@@ -136,39 +161,51 @@ namespace XDMessaging.Transport.Amazon
         {
             if (!disposed)
             {
-                disposed = true;
-                if (disposeManaged)
+                lock (disposeLock)
                 {
-                    if (MessageReceived != null)
+                    if (!disposed)
                     {
-                        // remove all handlers
-                        var del = MessageReceived.GetInvocationList();
-                        foreach (Listeners.XDMessageHandler msg in del)
+                        disposed = true;
+                        subscriptionService.Dispose();
+                        if (disposeManaged)
                         {
-                            MessageReceived -= msg;
+                            if (MessageReceived != null)
+                            {
+                                // remove all handlers
+                                var del = MessageReceived.GetInvocationList();
+                                foreach (Listeners.XDMessageHandler msg in del)
+                                {
+                                    MessageReceived -= msg;
+                                }
+                            }
                         }
+
                     }
                 }
-                subscriptionService.Dispose();
             }
         }
 
         private void OnMessageReceived(Message message)
         {
-            if (disposed)
+            if (!disposed)
             {
-                return;
-            }
+                lock (disposeLock)
+                {
+                    if (!disposed)
+                    {
 
-            var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
-            var dataGram = serializer.Deserialize<DataGram>(notification.Message);
+                        var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
+                        var dataGram = serializer.Deserialize<DataGram>(notification.Message);
 
-            var topic = topicRepository.GetTopic(dataGram.Channel);
-            var subscriber = subscriberRepository.GetSubscriber(dataGram.Channel, uniqueInstanceId);
-            var isSubscribed = subscriptionService.IsSubscribed(topic, subscriber);
-            if (!disposed && dataGram.IsValid && MessageReceived != null && isSubscribed)
-            {
-                MessageReceived(this, new XDMessageEventArgs(dataGram));
+                        var topic = topicRepository.GetTopic(dataGram.Channel);
+                        var subscriber = subscriberRepository.GetSubscriber(dataGram.Channel, uniqueInstanceId);
+                        var isSubscribed = subscriptionService.IsSubscribed(topic, subscriber);
+                        if (!disposed && dataGram.IsValid && MessageReceived != null && isSubscribed)
+                        {
+                            MessageReceived(this, new XDMessageEventArgs(dataGram));
+                        }
+                    }
+                }
             }
         }
 

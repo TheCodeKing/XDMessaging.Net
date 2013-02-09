@@ -30,6 +30,14 @@ namespace XDMessaging.Specialized
         private readonly XDTransportMode originalTransportMode;
         private readonly ISerializer serializer;
 
+        /// <summary>
+        /// 	Is this instance capable
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return networkBroadcaster.IsAlive; }
+        }
+
         public NetworkRelayBroadcaster(ISerializer serializer, XDTransportMode originalTransportMode,
                                        IXDBroadcaster networkBroadcaster)
         {
@@ -51,6 +59,7 @@ namespace XDMessaging.Specialized
                                           var networkMessage = new NetworkRelayMessage(Environment.MachineName,
                                                                                        originalTransportMode, channel,
                                                                                        message);
+                                          
                                           networkBroadcaster.SendToChannel(networkChannel, networkMessage);
                                       }).ContinueWith(t =>
                                                           {
@@ -65,6 +74,7 @@ namespace XDMessaging.Specialized
                                           var networkMessage = new NetworkRelayMessage(Environment.MachineName,
                                                                                        originalTransportMode, channel,
                                                                                        serializer.Serialize(message));
+  
                                           networkBroadcaster.SendToChannel(networkChannel, networkMessage);
                                       }).ContinueWith(t =>
                                                           {

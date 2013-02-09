@@ -1,11 +1,11 @@
 <?xml version="1.0"?>
 <package >
 	<metadata>
-		<id>$id$</id>
-		<version>$version$</version>
-		<title>$title$</title>
-		<authors>$author$</authors>
-		<owners>$author$</owners>
+		<id>XDMessaging</id>
+		<version>4.0.1</version>
+		<title>XDMessaging Library</title>
+		<authors>TheCodeKing</authors>
+		<owners>TheCodeKing</owners>
 		<licenseUrl>https://github.com/TheCodeKing/XDMessaging.Net/blob/master/License</licenseUrl>
 		<projectUrl>https://github.com/TheCodeKing/XDMessaging.Net</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
@@ -13,14 +13,17 @@
 		<copyright>Copyright 2013</copyright>
 		<tags>IPC crossdomain interprocess communication messaging amazon queuing messaging</tags>
 		<references>
+			<reference file="XDMessaging.dll" />
 			<reference file="XDMessaging.Transport.Amazon.dll" />
 			<reference file="XDMessaging.Transport.IOStream.dll" />
 			<reference file="XDMessaging.Transport.WindowsMessaging.dll" />
 		</references>
 	</metadata>
 	<files>
-		<file src="..\..\Bin\XDMessaging.Transport.Amazon.dll" target="lib\net40-Client\" />
-		<file src="..\..\Bin\XDMessaging.Transport.IOStream.dll" target="lib\net40-Client\" />
-		<file src="..\..\Bin\XDMessaging.Transport.WindowsMessaging.dll" target="lib\net40-Client\" />
+		<file src="app.config.transform" target="content" />
+		<file src="..\Bin\XDMessaging.dll" target="lib\net40-Client\" />
+		<file src="..\Bin\XDMessaging.Transport.Amazon.dll" target="lib\net40-Client\" />
+		<file src="..\Bin\XDMessaging.Transport.IOStream.dll" target="lib\net40-Client\" />
+		<file src="..\Bin\XDMessaging.Transport.WindowsMessaging.dll" target="lib\net40-Client\" />
 	</files>
 </package>

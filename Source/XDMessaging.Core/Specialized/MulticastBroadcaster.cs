@@ -11,12 +11,13 @@
 *=============================================================================
 */
 using System.Collections.Generic;
+using System.Linq;
 using TheCodeKing.Utils.Contract;
 
 namespace XDMessaging.Specialized
 {
     /// <summary>
-    ///   The implementation used to broadcast messages using multiple TransportModes.
+    /// 	The implementation used to broadcast messages using multiple TransportModes.
     /// </summary>
     internal sealed class MulticastBroadcaster : IXDBroadcaster
     {
@@ -37,8 +38,16 @@ namespace XDMessaging.Specialized
         }
 
         public MulticastBroadcaster(params IXDBroadcaster[] broadcasters)
-            : this((IEnumerable<IXDBroadcaster>)broadcasters)
+            : this((IEnumerable<IXDBroadcaster>) broadcasters)
         {
+        }
+
+        /// <summary>
+        /// 	Is this instance capable
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return !broadcasters.Any(x => !x.IsAlive); }
         }
 
         #endregion
@@ -51,7 +60,10 @@ namespace XDMessaging.Specialized
         {
             foreach (var broadcaster in broadcasters)
             {
-                broadcaster.SendToChannel(channel, message);
+                if (broadcaster.IsAlive)
+                {
+                    broadcaster.SendToChannel(channel, message);
+                }
             }
         }
 
@@ -59,7 +71,10 @@ namespace XDMessaging.Specialized
         {
             foreach (var broadcaster in broadcasters)
             {
-                broadcaster.SendToChannel(channel, message);
+                if (broadcaster.IsAlive)
+                {
+                    broadcaster.SendToChannel(channel, message);
+                }
             }
         }
 

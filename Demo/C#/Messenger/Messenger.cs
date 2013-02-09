@@ -96,6 +96,10 @@ namespace TheCodeKing.Demo
                                 "Missing AWS Crendentials",
                                 MessageBoxButtons.OK,
                                 MessageBoxIcon.Warning);
+
+                propagateCheck.CheckState = CheckState.Unchecked;
+                propagateCheck.Enabled = false;
+                mailRadio.Enabled = false;
             }
 
             var tooltips = new ToolTip();

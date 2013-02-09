@@ -13,15 +13,20 @@
 namespace XDMessaging
 {
     /// <summary>
-    ///   The API defined for dispatching messages interprocess and across appDomains.
+    /// 	The API defined for dispatching messages interprocess and across appDomains.
     /// </summary>
     public interface IXDBroadcaster
     {
         #region Public Methods
 
         /// <summary>
-        ///   The API used to broadcast messages to a channel, and other applications that
-        ///   may be listening.
+        /// 	Is this instance capable
+        /// </summary>
+        bool IsAlive { get; }
+
+        /// <summary>
+        /// 	The API used to broadcast messages to a channel, and other applications that
+        /// 	may be listening.
         /// </summary>
         /// <param name = "channel">The channel name to broadcast on.</param>
         /// <param name = "message">The string message data.</param>

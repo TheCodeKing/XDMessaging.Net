@@ -19,10 +19,10 @@ using XDMessaging.Entities;
 namespace XDMessaging.Transport.WindowsMessaging
 {
     /// <summary>
-    ///   An implementation of IXDListener used to send and recieve messages interprocess, using the Windows
-    ///   Messaging XDTransportMode. Applications may leverage this instance to register listeners on pseudo 'channels', and 
-    ///   receive messages broadcast using a concrete IXDBroadcast implementation on the same machine. Non-form based 
-    ///   application are not supported by this implementation.
+    /// 	An implementation of IXDListener used to send and recieve messages interprocess, using the Windows
+    /// 	Messaging XDTransportMode. Applications may leverage this instance to register listeners on pseudo 'channels', and 
+    /// 	receive messages broadcast using a concrete IXDBroadcast implementation on the same machine. Non-form based 
+    /// 	application are not supported by this implementation.
     /// </summary>
     [XDListenerHint(XDTransportMode.HighPerformanceUI)]
 // ReSharper disable InconsistentNaming
@@ -32,16 +32,15 @@ namespace XDMessaging.Transport.WindowsMessaging
         #region Constants and Fields
 
         private readonly ISerializer serializer;
-        // Flag as to whether dispose has been called
-
         private bool disposed;
+        private readonly object disposeLock = new object();
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        ///   The constructor used internally for creating new instances of XDListener.
+        /// 	The constructor used internally for creating new instances of XDListener.
         /// </summary>
         internal XDWinMsgListener(ISerializer serializer)
         {
@@ -64,7 +63,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         }
 
         /// <summary>
-        ///   Deconstructor, cleans unmanaged resources only
+        /// 	Deconstructor, cleans unmanaged resources only
         /// </summary>
         ~XDWinMsgListener()
         {
@@ -76,7 +75,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         #region Events
 
         /// <summary>
-        ///   The event fired when messages are received.
+        /// 	The event fired when messages are received.
         /// </summary>
         public event Listeners.XDMessageHandler MessageReceived;
 
@@ -87,7 +86,7 @@ namespace XDMessaging.Transport.WindowsMessaging
         #region IDisposable
 
         /// <summary>
-        ///   Dispose implementation, which ensures the native window is destroyed
+        /// 	Dispose implementation, which ensures the native window is destroyed
         /// </summary>
         public void Dispose()
         {
@@ -100,38 +99,56 @@ namespace XDMessaging.Transport.WindowsMessaging
         #region IXDListener
 
         /// <summary>
-        ///   Registers the instance to recieve messages from a named channel.
+        /// Is this instance capable 
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return true; }
+        }
+
+        /// <summary>
+        /// 	Registers the instance to recieve messages from a named channel.
         /// </summary>
         /// <param name = "channelName">The channel name to listen on.</param>
         public void RegisterChannel(string channelName)
         {
-            if (string.IsNullOrEmpty(channelName))
+            Validate.That(channelName).IsNotNullOrEmpty();
+
+            if (!disposed)
             {
-                throw new ArgumentException("The channel name cannot be null or empty.", "channelName");
+                lock (disposeLock)
+                {
+                    if (!disposed)
+                    {
+                        Native.SetProp(Handle, GetChannelKey(channelName), (int)Handle);
+                        return;
+                    }
+                }
             }
-            if (disposed)
-            {
-                throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
-            }
-            Native.SetProp(Handle, GetChannelKey(channelName), (int) Handle);
+            throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
         }
 
         /// <summary>
-        ///   Unregisters the channel name with the instance, so that messages from this 
-        ///   channel will no longer be received.
+        /// 	Unregisters the channel name with the instance, so that messages from this 
+        /// 	channel will no longer be received.
         /// </summary>
         /// <param name = "channelName">The channel name to stop listening for.</param>
         public void UnRegisterChannel(string channelName)
         {
-            if (string.IsNullOrEmpty(channelName))
+            Validate.That(channelName).IsNotNullOrEmpty();
+
+            if (!disposed)
             {
-                throw new ArgumentException("The channel name cannot be null or empty.", "channelName");
+                lock (disposeLock)
+                {
+                    if (!disposed)
+                    {
+                        Native.RemoveProp(Handle, GetChannelKey(channelName));
+                        return;
+                    }
+                }
             }
-            if (disposed)
-            {
-                throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
-            }
-            Native.RemoveProp(Handle, GetChannelKey(channelName));
+            throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
         }
 
         #endregion
@@ -141,10 +158,10 @@ namespace XDMessaging.Transport.WindowsMessaging
         #region Methods
 
         /// <summary>
-        ///   Gets a channel key string associated with the channel name. This is used as the 
-        ///   property name attached to listening windows in order to identify them as
-        ///   listeners. Using the key instead of user defined channel name avoids protential 
-        ///   property name clashes.
+        /// 	Gets a channel key string associated with the channel name. This is used as the 
+        /// 	property name attached to listening windows in order to identify them as
+        /// 	listeners. Using the key instead of user defined channel name avoids protential 
+        /// 	property name clashes.
         /// </summary>
         /// <param name = "channelName">The channel name for which a channel key is required.</param>
         /// <returns>The string channel key.</returns>
@@ -154,8 +171,8 @@ namespace XDMessaging.Transport.WindowsMessaging
         }
 
         /// <summary>
-        ///   The native window message filter used to catch our custom WM_COPYDATA
-        ///   messages containing cross AppDomain messages. All other messages are ignored.
+        /// 	The native window message filter used to catch our custom WM_COPYDATA
+        /// 	messages containing cross AppDomain messages. All other messages are ignored.
         /// </summary>
         /// <param name = "msg">A representation of the native Windows Message.</param>
         protected override void WndProc(ref Message msg)
@@ -177,29 +194,35 @@ namespace XDMessaging.Transport.WindowsMessaging
         }
 
         /// <summary>
-        ///   Dispose implementation which ensures the native window is destroyed, and
-        ///   managed resources detached.
+        /// 	Dispose implementation which ensures the native window is destroyed, and
+        /// 	managed resources detached.
         /// </summary>
         private void Dispose(bool disposeManaged)
         {
             if (!disposed)
             {
-                disposed = true;
-                if (disposeManaged)
+                lock (disposeLock)
                 {
-                    if (MessageReceived != null)
+                    if (!disposed)
                     {
-                        // remove all handlers
-                        Delegate[] del = MessageReceived.GetInvocationList();
-                        foreach (Listeners.XDMessageHandler msg in del)
+                        disposed = true;
+                        if (disposeManaged)
                         {
-                            MessageReceived -= msg;
+                            if (MessageReceived != null)
+                            {
+                                // remove all handlers
+                                Delegate[] del = MessageReceived.GetInvocationList();
+                                foreach (Listeners.XDMessageHandler msg in del)
+                                {
+                                    MessageReceived -= msg;
+                                }
+                            }
+                            if (Handle != IntPtr.Zero)
+                            {
+                                DestroyHandle();
+                                Dispose();
+                            }
                         }
-                    }
-                    if (Handle != IntPtr.Zero)
-                    {
-                        DestroyHandle();
-                        Dispose();
                     }
                 }
             }

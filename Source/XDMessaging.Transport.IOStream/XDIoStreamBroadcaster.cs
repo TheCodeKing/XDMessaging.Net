@@ -22,9 +22,9 @@ using XDMessaging.Messages;
 namespace XDMessaging.Transport.IOStream
 {
     /// <summary>
-    ///   A concrete implementation of IXDBroadcast which can be used to send messages across
-    ///   appDomain and process boundaries using file IO streams to a shared directory. Instances
-    ///   of XDIOStreamListener can be used to receive the messages in another process.
+    /// 	A concrete implementation of IXDBroadcast which can be used to send messages across
+    /// 	appDomain and process boundaries using file IO streams to a shared directory. Instances
+    /// 	of XDIOStreamListener can be used to receive the messages in another process.
     /// </summary>
     [XDBroadcasterHint(XDTransportMode.Compatibility)]
 // ReSharper disable InconsistentNaming
@@ -34,33 +34,41 @@ namespace XDMessaging.Transport.IOStream
         #region Constants and Fields
 
         /// <summary>
-        ///   The timeout period after which messages are deleted.
+        /// 	The timeout period after which messages are deleted.
         /// </summary>
         private const int fileTimeoutMilliseconds = 5000;
 
         /// <summary>
-        ///   Unique mutex key to synchronize the clean up tasks across processes.
+        /// 	Unique mutex key to synchronize the clean up tasks across processes.
         /// </summary>
         private const string mutexCleanUpKey = @"Global\XDIOStreamBroadcastv4.Cleanup";
 
         /// <summary>
-        ///   Get a list of charactors that must be stripped from a channel name folder.
+        /// 	Get a list of charactors that must be stripped from a channel name folder.
         /// </summary>
         private static readonly char[] invalidChannelChars = Path.GetInvalidFileNameChars();
 
         /// <summary>
-        ///   The temporary folder where messages will be stored.
+        /// 	The temporary folder where messages will be stored.
         /// </summary>
         private static readonly string temporaryFolder;
 
         private readonly ISerializer serializer;
+
+        /// <summary>
+        /// 	Is this instance capable
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return true; }
+        }
 
         #endregion
 
         #region Constructors and Destructors
 
         /// <summary>
-        ///   Static constructor gets the path to the temporary directory.
+        /// 	Static constructor gets the path to the temporary directory.
         /// </summary>
         static XDIOStreamBroadcaster()
         {
@@ -90,8 +98,8 @@ namespace XDMessaging.Transport.IOStream
         }
 
         /// <summary>
-        ///   The implementation of IXDBroadcast, used to broadcast a new message to other processes. This creates a unique
-        ///   file on the filesystem. The temporary files are cleaned up after a pre-defined timeout.
+        /// 	The implementation of IXDBroadcast, used to broadcast a new message to other processes. This creates a unique
+        /// 	file on the filesystem. The temporary files are cleaned up after a pre-defined timeout.
         /// </summary>
         /// <param name = "channelName"></param>
         /// <param name = "message"></param>
@@ -124,8 +132,8 @@ namespace XDMessaging.Transport.IOStream
         #region Methods
 
         /// <summary>
-        ///   A helper method used to determine the temporary directory location used for
-        ///   a particular channel. The directory is created if it does not exist.
+        /// 	A helper method used to determine the temporary directory location used for
+        /// 	a particular channel. The directory is created if it does not exist.
         /// </summary>
         /// <param name = "channelName"></param>
         /// <returns></returns>
@@ -163,8 +171,8 @@ namespace XDMessaging.Transport.IOStream
         }
 
         /// <summary>
-        ///   Gets a channel key string associated with the channel name. This is used as the 
-        ///   directory name in the temporary directory, and we therefore strip out any invalid characters.
+        /// 	Gets a channel key string associated with the channel name. This is used as the 
+        /// 	directory name in the temporary directory, and we therefore strip out any invalid characters.
         /// </summary>
         /// <param name = "channelName">The channel name for which a channel key is required.</param>
         /// <returns>The string channel key.</returns>
@@ -181,8 +189,8 @@ namespace XDMessaging.Transport.IOStream
         }
 
         /// <summary>
-        ///   This method is called within a seperate thread and deletes messages that are older than
-        ///   the pre-defined expiry time.
+        /// 	This method is called within a seperate thread and deletes messages that are older than
+        /// 	the pre-defined expiry time.
         /// </summary>
         /// <param name = "state"></param>
         private static void CleanUpMessages(object state)
@@ -222,8 +230,8 @@ namespace XDMessaging.Transport.IOStream
         }
 
         /// <summary>
-        ///   Helper method to delete messages form the given directory older
-        ///   than the specified timeout.
+        /// 	Helper method to delete messages form the given directory older
+        /// 	than the specified timeout.
         /// </summary>
         /// <param name = "directory"></param>
         private static void CleanUpMessages(DirectoryInfo directory)

@@ -21,10 +21,10 @@ using XDMessaging.Messages;
 namespace XDMessaging.Transport.IOStream
 {
     /// <summary>
-    ///   A concrete implementation of IXDListener which can be used to listen for messages
-    ///   broadcast using the XDIOStreamBroadcast implementation. A Mutex is used to ensure 
-    ///   a single clean up thread removes messages after the specified timeout period. Dispose
-    ///   should be called to shut down the listener cleanly and free up resources.
+    /// 	A concrete implementation of IXDListener which can be used to listen for messages
+    /// 	broadcast using the XDIOStreamBroadcast implementation. A Mutex is used to ensure 
+    /// 	a single clean up thread removes messages after the specified timeout period. Dispose
+    /// 	should be called to shut down the listener cleanly and free up resources.
     /// </summary>
     [XDListenerHint(XDTransportMode.Compatibility)]
 // ReSharper disable InconsistentNaming
@@ -34,19 +34,16 @@ namespace XDMessaging.Transport.IOStream
         #region Constants and Fields
 
         /// <summary>
-        ///   A lock object used to ensure changes to watcherList are thread-safe.
+        /// 	A lock object used to ensure changes to watcherList are thread-safe.
         /// </summary>
         private readonly object lockObj = new object();
 
         private readonly ISerializer serializer;
-
-        /// <summary>
-        ///   Flag as to whether dispose has been called.
-        /// </summary>
         private bool disposed;
+        private readonly object disposeLock = new object();
 
         /// <summary>
-        ///   A list of FileSystemWatcher instances used for each registered channel.
+        /// 	A list of FileSystemWatcher instances used for each registered channel.
         /// </summary>
         private Dictionary<string, FileSystemWatcher> watcherList;
 
@@ -55,7 +52,7 @@ namespace XDMessaging.Transport.IOStream
         #region Constructors and Destructors
 
         /// <summary>
-        ///   Default constructor.
+        /// 	Default constructor.
         /// </summary>
         internal XDIoStreamListener(ISerializer serializer)
         {
@@ -65,8 +62,14 @@ namespace XDMessaging.Transport.IOStream
             watcherList = new Dictionary<string, FileSystemWatcher>(StringComparer.InvariantCultureIgnoreCase);
         }
 
+
+        public bool IsAlive
+        {
+            get { return true; }
+        }
+
         /// <summary>
-        ///   Deconstructor, cleans unmanaged resources only
+        /// 	Deconstructor, cleans unmanaged resources only
         /// </summary>
         ~XDIoStreamListener()
         {
@@ -78,7 +81,7 @@ namespace XDMessaging.Transport.IOStream
         #region Events
 
         /// <summary>
-        ///   The MessageReceived event used to broadcast the message to attached instances within the current appDomain.
+        /// 	The MessageReceived event used to broadcast the message to attached instances within the current appDomain.
         /// </summary>
         public event Listeners.XDMessageHandler MessageReceived;
 
@@ -89,8 +92,8 @@ namespace XDMessaging.Transport.IOStream
         #region IDisposable
 
         /// <summary>
-        ///   Dispose implementation which ensures all FileSystemWatchers
-        ///   are shut down and handlers detatched.
+        /// 	Dispose implementation which ensures all FileSystemWatchers
+        /// 	are shut down and handlers detatched.
         /// </summary>
         public void Dispose()
         {
@@ -103,39 +106,48 @@ namespace XDMessaging.Transport.IOStream
         #region IXDListener
 
         /// <summary>
-        ///   Sets up a new FileSystemWatcher so that messages can be received on a particular 'channel'.
+        /// 	Sets up a new FileSystemWatcher so that messages can be received on a particular 'channel'.
         /// </summary>
         /// <param name = "channelName"></param>
         public void RegisterChannel(string channelName)
         {
-            if (string.IsNullOrEmpty(channelName))
+            Validate.That(channelName).IsNotNullOrEmpty();
+
+            if (!disposed)
             {
-                throw new ArgumentException("The channel name cannot be null or empty.", "channelName");
+                lock (disposeLock)
+                {
+                    if (!disposed)
+                    {
+                        FileSystemWatcher watcher = EnsureWatcher(channelName);
+                        watcher.EnableRaisingEvents = true;
+                        return;
+                    }
+                }
             }
-            if (disposed)
-            {
-                throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
-            }
-            FileSystemWatcher watcher = EnsureWatcher(channelName);
-            watcher.EnableRaisingEvents = true;
         }
 
         /// <summary>
-        ///   Disables any FileSystemWatcher for a particular channel so that messages are no longer received.
+        /// 	Disables any FileSystemWatcher for a particular channel so that messages are no longer received.
         /// </summary>
         /// <param name = "channelName"></param>
         public void UnRegisterChannel(string channelName)
         {
-            if (string.IsNullOrEmpty(channelName))
+            Validate.That(channelName).IsNotNullOrEmpty();
+
+            if (!disposed)
             {
-                throw new ArgumentException("The channel name cannot be null or empty.", "channelName");
+                lock (disposeLock)
+                {
+                    if (!disposed)
+                    {
+                        FileSystemWatcher watcher = EnsureWatcher(channelName);
+                        watcher.EnableRaisingEvents = false;
+                        return;
+                    }
+                }
             }
-            if (disposed)
-            {
-                throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
-            }
-            FileSystemWatcher watcher = EnsureWatcher(channelName);
-            watcher.EnableRaisingEvents = false;
+            throw new ObjectDisposedException("IXDListener", "This instance has been disposed.");
         }
 
         #endregion
@@ -145,42 +157,49 @@ namespace XDMessaging.Transport.IOStream
         #region Methods
 
         /// <summary>
-        ///   Dispose implementation, which ensures the native window is destroyed
+        /// 	Dispose implementation, which ensures the native window is destroyed
         /// </summary>
         private void Dispose(bool disposeManaged)
         {
             if (!disposed)
             {
-                disposed = true;
-                if (disposeManaged)
+                lock (disposeLock)
                 {
-                    if (MessageReceived != null)
+                    if (!disposed)
                     {
-                        // remove all handlers
-                        Delegate[] del = MessageReceived.GetInvocationList();
-                        foreach (Listeners.XDMessageHandler msg in del)
+                        disposed = true;
+                        if (disposeManaged)
                         {
-                            MessageReceived -= msg;
+                            if (MessageReceived != null)
+                            {
+                                // remove all handlers
+                                Delegate[] del = MessageReceived.GetInvocationList();
+                                foreach (Listeners.XDMessageHandler msg in del)
+                                {
+                                    MessageReceived -= msg;
+                                }
+                            }
+                            if (watcherList != null)
+                            {
+                                // shut down watchers
+                                foreach (var watcher in watcherList.Values)
+                                {
+                                    watcher.EnableRaisingEvents = false;
+                                    watcher.Changed -= OnMessageReceived;
+                                    watcher.Dispose();
+                                }
+                                watcherList.Clear();
+                                watcherList = null;
+                            }
                         }
-                    }
-                    if (watcherList != null)
-                    {
-                        // shut down watchers
-                        foreach (var watcher in watcherList.Values)
-                        {
-                            watcher.EnableRaisingEvents = false;
-                            watcher.Changed -= OnMessageReceived;
-                            watcher.Dispose();
-                        }
-                        watcherList.Clear();
-                        watcherList = null;
+
                     }
                 }
             }
         }
 
         /// <summary>
-        ///   Provides a thread safe method to lookup/create a instance of FileSystemWatcher for a particular channel.
+        /// 	Provides a thread safe method to lookup/create a instance of FileSystemWatcher for a particular channel.
         /// </summary>
         /// <param name = "channelName"></param>
         /// <returns></returns>
@@ -221,8 +240,8 @@ namespace XDMessaging.Transport.IOStream
         }
 
         /// <summary>
-        ///   The FileSystemWatcher event that is triggered when a new file is created in the channel temporary
-        ///   directory. This dispatches the MessageReceived event.
+        /// 	The FileSystemWatcher event that is triggered when a new file is created in the channel temporary
+        /// 	directory. This dispatches the MessageReceived event.
         /// </summary>
         private void ProcessMessage(string fullPath)
         {

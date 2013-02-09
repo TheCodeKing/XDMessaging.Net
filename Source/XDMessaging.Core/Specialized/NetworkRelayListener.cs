@@ -28,7 +28,6 @@ namespace XDMessaging.Specialized
         #region Constants and Fields
 
         private const int networkReTryTimeoutMilliSeconds = 10000;
-        private bool disposed;
 
         /// <summary>
         /// 	The factory instance used to create broadcast instances in order to re-send network messages natively.
@@ -41,6 +40,8 @@ namespace XDMessaging.Specialized
         /// 	The instance of MailSlot used to receive network messages from other machines.
         /// </summary>
         private readonly IXDListener propagateListener;
+
+        private bool disposed;
 
         #endregion
 
@@ -68,6 +69,14 @@ namespace XDMessaging.Specialized
             RegisterNetworkListener(mode);
         }
 
+        /// <summary>
+        /// 	Is this instance capable
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return propagateListener.IsAlive; }
+        }
+
         private void RegisterNetworkListener(XDTransportMode mode)
         {
             if (disposed)
@@ -75,12 +84,17 @@ namespace XDMessaging.Specialized
                 return;
             }
 
+            if (!IsAlive)
+            {
+                return;
+            }
+
             // listen on the network channel for this mode
             Task.Factory.StartNew(() =>
                                       {
-                                          this.propagateListener.RegisterChannel(
+                                          propagateListener.RegisterChannel(
                                               NetworkRelayBroadcaster.GetNetworkListenerName(mode));
-                                          this.propagateListener.MessageReceived += OnNetworkMessageReceived;
+                                          propagateListener.MessageReceived += OnNetworkMessageReceived;
                                       }).ContinueWith(t =>
                                                           {
                                                               var e = t.Exception;
@@ -90,7 +104,6 @@ namespace XDMessaging.Specialized
                                                                   // retry attach listener
                                                                   RegisterNetworkListener(mode);
                                                               }
-         
                                                           }, TaskContinuationOptions.OnlyOnFaulted);
         }
 
@@ -105,7 +118,7 @@ namespace XDMessaging.Specialized
         #region Implemented Interfaces
 
         /// <summary>
-        ///   Deconstructor, cleans unmanaged resources only
+        /// 	Deconstructor, cleans unmanaged resources only
         /// </summary>
         ~NetworkRelayListener()
         {
@@ -115,7 +128,7 @@ namespace XDMessaging.Specialized
         #region IDisposable
 
         /// <summary>
-        ///   Dispose implementation, which ensures the native window is destroyed
+        /// 	Dispose implementation, which ensures the native window is destroyed
         /// </summary>
         public void Dispose()
         {
@@ -142,7 +155,6 @@ namespace XDMessaging.Specialized
                     {
                         nativeListener.Dispose();
                     }
-      
                 }
             }
         }

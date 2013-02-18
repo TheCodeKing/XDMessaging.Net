@@ -64,7 +64,8 @@ namespace XDMessaging.IoC
             var assemblies = Directory.GetFiles(location, "*.dll")
                 .Where(a => (!AppDomain.CurrentDomain.GetAssemblies()
                     .Any(x => AssemblyName.ReferenceMatchesDefinition(AssemblyName.GetAssemblyName(a), x.GetName()))))
-                    .Select(Assembly.LoadFrom);
+                    .Select(Assembly.LoadFrom)
+                    .SkipExceptions();
             ScanAllAssemblies(assemblies);
         }
 

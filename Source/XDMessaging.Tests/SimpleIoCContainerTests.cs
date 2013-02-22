@@ -12,6 +12,7 @@
 */
 using System;
 using System.Collections.Specialized;
+using System.Diagnostics;
 using NUnit.Framework;
 using TheCodeKing.Utils.IoC;
 using XDMessaging.IdentityProviders;
@@ -30,6 +31,22 @@ namespace XDMessaging.Tests
         #endregion
 
         #region Public Methods
+
+        [Test]
+        public void GivenIocContainerInitializeShouldCompleteInLessThanHalfSecond()
+        {
+            // arrange
+            var stopwatch = new Stopwatch();
+            stopwatch.Start();
+
+            // act
+            SimpleIocContainerBootstrapper.GetInstance(true);
+            stopwatch.Stop();
+
+            // assert
+            Assert.That(stopwatch.Elapsed.Milliseconds, Is.LessThanOrEqualTo(500));
+        }
+
 
         [Test]
         public void GivenLifetimeSingletonThenReturnSameInstanceSuccess()

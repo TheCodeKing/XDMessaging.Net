@@ -1,5 +1,8 @@
-﻿using NUnit.Framework;
+﻿using System;
+using System.Diagnostics;
+using NUnit.Framework;
 using TheCodeKing.Utils.IoC;
+using XDMessaging.IoC;
 using XDMessaging.Transport.Amazon.Entities;
 
 namespace XDMessaging.Tests

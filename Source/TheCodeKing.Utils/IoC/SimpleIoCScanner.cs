@@ -24,6 +24,7 @@ namespace XDMessaging.IoC
     {
         protected readonly IocContainer Container;
 
+        private const string DefaultSearchPattern = "*.dll";
         private static readonly IList<string> checkedAssemblies = new List<string>();
         private static readonly IDictionary<string, Assembly> dynamicAssemblies = new Dictionary<string, Assembly>(StringComparer.InvariantCultureIgnoreCase);
         private static readonly IDictionary<string, Type> foundInterfaces = new Dictionary<string, Type>(StringComparer.InvariantCultureIgnoreCase);
@@ -42,34 +43,47 @@ namespace XDMessaging.IoC
             Container = container;
         }
 
-
         public void ScanAllAssemblies()
         {
-            ScanLoadedAssemblies();
+            ScanAllAssemblies(DefaultSearchPattern);
+        }
+
+        public void ScanAllAssemblies(string searchPattern)
+        {
+            Validate.That(searchPattern).IsNotNullOrEmpty();
+
             var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
-            ScanAllAssemblies(location);
-            location = AppDomain.CurrentDomain.BaseDirectory;
-            ScanAllAssemblies(location);
+            ScanAssemblies(location, searchPattern);
+            var baselocation = AppDomain.CurrentDomain.BaseDirectory;
+            if (string.Compare(baselocation.Trim('\\'), location.Trim('\\'), true) != 0)
+            {
+                ScanAssemblies(baselocation, searchPattern);
+            }
         }
 
         public void ScanLoadedAssemblies()
         {
-            ScanAllAssemblies(AppDomain.CurrentDomain.GetAssemblies().Where(a => !a.FullName.StartsWith("system.", StringComparison.InvariantCultureIgnoreCase)));
+            ScanAssemblies(AppDomain.CurrentDomain.GetAssemblies()
+                .Where(a => !a.FullName.StartsWith("system.", StringComparison.InvariantCultureIgnoreCase)));
         }
 
-        public void ScanAllAssemblies(string location)
+        public void ScanAssemblies(string location)
+        {
+            ScanAssemblies(location, DefaultSearchPattern);
+        }
+
+        public void ScanAssemblies(string location, string searchPattern)
         {
             Validate.That(location).IsNotNullOrEmpty();
+            Validate.That(searchPattern).IsNotNullOrEmpty();
 
-            var assemblies = Directory.GetFiles(location, "*.dll")
-                .Where(a => (!AppDomain.CurrentDomain.GetAssemblies()
-                    .Any(x => AssemblyName.ReferenceMatchesDefinition(AssemblyName.GetAssemblyName(a), x.GetName()))))
-                    .Select(Assembly.LoadFrom)
-                    .SkipExceptions();
-            ScanAllAssemblies(assemblies);
+            var assemblies = Directory.GetFiles(location, searchPattern)
+                .Select(Assembly.LoadFrom)
+                .SkipExceptions();
+            ScanAssemblies(assemblies);
         }
 
-        private void ScanAllAssemblies(IEnumerable<Assembly> assemblies)
+        private void ScanAssemblies(IEnumerable<Assembly> assemblies)
         {
             var list = assemblies.ToList();
             var resources = new List<Assembly>();

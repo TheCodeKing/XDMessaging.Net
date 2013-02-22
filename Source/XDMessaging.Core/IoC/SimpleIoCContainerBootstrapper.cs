@@ -63,7 +63,7 @@ namespace XDMessaging.IoC
             container.Register<ISerializer>(
                 () => new SpecializedSerializer(container.Resolve<ISerializer>(binarySerializer),
                                                 container.Resolve<ISerializer>(jsonSerializer)));
-            container.Scan.ScanAllAssemblies();
+            container.Scan.ScanAllAssemblies("XDMessaging.*.dll");
         }
 
         #endregion

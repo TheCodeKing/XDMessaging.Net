@@ -39,9 +39,22 @@ namespace TheCodeKing.Utils.IoC
         void ScanAllAssemblies();
 
         /// <summary>
+        ///   Scan assemblies at the same location as the executing assembly for concrete XD implementations.
+        /// </summary>
+        /// <param name="searchPattern">The search pattern.</param>
+        void ScanAllAssemblies(string searchPattern);
+
+        /// <summary>
         ///   Scan assemblies at given location for concrete XD implementations.
         /// </summary>
         /// <param name = "location">The search location.</param>
-        void ScanAllAssemblies(string location);
+        void ScanAssemblies(string location);
+
+        /// <summary>
+        ///   Scan assemblies at location using the given serach pattern.
+        /// </summary>
+        /// <param name = "location">The search location.</param>
+        /// <param name = "searchPattern">The search pattern.</param>
+        void ScanAssemblies(string location, string searchPattern);
     }
 }

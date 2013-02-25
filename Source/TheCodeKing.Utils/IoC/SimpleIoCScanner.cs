@@ -52,11 +52,13 @@ namespace XDMessaging.IoC
         {
             Validate.That(searchPattern).IsNotNullOrEmpty();
 
-            var location = Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location);
+            var location = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)??"").Trim('\\');
+            location = ResolveBinLocation(location);
             ScanAssemblies(location, searchPattern);
-            var baselocation = AppDomain.CurrentDomain.BaseDirectory;
-            if (string.Compare(baselocation.Trim('\\'), location.Trim('\\'), true) != 0)
+            var baselocation = AppDomain.CurrentDomain.BaseDirectory.Trim('\\');
+            if (string.Compare(baselocation, location, true) != 0)
             {
+                baselocation = ResolveBinLocation(baselocation);
                 ScanAssemblies(baselocation, searchPattern);
             }
         }
@@ -77,7 +79,7 @@ namespace XDMessaging.IoC
             Validate.That(location).IsNotNullOrEmpty();
             Validate.That(searchPattern).IsNotNullOrEmpty();
 
-            var assemblies = Directory.GetFiles(location, searchPattern)
+            var assemblies = Directory.GetFiles(location, searchPattern, SearchOption.AllDirectories)
                 .Select(Assembly.LoadFrom)
                 .SkipExceptions();
             ScanAssemblies(assemblies);
@@ -237,6 +239,16 @@ namespace XDMessaging.IoC
 
                 return output.ToArray();
             }
+        }
+
+        private static string ResolveBinLocation(string location)
+        {
+            var testPath = string.Concat(location, @"\bin");
+            if (Directory.Exists(testPath))
+            {
+                return testPath;
+            }
+            return location;
         }
     }
 }

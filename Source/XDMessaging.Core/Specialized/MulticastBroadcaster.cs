@@ -47,7 +47,7 @@ namespace XDMessaging.Specialized
         /// </summary>
         public bool IsAlive
         {
-            get { return !broadcasters.Any(x => !x.IsAlive); }
+            get { return broadcasters.Any(x => x.IsAlive); }
         }
 
         #endregion

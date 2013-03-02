@@ -15,6 +15,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text.RegularExpressions;
 using TheCodeKing.Utils.Contract;
 using TheCodeKing.Utils.IoC;
 
@@ -24,15 +25,16 @@ namespace XDMessaging.IoC
     {
         protected readonly IocContainer Container;
 
+        private static readonly Regex SystemRegex = new Regex(@"^system\.$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
         private const string DefaultSearchPattern = "*.dll";
-        private static readonly IList<string> checkedAssemblies = new List<string>();
-        private static readonly IDictionary<string, Assembly> dynamicAssemblies = new Dictionary<string, Assembly>(StringComparer.InvariantCultureIgnoreCase);
-        private static readonly IDictionary<string, Type> foundInterfaces = new Dictionary<string, Type>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly IList<string> CheckedAssemblies = new List<string>();
+        private static readonly IDictionary<string, Assembly> DynamicAssemblies = new Dictionary<string, Assembly>(StringComparer.InvariantCultureIgnoreCase);
+        private static readonly IDictionary<string, Type> FoundInterfaces = new Dictionary<string, Type>(StringComparer.InvariantCultureIgnoreCase);
 
         static SimpleIocScanner()
         {
-            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => dynamicAssemblies.ContainsKey(args.Name)
-                                                                             ? dynamicAssemblies[args.Name]
+            AppDomain.CurrentDomain.AssemblyResolve += (sender, args) => DynamicAssemblies.ContainsKey(args.Name)
+                                                                             ? DynamicAssemblies[args.Name]
                                                                              : null;
         }
 
@@ -61,12 +63,19 @@ namespace XDMessaging.IoC
                 baselocation = ResolveBinLocation(baselocation);
                 ScanAssemblies(baselocation, searchPattern);
             }
+
         }
 
         public void ScanLoadedAssemblies()
         {
+            ScanLoadedAssemblies(DefaultSearchPattern);
+        }
+
+        public void ScanLoadedAssemblies(string searchPattern)
+        {
+            var regex = new Regex("^" + Regex.Escape(searchPattern).Replace(@"\*", ".*").Replace(@"\?", ".") + "$", RegexOptions.IgnoreCase | RegexOptions.Compiled | RegexOptions.Singleline);
             ScanAssemblies(AppDomain.CurrentDomain.GetAssemblies()
-                .Where(a => !a.FullName.StartsWith("system.", StringComparison.InvariantCultureIgnoreCase)));
+                .Where(a => regex.IsMatch(Path.GetFileName(a.Location) ?? "")));
         }
 
         public void ScanAssemblies(string location)
@@ -81,17 +90,18 @@ namespace XDMessaging.IoC
 
             var assemblies = Directory.GetFiles(location, searchPattern, SearchOption.AllDirectories)
                 .Select(Assembly.LoadFrom)
-                .SkipExceptions();
+                .WrapExceptions(e => new FileLoadException("Error loading transport assembly. Grant read/list contents permissions on the application directory. If executing from a network share, add <loadFromRemoteSources enabled=\"true\" /> to the runtime section of the app.config.", e));
             ScanAssemblies(assemblies);
         }
 
         private void ScanAssemblies(IEnumerable<Assembly> assemblies)
         {
+
             var list = assemblies.ToList();
             var resources = new List<Assembly>();
             foreach (var item in list)
             {
-                if ((Path.GetFileNameWithoutExtension(item.Location)??"").StartsWith("System.", StringComparison.InvariantCultureIgnoreCase) || checkedAssemblies.Contains(item.FullName))
+                if (SystemRegex.IsMatch(Path.GetFileNameWithoutExtension(item.Location) ?? "") || CheckedAssemblies.Contains(item.FullName))
                 {
                     continue;
                 }
@@ -109,14 +119,14 @@ namespace XDMessaging.IoC
             {
                 foreach (var concrete in GetFilteredTypes(assembly))
                 {
-                    if (foundInterfaces.ContainsKey(concrete.Name))
+                    if (FoundInterfaces.ContainsKey(concrete.Name))
                     {
-                        var interfaceType = foundInterfaces[concrete.Name];
+                        var interfaceType = FoundInterfaces[concrete.Name];
                         if (interfaceType.IsAssignableFrom(concrete))
                         {
                             Container.Register(interfaceType, concrete);
                         }
-                        foundInterfaces.Remove(concrete.Name);
+                        FoundInterfaces.Remove(concrete.Name);
                     }
                 }
             }
@@ -157,14 +167,14 @@ namespace XDMessaging.IoC
             {
                 foreach (var item in GetFilteredTypes(assembly).Where(a => a.IsInterface).Where(t => t.Name.StartsWith("I")))
                 {
-                    foundInterfaces[item.Name.Substring(1)] = item;
+                    FoundInterfaces[item.Name.Substring(1)] = item;
                 }
             }
         }
 
         private static IEnumerable<Type> GetFilteredTypes(Assembly assembly)
         {
-            return assembly.GetTypes().Where(t => !t.FullName.StartsWith("System.", StringComparison.InvariantCultureIgnoreCase));
+            return assembly.GetTypes().Where(t => !SystemRegex.IsMatch(t.FullName??""));
         }
 
         private static IEnumerable<Assembly> SearchResourcesForEmbeddedAssemblies(Assembly assembly)
@@ -177,9 +187,9 @@ namespace XDMessaging.IoC
                     if (input != null)
                     {
                         var dynamicAssembly = Assembly.Load(StreamToBytes(input));
-                        if (!dynamicAssemblies.ContainsKey(dynamicAssembly.FullName))
+                        if (!DynamicAssemblies.ContainsKey(dynamicAssembly.FullName))
                         {
-                            dynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;
+                            DynamicAssemblies[dynamicAssembly.FullName] = dynamicAssembly;
                         }
                         resources.Add(dynamicAssembly);
                     }
@@ -202,17 +212,17 @@ namespace XDMessaging.IoC
             Validate.That(assembly).IsNotNull();
 
             IEnumerable<Assembly> resources;
-            if (!checkedAssemblies.Contains(assembly.FullName))
+            if (!CheckedAssemblies.Contains(assembly.FullName))
             {
-                checkedAssemblies.Add(assembly.FullName);
+                CheckedAssemblies.Add(assembly.FullName);
                 resources = SearchResourcesForEmbeddedAssemblies(assembly);
                 SearchAssembliesForAllInterfaces(resources.Concat(new[] { assembly }));
 
                 RegisterConcreteBasedOnInitializeAttribute(resources);
                 RegisterConcreteBasedOnNamingConvention(resources);
             }
-
         }
+
         public void ScanEmbeddedResources(Assembly assembly)
         {
             Validate.That(assembly).IsNotNull();

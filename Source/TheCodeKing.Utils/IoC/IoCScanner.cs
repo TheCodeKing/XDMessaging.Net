@@ -28,6 +28,12 @@ namespace TheCodeKing.Utils.IoC
         void ScanLoadedAssemblies();
 
         /// <summary>
+        /// Scan all loaded assemblies.
+        /// </summary>
+        /// <param name="searchPattern">The search pattern to use when scanning assemblies.</param>
+        void ScanLoadedAssemblies(string searchPattern);
+
+        /// <summary>
         ///   Scan assembly.
         /// </summary>
         /// <param name="assembly">The assembly to scan.</param>
@@ -41,7 +47,7 @@ namespace TheCodeKing.Utils.IoC
         /// <summary>
         ///   Scan assemblies at the same location as the executing assembly for concrete XD implementations.
         /// </summary>
-        /// <param name="searchPattern">The search pattern.</param>
+        /// <param name="searchPattern">The search pattern to use when scanning assemblies.</param>
         void ScanAllAssemblies(string searchPattern);
 
         /// <summary>

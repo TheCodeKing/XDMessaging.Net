@@ -10,13 +10,15 @@
 *
 *=============================================================================
 */
+using System;
 using System.Collections.Generic;
+using System.Text;
 
 namespace TheCodeKing.Utils.IoC
 {
     public static class LinqExtensions
     {
-        public static IEnumerable<T> SkipExceptions<T>(this IEnumerable<T> values)
+        public static IEnumerable<T> WrapExceptions<T>(this IEnumerable<T> values, Func<Exception, Exception> exception)
         {
             using (var enumerator = values.GetEnumerator())
             {
@@ -27,9 +29,9 @@ namespace TheCodeKing.Utils.IoC
                     {
                         next = enumerator.MoveNext();
                     }
-                    catch
+                    catch (Exception e)
                     {
-                        continue;
+                        throw exception(e);
                     }
 
                     if (next)

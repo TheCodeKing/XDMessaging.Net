@@ -2,7 +2,7 @@
 <package >
 	<metadata>
 		<id>XDMessaging</id>
-		<version>4.0.4</version>
+		<version>4.0.5</version>
 		<title>XDMessaging Library</title>
 		<authors>TheCodeKing</authors>
 		<owners>TheCodeKing</owners>
@@ -11,7 +11,7 @@
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>The XDMessaging library provides an easy-to-use, zero configuration solution to same-box communications. It provides a simple API for broadcasting and receiving messages across application domain, process and network boundaries.</description>
 		<copyright>Copyright 2013</copyright>
-		<tags>IPC crossdomain interprocess communication messaging amazon queuing messaging</tags>
+		<tags>IPC crossdomain interprocess communication messaging amazon queuing messaging remoting</tags>
 		<references>
 			<reference file="XDMessaging.dll" />
 			<reference file="XDMessaging.Transport.Amazon.dll" />

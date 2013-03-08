@@ -37,7 +37,7 @@ namespace XDMessaging.Transport.Amazon
                     var count = (int.MaxValue - semaphore.Release(1)) - 1;
                     return (count < 0) ? 0 : count;
                 }
-                catch (SemaphoreFullException e)
+                catch (SemaphoreFullException)
                 {
                     return 0;
                 }

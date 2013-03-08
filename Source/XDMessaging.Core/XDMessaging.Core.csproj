@@ -79,6 +79,7 @@
     <Compile Include="IdentityProviders\IdentityScope.cs" />
     <Compile Include="IdentityProviders\IIdentityProvider.cs" />
     <Compile Include="IdentityProviders\MachineNameIdentityProvider.cs" />
+    <Compile Include="IO\XDMessagingException.cs" />
     <Compile Include="Specialized\NetworkRelayBroadcaster.cs" />
     <Compile Include="Specialized\MulticastBroadcaster.cs" />
     <Compile Include="Entities\XDRegisterBase.cs">

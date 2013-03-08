@@ -11,9 +11,11 @@
 *=============================================================================
 */
 using System;
+using TheCodeKing.Utils.IO;
 using TheCodeKing.Utils.IoC;
 using TheCodeKing.Utils.Serialization;
 using XDMessaging.IdentityProviders;
+using XDMessaging.IO;
 using XDMessaging.Specialized;
 
 namespace XDMessaging.IoC
@@ -63,7 +65,16 @@ namespace XDMessaging.IoC
             container.Register<ISerializer>(
                 () => new SpecializedSerializer(container.Resolve<ISerializer>(binarySerializer),
                                                 container.Resolve<ISerializer>(jsonSerializer)));
-            container.Scan.ScanAllAssemblies("XDMessaging.*.dll");
+
+            try
+            {
+                container.Scan.ScanAllAssemblies("XDMessaging.*.dll");  
+            }
+            catch (IocScannerException e)
+            {
+                throw new XDMessagingException("Error loading transport assembly. Grant read/list contents permissions on the application directory. If executing from a network share, add <loadFromRemoteSources enabled=\"true\" /> to the runtime section of the app.config.", e);
+            }
+
         }
 
         #endregion

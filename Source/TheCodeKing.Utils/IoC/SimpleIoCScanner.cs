@@ -17,6 +17,7 @@ using System.Linq;
 using System.Reflection;
 using System.Text.RegularExpressions;
 using TheCodeKing.Utils.Contract;
+using TheCodeKing.Utils.IO;
 using TheCodeKing.Utils.IoC;
 
 namespace XDMessaging.IoC
@@ -90,7 +91,7 @@ namespace XDMessaging.IoC
 
             var assemblies = Directory.GetFiles(location, searchPattern, SearchOption.AllDirectories)
                 .Select(Assembly.LoadFrom)
-                .WrapExceptions(e => new FileLoadException("Error loading transport assembly. Grant read/list contents permissions on the application directory. If executing from a network share, add <loadFromRemoteSources enabled=\"true\" /> to the runtime section of the app.config.", e));
+                .WrapExceptions(e => new IocScannerException("Error loading transport assembly.", e));
             ScanAssemblies(assemblies);
         }
 
@@ -107,7 +108,7 @@ namespace XDMessaging.IoC
                 }
                 resources.AddRange(SearchResourcesForEmbeddedAssemblies(item));
             }
-            list = list.Concat(resources).ToList();
+            list = list.Concat(resources).DistinctBy(a => a.GetName().Name, StringComparer.InvariantCultureIgnoreCase).ToList();
             SearchAssembliesForAllInterfaces(list);
             RegisterConcreteBasedOnInitializeAttribute(list);
             RegisterConcreteBasedOnNamingConvention(list);

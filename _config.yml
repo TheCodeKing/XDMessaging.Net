@@ -14,8 +14,8 @@ tagline: Easy-to-use, zero configuration solution for PubSub messaging across ap
 author :
   name : Mike Carlisle
   email : mike.carlisle@thecodeking.com
-  github : thecodeking
-  twitter : thecodeking
+  github : TheCodeKing
+  twitter : TheCodeKing
   feedburner : false
 
 # The production_url is only used when full-domain names are needed

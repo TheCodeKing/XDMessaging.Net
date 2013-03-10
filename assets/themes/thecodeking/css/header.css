@@ -142,6 +142,11 @@ Small Device Styles
 
 @media screen and (max-width: 480px) {
 
+  body {
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
   .homeBtn {
     display: block;
   }

@@ -171,6 +171,7 @@ Small Device Styles
   }
   .navbar-inner {
       min-height: 0px;
+	  padding-right: 0px;
   }
 
   body {

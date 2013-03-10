@@ -10,4 +10,4 @@ The messages may optionally be propagated to other processes over a network auto
 
 Install the library using Nuget.
 
-> PM> Install-Package XDMessaging
+> PM> Install-Package XDMessaging.Net

@@ -124,7 +124,7 @@ Medium Device Styles
   
   .navbar .nav>li>a {
 	float: none;
-	padding: 5px 15px 5px;
+	padding: 10px 15px 10px;
   }
   .navbar-inner {
       min-height: 20px;
@@ -156,7 +156,7 @@ Small Device Styles
   }
 
   .navbar .nav>li>a {
-	padding: 0px 10px 5px;
+	padding: 5px 10px 5px;
   }
   .navbar-inner {
       min-height: 0px;

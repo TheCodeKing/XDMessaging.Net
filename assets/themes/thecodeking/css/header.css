@@ -139,8 +139,8 @@ Small Device Styles
 @media screen and (max-width: 480px) {
 
   body {
-    padding-left: 10px;
-    padding-right: 10px;
+    padding-left: 5px;
+    padding-right: 5px;
   }
 
   .home {
@@ -179,6 +179,14 @@ Small Device Styles
   .inner {
     min-width: 320px;
     max-width: 480px;
+  }
+  
+  .page-header h1 small {
+	display: none;
+  }
+  
+  h1 small {
+    font-size: 18px;
   }
   
   h1 {

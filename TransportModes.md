@@ -1,7 +1,7 @@
 ---
 layout: page
 title: Transport Modes
-tagline: what are they
+tagline: pros & cons
 group: navigation
 ---
 {% include JB/setup %}

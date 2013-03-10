@@ -16,7 +16,8 @@ To begin create an instance of the `XDMessagingCient` as follows:
 To send messages use the client to create an instance of `IXDBroadcast` for a particular transport mode. Use the instance to then broadcast messages on a named channel. A channel is an arbitrary string chosen to represent a channel and are not case sensitive.
 
 	// Create our listener instance using HighPerformanceUI mode
-	IXDBroadcaster broadcaster = client.Broadcasters.GetBroadcasterForMode(XDTransportMode.HighPerformanceUI);
+	IXDBroadcaster broadcaster = client.Broadcasters
+		.GetBroadcasterForMode(XDTransportMode.HighPerformanceUI);
 	
 	// Send a shutdown message on the commands channel
 	broadcast.SendToChannel("commands", "shutdown");
@@ -26,7 +27,8 @@ To send messages use the client to create an instance of `IXDBroadcast` for a pa
 To receive messages use the client to create an instance of `IXDListener` for a particular transport mode. Use the instance to register a channel to listen on.
 
 	// Create our listener instance using HighPerformanceUI mode
-	IXDListener listener= client.Listeners.GetListenerForMode(XDTransportMode.HighPerformanceUI);
+	IXDListener listener= client.Listeners
+		.GetListenerForMode(XDTransportMode.HighPerformanceUI);
 	
 	// Register channel to listen on
 	listener.RegisterChannel("commands");

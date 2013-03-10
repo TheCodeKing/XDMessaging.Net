@@ -40,6 +40,26 @@ In order to enable `NetworkPropagation` an additional flag is set when creating 
 	IXDBroadcaster broadcaster = client.Broadcasters
 		.GetBroadcasterForMode(XDTransportMode.HighPerformanceUI, true);
 
+### Sending Typed Objects
+
+The library allows the sending of plain string messages, or strongly typed serializable objects. To send objects the sender and receiver must share a common class definition for the object.
+
+	// Create serializable instance
+	CustomMessage message = new CustomMessage();
+	message.Name = "My Message";
+	
+	// Send the object to a channel named binary
+	broadcaster.SendToChannel("binary", message);
+	
+	// Deserialise the strongly typed message
+	listener.MessageReceived += (o,e) {
+		if (e.DataGram.Channel == "binary")
+		{
+		   TypedDataGram<CustomMessage> message = e.DataGram;
+		   MessageBox.Show("Received CustomMessage: "+message.Name);
+		}
+	}		
+		
 ### Explicit Modes
 
 If project references are added to the transport assemblies, then extension methods are made available on `XDMessagingClient` which strong type the specific transport implementations (rather than relying on defaults).
@@ -62,3 +82,12 @@ If project references are added to the transport assemblies, then extension meth
 	// Create broadcaster instance using Amazon mode (RemoteNetwork)
 	IXDBroadcaster broadcaster = client.Broadcasters.GetAmazonListener();
 
+### Multicast Broadcaster
+
+The multicast broadcaster is capable of sending messages to multiple transport modes at once.
+
+	IXDBroadcaster broadcaster = client.Broadcasters
+		.GetMulticastBroadcaster(XDTransportMode.Compatibility, XDTransportMode.RemoteNetwork);
+		
+	broadcaster.SendToChannel("command", "message");
+	

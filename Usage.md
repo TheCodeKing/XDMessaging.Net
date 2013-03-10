@@ -26,7 +26,7 @@ To send messages use the client to create an instance of `IXDBroadcaster` for a 
 	
 To receive messages use the client to create an instance of `IXDListener` for a particular transport mode. Use the instance to register a channel to listen on.
 
-	// Create our listener instance using HighPerformanceUI mode
+	// Create listener instance using HighPerformanceUI mode
 	IXDListener listener = client.Listeners
 		.GetListenerForMode(XDTransportMode.HighPerformanceUI);
 	

@@ -167,7 +167,7 @@ Small Device Styles
   }
 
   .navbar .nav>li>a {
-	padding: 5px 10px 5px;
+	padding: 0px 10px 2px;
   }
   .navbar-inner {
       min-height: 0px;

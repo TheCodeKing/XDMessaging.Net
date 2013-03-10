@@ -83,7 +83,7 @@ JB :
   comments :
     provider : disqus
     disqus :
-      short_name : xmessaging.net
+      short_name : xmessagingnet
     livefyre :
       site_id : 123
     intensedebate :

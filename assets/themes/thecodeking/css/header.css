@@ -92,10 +92,6 @@
   background: url(../images/sprite_download.png) no-repeat top right;
 }
 
-.homeBtn {
-    display: none;
-}
-
 code {
   color: #0088cc;
 }
@@ -147,15 +143,6 @@ Small Device Styles
     padding-right: 10px;
   }
 
-  .homeBtn {
-    display: block;
-	margin-right: -10px;
-  }
-  
-  li.homeBtn a.brand {
-	font-size: 30px;
-	margin-top: -2px;
-  }
   .home {
     display: none;
   }

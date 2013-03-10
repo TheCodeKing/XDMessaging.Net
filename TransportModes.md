@@ -18,4 +18,4 @@ The default implementation uses the `WM_COPYDATA` Windows Message to copy data b
 
 ### RemoteNetwork
 
-By default this uses `Amazon Web Services` to implement a subscriber/publisher implementation for broadcasting messages over a network and interprocess. There may be associated costs involved in using this mode, and you will need to supply valid Amazon account credentials. This mode is used internally to send messages from other transport modes over the network when using network propagation mode. To use this implementation add a reference to `XDMessaging.Transport.Amazon` in your project.
+The default implementation uses `Amazon Web Services` to implement a subscriber/publisher implementation for broadcasting messages over a network and interprocess. There may be associated costs involved in using this mode, and you will need to supply valid Amazon account credentials. This mode is used internally to send messages from other transport modes over the network when using network propagation mode. To use this implementation add a reference to `XDMessaging.Transport.Amazon` in your project.

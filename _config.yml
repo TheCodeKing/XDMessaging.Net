@@ -10,7 +10,7 @@ pygments: true
 # so be sure to set them if your theme uses them.
 #
 title : XDMessaging.Net
-tagline: The XDMessaging library provides an easy-to-use, zero configuration solution to same-box communications. It provides a simple API for broadcasting and receiving messages across application domain, process and network boundaries.
+tagline: Easy-to-use, zero configuration solution for PubSub messaging across application and network boundaries.
 author :
   name : Mike Carlisle
   email : mike.carlisle@thecodeking.com

@@ -1,5 +1,5 @@
 ---
-layout: page 
+layout: page
 title: Usage
 tagline: quick start
 group: navigation

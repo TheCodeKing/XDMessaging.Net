@@ -1,5 +1,5 @@
 ---
-layout: page 
+layout: page
 title: Transport Modes
 tagline: what are they
 group: navigation

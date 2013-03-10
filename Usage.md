@@ -13,7 +13,7 @@ To begin create an instance of the `XDMessagingCient` as follows:
 
 #### Broadcast	
 	
-To send messages use the client to create an instance of `IXDBroadcast` for a particular transport mode. Use the instance to then broadcast messages on a named channel. A channel is an arbitrary string chosen to represent a channel and are not case sensitive.
+To send messages use the client to create an instance of `IXDBroadcaster` for a particular transport mode. Use the instance to then broadcast messages on a named channel. A channel is an arbitrary string chosen to represent a channel and are not case sensitive.
 
 	// Create our listener instance using HighPerformanceUI mode
 	IXDBroadcaster broadcaster = client.Broadcasters
@@ -22,7 +22,7 @@ To send messages use the client to create an instance of `IXDBroadcast` for a pa
 	// Send a shutdown message on the commands channel
 	broadcast.SendToChannel("commands", "shutdown");
 
-#### Listen	
+#### Listen
 	
 To receive messages use the client to create an instance of `IXDListener` for a particular transport mode. Use the instance to register a channel to listen on.
 

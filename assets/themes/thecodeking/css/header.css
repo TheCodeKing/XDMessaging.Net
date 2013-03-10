@@ -149,6 +149,7 @@ Small Device Styles
 
   .homeBtn {
     display: block;
+	margin-right: -10px;
   }
   
   li.homeBtn a.brand {
@@ -168,7 +169,7 @@ Small Device Styles
   }
 
   .navbar .nav>li>a {
-	padding: 0px 10px 2px;
+	padding: 0px 10px 5px;
   }
   .navbar-inner {
       min-height: 0px;

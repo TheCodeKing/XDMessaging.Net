@@ -6,7 +6,7 @@ group: navigation
 ---
 {% include JB/setup %}
 
-Transport Modes define the implementation to use when broadcasting and receiving messages. There are three modes as follows, each with advantages over the other. Modes are abstracted from their specific implementations for extensibility, and loosely coupled. In order to use one of the modes the appropriate assembly must be placed int he installation directory of the project in addition to `XDMessaging.dll`.
+Transport Modes define the implementation to use when broadcasting and receiving messages. There are three modes as follows, each with advantages over the other. Modes are abstracted from their specific implementations for extensibility, and loosely coupled. In order to use one of the modes the appropriate assembly must be placed in the application execution directory.
 
 ### Compatibility
 

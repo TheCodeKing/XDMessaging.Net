@@ -11,8 +11,8 @@ The library allows the use of user-defined pseudo channels through which message
 
 The messages may optionally be propagated to other processes over a network automatically.
 
-## Installation
+### Installation
 
 Install the library using Nuget.
 
-> PM> Install-Package XDMessaging
+	PM> Install-Package XDMessaging

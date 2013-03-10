@@ -20,7 +20,7 @@ To send messages use the client to create an instance of `IXDBroadcaster` for a 
 		.GetBroadcasterForMode(XDTransportMode.HighPerformanceUI);
 	
 	// Send a shutdown message on the commands channel
-	broadcast.SendToChannel("commands", "shutdown");
+	broadcaster.SendToChannel("commands", "shutdown");
 
 #### Listen
 	

@@ -16,3 +16,9 @@ The messages may optionally be propagated to other processes over a network auto
 Install the library using Nuget.
 
 	PM> Install-Package XDMessaging
+	
+### Advantages
+
+The XDMessaging library offers some advantages over other IPC technologies like WCF, .Net Remoting, Sockets, NamedPipes and MailSlots. To begin with the library does not require a server-client relationship as there is no physical connection between processes.
+
+With XDMessaging messages can be broadcast by multiple applications and instantly received by multiple listeners in a disconnected fashion. It's also worth noting that most of the existing IPC implementations require the opening of specific ports and somewhat painful configuration of settings to make work. With XDMessaging there is no configuration, the API determines where messages are sent, and which messages are received using pseudo channels.

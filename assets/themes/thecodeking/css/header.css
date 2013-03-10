@@ -92,10 +92,14 @@
   background: url(../images/sprite_download.png) no-repeat top right;
 }
 
-  .homeBtn {
+.homeBtn {
     display: none;
-  }
+}
 
+code {
+  color: #0088cc;
+}
+  
 /*******************************************************************************
 Medium Device Styles
 *******************************************************************************/

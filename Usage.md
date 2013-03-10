@@ -13,7 +13,7 @@ To begin create an instance of the `XDMessagingCient` as follows:
 
 ### Broadcast	
 	
-To send messages use the client to create an instance of `IXDBroadcaster` for a particular transport mode. Use the instance to then broadcast messages on a named channel. A channel is an arbitrary string chosen to represent a channel and are not case sensitive.
+To send messages use the client to create an instance of `IXDBroadcaster` for a particular transport mode. Use the instance to broadcast messages on a named channel. A channel is an arbitrary string chosen to represent a channel and are not case sensitive.
 
 	// Create broadcaster instance using HighPerformanceUI mode
 	IXDBroadcaster broadcaster = client.Broadcasters
@@ -35,7 +35,7 @@ To receive messages use the client to create an instance of `IXDListener` for a 
 	
 ### Handle Response	
 	
-To handle messages received by the listener, attach a `MessageReceived` handler. The `DataGram` contains the original message, and channel name.
+To handle messages received by the listener, attach a `MessageReceived` handler. The `DataGram` contains the original message and channel name.
 	
 	// Attach event handler for incoming messages
 	listener.MessageReceived += (o,e) {

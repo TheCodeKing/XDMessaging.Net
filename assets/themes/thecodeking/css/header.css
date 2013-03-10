@@ -182,7 +182,7 @@ Small Device Styles
   }
   
   .page-header h1 small {
-	display: none;
+	display: inline;
   }
   
   h1 small {

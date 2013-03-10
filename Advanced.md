@@ -1,5 +1,5 @@
 ---
-layout: page
+layout: page 
 title: Advanced
 tagline: beyond basics
 group: navigation

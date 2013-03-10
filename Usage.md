@@ -3,7 +3,6 @@ layout: page
 title: Usage
 tagline: quick start
 group: navigation
-comments : disqus
 ---
 {% include JB/setup %}
 

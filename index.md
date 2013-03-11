@@ -23,4 +23,4 @@ The XDMessaging library offers some advantages over other IPC technologies like 
 
 With XDMessaging messages can be broadcast by multiple applications and instantly received by multiple listeners in a disconnected fashion. It's also worth noting that most of the existing IPC implementations require the opening of specific ports and somewhat painful configuration of settings to make work. With XDMessaging there is no configuration, the API determines where messages are sent, and which messages are received using pseudo channels.
 
-![Alt PubSub Pattern](Images/XDMessagingInstance.png)
+![Alt PubSub Pattern](images/XDMessagingInstance.png)

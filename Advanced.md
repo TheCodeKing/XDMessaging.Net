@@ -34,7 +34,7 @@ If using multiple applications with conflicting channel names, it's possible to 
 
 Network propagation is a feature of the library that allows messages to leverage `HighPerformanceUI` or `Compatibility` modes, whilst additionally distributing messages to a remote server. This uses `RemoteNetwork` mode under the hood, and messages are re-broadcast on the remote server using the original transport mode.
 
-![Alt Network Propagtion](Images/XDMessaging.png)
+![Alt Network Propagtion](images/XDMessaging.png)
 
 In order to enable `NetworkPropagation` an additional flag is set when creating the `IXDBroadcaster` instance.
 

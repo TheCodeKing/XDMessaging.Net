@@ -32,7 +32,7 @@ If using multiple applications with conflicting channel names, it's possible to 
 
 ### Network Propagation
 
-Network propagation is a feature of the library that allows messages to leverage `HighPerformanceUI` or `Compatibility` modes, whilst additionally distributing messages to a remote server. This uses `RemoteNetwork` mode under the hood, and messages are re-broadcast on the remote server using the original transport mode.
+Network propagation is a feature of the library that allows messages to leverage `HighPerformanceUI` or `Compatibility` modes, whilst additionally distributing messages to a remote server. This uses `RemoteNetwork` mode under the hood, and messages are re-broadcast by a slave listener instance using the original transport. If the slave instance terminates, then another listener instance will automatically take it's place.
 
 ![Alt Network Propagtion](images/XDMessaging.png)
 

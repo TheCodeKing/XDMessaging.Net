@@ -3,6 +3,7 @@ layout: page
 title: Usage
 tagline: quick start
 group: navigation
+weight: 1
 ---
 {% include JB/setup %}
 

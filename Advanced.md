@@ -66,7 +66,7 @@ The library allows the sending of plain string messages, or strongly typed seria
 
 If project references are added to the transport assemblies, then extension methods are made available on `XDMessagingClient` which strong type the specific transport implementations (rather than relying on defaults).
 
-	// Create listener instance using WindowsMessaging mode (HighPerformaceUI)
+	// Create listener instance using WindowsMessaging mode (HighPerformanceUI)
 	IXDListener listener = client.Listeners.GetWindowsMessagingListener();
 	
 	// Create listener instance using IOStream mode (Compatibility)
@@ -75,7 +75,7 @@ If project references are added to the transport assemblies, then extension meth
 	// Create listener instance using Amazon mode (RemoteNetwork)
 	IXDListener listener = client.Listeners.GetAmazonListener();
 	
-	// Create broadcaster instance using WindowsMessaging mode (HighPerformaceUI)
+	// Create broadcaster instance using WindowsMessaging mode (HighPerformanceUI)
 	IXDBroadcaster broadcaster = client.Broadcasters.GetWindowsMessagingBroadcaster();
 	
 	// Create broadcaster instance using IOStream mode (Compatibility)

@@ -35,7 +35,7 @@ To receive messages use the client to create an instance of `IXDListener` for a 
 	
 ### Handle Response	
 	
-To handle messages received by the listener, attach a `MessageReceived` handler. The `DataGram` contains the original message and channel name.
+To handle messages received by the listener, attach a `MessageReceived` event handler. The `DataGram` contains the original message and channel name.
 	
 	// Attach event handler for incoming messages
 	listener.MessageReceived += (o,e) {
@@ -45,9 +45,9 @@ To handle messages received by the listener, attach a `MessageReceived` handler.
 		{
 		   switch(e.DataGram.Message)
 		   {
-			   case "shutdown":
-				 this.Close();
-				 break;
+			case "shutdown":
+			   this.Close();
+			   break;
 		   }
 		}
 	}

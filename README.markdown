@@ -12,3 +12,6 @@ Install the library using Nuget.
 
 	PM> Install-Package XDMessaging
 	
+### User Guide	
+
+Refer the documentation [here](http://thecodeking.github.com/XDMessaging.Net/ "XDMessaging.Net User Guide").

@@ -35,6 +35,8 @@ If using multiple applications with conflicting channel names, it's possible to 
 
 Network propagation is a feature of the library that allows messages to leverage `HighPerformanceUI` or `Compatibility` modes, whilst additionally distributing messages to a remote server. `RemoteNetwork` mode is used under the hood to transfer messages to disconnected servers, and messages are rebroadcast by a slave `IXDListener` instance using the original transport mode. If the slave instance terminates for any reason, then another listener instance will automatically take it's place.
 
+In order to use `NetworkPropagation` mode, the `RemoteNetwork` transport mode must be enabled.
+
 ![Alt Network Propagtion](images/XDMessaging.png)
 
 In order to enable `NetworkPropagation` an additional flag is set when creating the `IXDBroadcaster` instance.

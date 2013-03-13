@@ -3,7 +3,7 @@ layout: page
 title: Advanced
 tagline: beyond basics
 group: navigation
-weight: 3
+weight: 1
 ---
 {% include JB/setup %}
 

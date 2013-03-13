@@ -9,7 +9,7 @@ weight: 2
 
 Transport Modes define the implementation to use when broadcasting and receiving messages. There are three modes as follows, each with advantages over the other. Modes are abstracted from their specific implementations for extensibility, and loosely coupled. In order to use one of the modes the appropriate assembly must be placed in the application execution directory.
 
-The following table shows the transport modes supported each application type.
+The following table shows the transport modes supported by each application type.
 
 ![Alt Transport modes](images/XDMessaging-Modes.png)
 

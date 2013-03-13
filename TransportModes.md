@@ -7,7 +7,7 @@ weight: 2
 ---
 {% include JB/setup %}
 
-Transport Modes define the implementation to use when broadcasting and receiving messages. There are three transport modes outlined below, each with advantages over the other. Modes are abstracted from their specific implementations for extensibility, and loosely coupled. In order to use one of the modes the appropriate assembly must be placed in the application execution directory.
+Transport Modes define the implementation to use when broadcasting and receiving messages. There are three transport modes outlined below, each with advantages over the other. Modes are abstracted from their specific implementations for extensibility, and loosely coupled. In order to use one of the modes the appropriate assembly must be placed into the application execution directory.
 
 The following table shows the transport modes supported by each application type.
 

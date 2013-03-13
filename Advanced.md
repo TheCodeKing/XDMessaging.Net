@@ -26,7 +26,7 @@ Alternatively by adding a reference to the `XDMessaging.Transport.Amazon.dll` as
 	XDMessagingClient client = new XDMessagingClient()
 		.WithAmazonSettings(accessKey, accessSecret, RegionEndPoint.EUWest1);
 
-If using multiple applications with conflicting channel names, it's possible to additionally partition AWS messages by a unique name. This may be useful if deploying the same application to multiple test environments. In this case messages are only send and received to applications with the same AWS settings.
+If using multiple applications with conflicting channel names, it's possible to additionally partition AWS messages by a unique name. This may be useful if deploying the same application to multiple test environments. In this case messages are only sent and received to applications with the same unique AWS key.
 
 	XDMessagingClient client = new XDMessagingClient()
 		.WithAmazonUniqueKey("qa");

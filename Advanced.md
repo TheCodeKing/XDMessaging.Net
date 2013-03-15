@@ -57,7 +57,7 @@ The library allows the sending of plain string messages, or strongly typed seria
 	broadcaster.SendToChannel("binary", message);
 	
 	// Deserialise the strongly typed message
-	listener.MessageReceived += (o,e) {
+	listener.MessageReceived += (o,e) => {
 		if (e.DataGram.Channel == "binary")
 		{
 		   TypedDataGram<CustomMessage> message = e.DataGram;

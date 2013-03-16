@@ -55,10 +55,10 @@ namespace XDMessaging.IoC
         {
             Validate.That(searchPattern).IsNotNullOrEmpty();
 
-            var location = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)??"").Trim('\\');
+            var location = (Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location)??"").TrimEnd('\\');
             location = ResolveBinLocation(location);
             ScanAssemblies(location, searchPattern);
-            var baselocation = AppDomain.CurrentDomain.BaseDirectory.Trim('\\');
+            var baselocation = AppDomain.CurrentDomain.BaseDirectory.TrimEnd('\\');
             if (string.Compare(baselocation, location, true) != 0)
             {
                 baselocation = ResolveBinLocation(baselocation);
@@ -89,7 +89,7 @@ namespace XDMessaging.IoC
             Validate.That(location).IsNotNullOrEmpty();
             Validate.That(searchPattern).IsNotNullOrEmpty();
 
-            var assemblies = Directory.GetFiles(location, searchPattern, SearchOption.AllDirectories)
+            var assemblies = Directory.GetFiles(location, searchPattern)
                 .Select(Assembly.LoadFrom)
                 .WrapExceptions(e => new IocScannerException("Error loading transport assembly.", e));
             ScanAssemblies(assemblies);

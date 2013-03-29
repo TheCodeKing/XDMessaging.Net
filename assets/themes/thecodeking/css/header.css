@@ -99,6 +99,10 @@ code {
 #follow-button span {
   padding: 5px;
 }
+ 
+#donate {
+	margin-left: 60px;
+} 
   
 /*******************************************************************************
 Medium Device Styles

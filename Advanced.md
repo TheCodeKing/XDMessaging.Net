@@ -57,7 +57,7 @@ The library allows the sending of plain string messages, or strongly typed seria
 	broadcaster.SendToChannel("binary", message);
 	
 	// Deserialise the strongly typed message
-	listener.MessageReceived += (o,e) {
+	listener.MessageReceived += (o,e) => {
 		if (e.DataGram.Channel == "binary")
 		{
 		   TypedDataGram<CustomMessage> message = e.DataGram;
@@ -91,8 +91,13 @@ If project references are added to the transport assemblies, then extension meth
 
 The multicast broadcaster is capable of sending messages to multiple transport modes at once.
 
+	IXDBroadcaster compatibility = client.Broadcasters
+		.GetMulticastBroadcaster(XDTransportMode.Compatibility);
+	IXDBroadcaster remoteNetwork = client.Broadcasters
+		.GetMulticastBroadcaster(XDTransportMode.RemoteNetwork);
+
 	IXDBroadcaster broadcaster = client.Broadcasters
-		.GetMulticastBroadcaster(XDTransportMode.Compatibility, XDTransportMode.RemoteNetwork);
+		.GetMulticastBroadcaster(compatibility, remoteNetwork);
 		
 	broadcaster.SendToChannel("command", "message");
 	

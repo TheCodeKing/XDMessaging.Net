@@ -39,7 +39,7 @@ To receive messages use the client to create an instance of `IXDListener` for a 
 To handle messages received by the listener, attach a `MessageReceived` event handler. The `DataGram` contains the original message and channel name.
 	
 	// Attach event handler for incoming messages
-	listener.MessageReceived += (o,e) {
+	listener.MessageReceived += (o,e) => {
 		// e.DataGram.Message is the message
 		// e.DataGram.Channel is the channel name
 		if (e.DataGram.Channel == "commands")

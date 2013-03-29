@@ -65,11 +65,7 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(channel).IsNotNull();
             Validate.That(message).IsNotNullOrEmpty();
 
-            var topic = topicRepository.GetTopic(channel);
-            var dataGram = new DataGram(channel, message);
-            var data = serializer.Serialize(dataGram);
-
-            publisherService.Publish(topic, dataGram.Channel, data);
+            SendToChannel(channel, typeof (string).AssemblyQualifiedName, message);
         }
 
         public void SendToChannel(string channel, object message)
@@ -78,11 +74,24 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(message).IsNotNull();
 
             var msg = serializer.Serialize(message);
-            SendToChannel(channel, msg);
+            SendToChannel(channel, message.GetType().AssemblyQualifiedName, msg);
         }
 
         #endregion
 
         #endregion
+
+        private void SendToChannel(string channel, string dataType, string message)
+        {
+            Validate.That(channel).IsNotNull();
+            Validate.That(dataType).IsNotNull();
+            Validate.That(message).IsNotNullOrEmpty();
+
+            var topic = topicRepository.GetTopic(channel);
+            var dataGram = new DataGram(channel, dataType, message);
+            var data = serializer.Serialize(dataGram);
+
+            publisherService.Publish(topic, dataGram.Channel, data);
+        }
     }
 }

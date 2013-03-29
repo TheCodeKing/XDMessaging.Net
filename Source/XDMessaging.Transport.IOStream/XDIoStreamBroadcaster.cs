@@ -94,7 +94,7 @@ namespace XDMessaging.Transport.IOStream
             Validate.That(channelName).IsNotNullOrEmpty();
             Validate.That(message).IsNotNull();
 
-            SendToChannel(channelName, serializer.Serialize(message));
+            SendToChannel(channelName, message.GetType().AssemblyQualifiedName, serializer.Serialize(message));
         }
 
         /// <summary>
@@ -105,7 +105,26 @@ namespace XDMessaging.Transport.IOStream
         /// <param name = "message"></param>
         public void SendToChannel(string channelName, string message)
         {
+            SendToChannel(channelName, typeof (string).AssemblyQualifiedName, message);
+        }
+
+        #endregion
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// 	The implementation of IXDBroadcast, used to broadcast a new message to other processes. This creates a unique
+        /// 	file on the filesystem. The temporary files are cleaned up after a pre-defined timeout.
+        /// </summary>
+        /// <param name = "channelName"></param>
+        /// <param name = "dataType"></param>
+        /// <param name = "message"></param>
+        private void SendToChannel(string channelName, string dataType, string message)
+        {
             Validate.That(channelName).IsNotNullOrEmpty();
+            Validate.That(dataType).IsNotNullOrEmpty();
             Validate.That(message).IsNotNullOrEmpty();
 
             // create temporary name
@@ -117,19 +136,13 @@ namespace XDMessaging.Transport.IOStream
             {
                 // write out the channel name and message, this allows for invalid
                 // characters in the channel name.
-                var dataGram = new DataGram(channelName, message);
+                var dataGram = new DataGram(channelName, dataType, message);
                 writer.Write(serializer.Serialize(dataGram));
                 writer.Flush();
             }
             // return as fast as we can, leaving a clean up task
             ThreadPool.QueueUserWorkItem(CleanUpMessages, new FileInfo(filePath).Directory);
         }
-
-        #endregion
-
-        #endregion
-
-        #region Methods
 
         /// <summary>
         /// 	A helper method used to determine the temporary directory location used for

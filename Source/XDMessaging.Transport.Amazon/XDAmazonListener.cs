@@ -29,28 +29,21 @@ namespace XDMessaging.Transport.Amazon
     {
         #region Constants and Fields
 
-        private readonly bool useLongLiveQueues;
+        private readonly object disposeLock = new object();
         private readonly ISerializer serializer;
         private readonly ISubscriberRepository subscriberRepository;
         private readonly ISubscriptionService subscriptionService;
         private readonly ITopicRepository topicRepository;
         private readonly string uniqueInstanceId;
+        private readonly bool useLongLiveQueues;
         private bool disposed;
-        private readonly object disposeLock = new object();
 
         #endregion
 
         #region Constructors and Destructors
 
-        /// <summary>
-        /// Is this instance capable 
-        /// </summary>
-        public bool IsAlive
-        {
-            get { return AmazonAccountSettings.GetInstance().IsValid; }
-        }
-
-        internal XDAmazonListener(IIdentityProvider identityProvider, ISerializer serializer, ITopicRepository topicRepository,
+        internal XDAmazonListener(IIdentityProvider identityProvider, ISerializer serializer,
+                                  ITopicRepository topicRepository,
                                   ISubscriberRepository subscriberRepository, ISubscriptionService subscriptionService)
         {
             Validate.That(identityProvider).IsNotNull();
@@ -59,8 +52,8 @@ namespace XDMessaging.Transport.Amazon
             Validate.That(subscriberRepository).IsNotNull();
             Validate.That(subscriptionService).IsNotNull();
 
-            this.useLongLiveQueues = (identityProvider.Scope == IdentityScope.Machine);
-            this.uniqueInstanceId = identityProvider.GetUniqueId();
+            useLongLiveQueues = (identityProvider.Scope == IdentityScope.Machine);
+            uniqueInstanceId = identityProvider.GetUniqueId();
             this.serializer = serializer;
             this.topicRepository = topicRepository;
             this.subscriberRepository = subscriberRepository;
@@ -68,7 +61,15 @@ namespace XDMessaging.Transport.Amazon
         }
 
         /// <summary>
-        ///   Deconstructor, cleans unmanaged resources only
+        /// 	Is this instance capable
+        /// </summary>
+        public bool IsAlive
+        {
+            get { return AmazonAccountSettings.GetInstance().IsValid; }
+        }
+
+        /// <summary>
+        /// 	Deconstructor, cleans unmanaged resources only
         /// </summary>
         ~XDAmazonListener()
         {
@@ -88,7 +89,7 @@ namespace XDMessaging.Transport.Amazon
         #region IDisposable
 
         /// <summary>
-        ///   Dispose implementation, which ensures the native window is destroyed
+        /// 	Dispose implementation, which ensures the native window is destroyed
         /// </summary>
         public void Dispose()
         {
@@ -110,7 +111,6 @@ namespace XDMessaging.Transport.Amazon
                 {
                     if (!disposed)
                     {
-
                         var topic = topicRepository.GetTopic(channelName);
                         var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId,
                                                                             useLongLiveQueues);
@@ -134,7 +134,6 @@ namespace XDMessaging.Transport.Amazon
                 {
                     if (!disposed)
                     {
-
                         var topic = topicRepository.GetTopic(channelName);
                         var subscriber = subscriberRepository.GetSubscriber(channelName, uniqueInstanceId,
                                                                             useLongLiveQueues);
@@ -154,8 +153,8 @@ namespace XDMessaging.Transport.Amazon
         #region Methods
 
         /// <summary>
-        ///   Dispose implementation which ensures the native window is destroyed, and
-        ///   managed resources detached.
+        /// 	Dispose implementation which ensures the native window is destroyed, and
+        /// 	managed resources detached.
         /// </summary>
         private void Dispose(bool disposeManaged)
         {
@@ -179,7 +178,6 @@ namespace XDMessaging.Transport.Amazon
                                 }
                             }
                         }
-
                     }
                 }
             }
@@ -193,7 +191,6 @@ namespace XDMessaging.Transport.Amazon
                 {
                     if (!disposed)
                     {
-
                         var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
                         var dataGram = serializer.Deserialize<DataGram>(notification.Message);
 

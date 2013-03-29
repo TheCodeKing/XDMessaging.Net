@@ -42,6 +42,8 @@ namespace XDMessaging.Transport.WindowsMessaging
 
         #endregion
 
+        #region IXDBroadcaster Members
+
         /// <summary>
         /// 	Is this instance capable
         /// </summary>
@@ -49,6 +51,8 @@ namespace XDMessaging.Transport.WindowsMessaging
         {
             get { return true; }
         }
+
+        #endregion
 
         #region Implemented Interfaces
 
@@ -59,7 +63,7 @@ namespace XDMessaging.Transport.WindowsMessaging
             Validate.That(channelName).IsNotNullOrEmpty();
             Validate.That(message).IsNotNull();
 
-            SendToChannel(channelName, serializer.Serialize(message));
+            SendToChannel(channelName, message.GetType().AssemblyQualifiedName, serializer.Serialize(message));
         }
 
         public void SendToChannel(string channelName, string message)
@@ -67,8 +71,20 @@ namespace XDMessaging.Transport.WindowsMessaging
             Validate.That(channelName).IsNotNullOrEmpty();
             Validate.That(message).IsNotNullOrEmpty();
 
+            SendToChannel(channelName, typeof (string).AssemblyQualifiedName, message);
+        }
+
+        #endregion
+
+        #endregion
+
+        private void SendToChannel(string channelName, string dataType, string message)
+        {
+            Validate.That(channelName).IsNotNullOrEmpty();
+            Validate.That(message).IsNotNullOrEmpty();
+
             // create a DataGram instance, and ensure memory is freed
-            using (var dataGram = new WinMsgDataGram(serializer, channelName, message))
+            using (var dataGram = new WinMsgDataGram(serializer, channelName, dataType, message))
             {
                 // Allocate the DataGram to a memory address contained in COPYDATASTRUCT
                 Native.COPYDATASTRUCT dataStruct = dataGram.ToStruct();
@@ -86,9 +102,5 @@ namespace XDMessaging.Transport.WindowsMessaging
                 }
             }
         }
-
-        #endregion
-
-        #endregion
     }
 }

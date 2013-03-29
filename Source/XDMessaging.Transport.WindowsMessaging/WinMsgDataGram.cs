@@ -55,15 +55,16 @@ namespace XDMessaging.Transport.WindowsMessaging
         /// </summary>
         /// <param name = "serializer"></param>
         /// <param name = "channel">The channel through which the message will be sent.</param>
+        /// <param name = "dataType">The type of the message used for deserialization hints.</param>
         /// <param name = "message">The string message to send.</param>
-        internal WinMsgDataGram(ISerializer serializer, string channel, string message)
+        internal WinMsgDataGram(ISerializer serializer, string channel, string dataType, string message)
         {
             Validate.That(serializer).IsNotNull();
 
             this.serializer = serializer;
             allocatedMemory = false;
             dataStruct = new Native.COPYDATASTRUCT();
-            dataGram = new DataGram(channel, message);
+            dataGram = new DataGram(channel, dataType, message);
         }
 
         /// <summary>

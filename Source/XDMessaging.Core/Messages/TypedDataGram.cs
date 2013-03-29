@@ -40,6 +40,11 @@ namespace XDMessaging.Messages
 
         #region Properties
 
+        public string AssemblyQualifiedName
+        {
+            get { return dataGram.AssemblyQualifiedName; }
+        }
+
         public string Channel
         {
             get { return dataGram.Channel; }

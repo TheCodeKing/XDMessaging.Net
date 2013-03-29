@@ -50,7 +50,7 @@ namespace XDMessaging.Transport.Amazon
         {
             Validate.That(name).IsNotNullOrEmpty();
 
-            var semaphore = localTracker.GetOrAdd(name, (key) => GetSemaphore(name));
+            var semaphore = localTracker.GetOrAdd(name, key => GetSemaphore(name));
             semaphore.WaitOne();
         }
 

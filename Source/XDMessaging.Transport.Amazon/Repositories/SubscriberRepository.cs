@@ -26,7 +26,7 @@ namespace XDMessaging.Transport.Amazon.Repositories
         #region Constants and Fields
 
         private readonly IDictionary<string, Subscriber> subscribers = new Dictionary<string, Subscriber>(StringComparer.InvariantCultureIgnoreCase);
-        private static readonly Regex ChannelValidatorRegex = new Regex("[^0-9a-zA-Z-_]", RegexOptions.Compiled);
+        private static readonly Regex channelValidatorRegex = new Regex("[^0-9a-zA-Z-_]", RegexOptions.Compiled);
         private readonly AmazonAccountSettings amazonAccountSettings;
         private readonly IAmazonSqsFacade amazonSqsFacade;
 
@@ -94,7 +94,7 @@ namespace XDMessaging.Transport.Amazon.Repositories
 
         private static bool DoesNameRequireEscape(string rawTopic)
         {
-            return ChannelValidatorRegex.IsMatch(rawTopic);
+            return channelValidatorRegex.IsMatch(rawTopic);
         }
 
         private string GetQueueName(string channelName, string subscriber)

@@ -121,6 +121,11 @@ namespace TheCodeKing.Demo
         private void OnMessageReceived(object sender, XDMessageEventArgs e)
         {
             // view these debug messages using SysInternals Dbgview.
+            if (e.DataGram.AssemblyQualifiedName != typeof(FormattedUserMessage).AssemblyQualifiedName)
+            {
+                throw new NotSupportedException(string.Format("Unknown message type: {0}",
+                                                              e.DataGram.AssemblyQualifiedName));
+            }
             TypedDataGram<FormattedUserMessage> dataGram = e.DataGram;
 
             Debug.WriteLine("Test Service: " + e.DataGram.Channel + " " + dataGram.Message);

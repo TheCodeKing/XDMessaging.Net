@@ -219,8 +219,15 @@ namespace TheCodeKing.Demo
                         break;
                     default:
                         // all other channels contain serialized FormattedUserMessage object 
-                        TypedDataGram<FormattedUserMessage> typedDataGram = e.DataGram;
-                        UpdateDisplayText(typedDataGram.Channel, typedDataGram.Message.FormattedTextMessage);
+                        if (e.DataGram.AssemblyQualifiedName == typeof(FormattedUserMessage).AssemblyQualifiedName)
+                        {
+                            TypedDataGram<FormattedUserMessage> typedDataGram = e.DataGram;
+                            UpdateDisplayText(typedDataGram.Channel, typedDataGram.Message.FormattedTextMessage);
+                        }
+                        else
+                        {
+                            throw new NotSupportedException(string.Format("Unknown message type: {0}", e.DataGram.AssemblyQualifiedName));
+                        }
                         break;
                 }
             }

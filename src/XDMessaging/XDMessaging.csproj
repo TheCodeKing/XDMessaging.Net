@@ -1,0 +1,177 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{E5A12ED6-6CD9-4758-B508-A6BB8554B7CC}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XDMessaging</RootNamespace>
+    <AssemblyName>XDMessaging</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'SignedRelease|AnyCPU'">
+    <OutputPath>bin\SignedRelease\</OutputPath>
+    <DefineConstants>TRACE;SIGNED</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="AWSSDK, Version=2.3.55.0, Culture=neutral, PublicKeyToken=9f476d3089b52be3, processorArchitecture=MSIL">
+      <HintPath>..\packages\AWSSDK.2.3.55.0\lib\net45\AWSSDK.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="Conditions, Version=2.1.0.24, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Conditions.2.1.0\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Conditions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\XDMessaging.Lite\IXDBroadcaster.cs">
+      <Link>IXDBroadcaster.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\IXDListener.cs">
+      <Link>IXDListener.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Messages\DataGram.cs">
+      <Link>Messages\DataGram.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Messages\TypedDataGram.cs">
+      <Link>Messages\TypedDataGram.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Properties\CommonAssemblyInfo.cs">
+      <Link>Properties\CommonAssemblyInfo.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Serialization\BinaryBase64Serializer.cs">
+      <Link>Serialization\BinaryBase64Serializer.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Serialization\ISerializer.cs">
+      <Link>Serialization\ISerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Serialization\JsonSerializer.cs">
+      <Link>Serialization\JsonSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Serialization\SpecializedSerializer.cs">
+      <Link>Serialization\SpecializedSerializer.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\IOStream\RegisterWithClient.cs">
+      <Link>Transport\IOStream\RegisterWithClient.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\IOStream\XDIOStreamBroadcaster.cs">
+      <Link>Transport\IOStream\XDIOStreamBroadcaster.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\IOStream\XDIoStreamListener.cs">
+      <Link>Transport\IOStream\XDIoStreamListener.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\WindowsMessaging\Native.cs">
+      <Link>Transport\WindowsMessaging\Native.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\WindowsMessaging\RegisterWithClient.cs">
+      <Link>Transport\WindowsMessaging\RegisterWithClient.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\WindowsMessaging\WindowEnumFilter.cs">
+      <Link>Transport\WindowsMessaging\WindowEnumFilter.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\WindowsMessaging\WindowsEnum.cs">
+      <Link>Transport\WindowsMessaging\WindowsEnum.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\WindowsMessaging\WinMsgDataGram.cs">
+      <Link>Transport\WindowsMessaging\WinMsgDataGram.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\WindowsMessaging\XDWinMsgBroadcaster.cs">
+      <Link>Transport\WindowsMessaging\XDWinMsgBroadcaster.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\Transport\WindowsMessaging\XDWinMsgListener.cs">
+      <Link>Transport\WindowsMessaging\XDWinMsgListener.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\XDMessageEventArgs.cs">
+      <Link>XDMessageEventArgs.cs</Link>
+    </Compile>
+    <Compile Include="..\XDMessaging.Lite\XDMessagingClient.cs">
+      <Link>XDMessagingClient.cs</Link>
+    </Compile>
+    <Compile Include="Entities\Broadcasters.cs" />
+    <Compile Include="Entities\Listeners.cs" />
+    <Compile Include="IdentityProviders\IdentityScope.cs" />
+    <Compile Include="IdentityProviders\IIdentityProvider.cs" />
+    <Compile Include="IdentityProviders\MachineNameIdentityProvider.cs" />
+    <Compile Include="IdentityProviders\UniqueIdentityProvider.cs" />
+    <Compile Include="Messages\NetworkRelayMessage.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Entities\Amazon\AmazonAccountSettings.cs" />
+    <Compile Include="Entities\Amazon\AmazonSqsNotification.cs" />
+    <Compile Include="Entities\Amazon\RegionEndPoint.cs" />
+    <Compile Include="Entities\Amazon\Subscriber.cs" />
+    <Compile Include="Entities\Amazon\SubscriptionInfo.cs" />
+    <Compile Include="Entities\Amazon\Topic.cs" />
+    <Compile Include="Specialized\RegisterWithClient.cs" />
+    <Compile Include="Specialized\MulticastBroadcaster.cs" />
+    <Compile Include="Specialized\NetworkRelayBroadcaster.cs" />
+    <Compile Include="Specialized\NetworkRelayListener.cs" />
+    <Compile Include="Transport\Amazon\RegisterWithClient.cs" />
+    <Compile Include="Transport\Amazon\Facades\AmazonSnsFacade.cs" />
+    <Compile Include="Transport\Amazon\Facades\AmazonSqsFacade.cs" />
+    <Compile Include="Transport\Amazon\Interfaces\IAmazonSnsFacade.cs" />
+    <Compile Include="Transport\Amazon\Interfaces\IAmazonSqsFacade.cs" />
+    <Compile Include="Transport\Amazon\Interfaces\IPublisherService.cs" />
+    <Compile Include="Transport\Amazon\Interfaces\IQueuePoller.cs" />
+    <Compile Include="Transport\Amazon\Interfaces\IResourceCounter.cs" />
+    <Compile Include="Transport\Amazon\Interfaces\ISubscriberRepository.cs" />
+    <Compile Include="Transport\Amazon\Interfaces\ISubscriptionService.cs" />
+    <Compile Include="Transport\Amazon\Interfaces\ITopicRepository.cs" />
+    <Compile Include="Transport\Amazon\QueuePoller.cs" />
+    <Compile Include="Transport\Amazon\Repositories\PublisherService.cs" />
+    <Compile Include="Transport\Amazon\Repositories\SubscriberRepository.cs" />
+    <Compile Include="Transport\Amazon\Repositories\SubscriptionService.cs" />
+    <Compile Include="Transport\Amazon\Repositories\TopicRepository.cs" />
+    <Compile Include="Transport\Amazon\ResourceCounter.cs" />
+    <Compile Include="Transport\Amazon\XDAmazonBroadcaster.cs" />
+    <Compile Include="Transport\Amazon\XdAmazonListener.cs" />
+    <Compile Include="XDTransportMode.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config" />
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if "$(ConfigurationName)" == "SignedRelease" (
+"$(SolutionDir)packages\ILMerge.2.14.1208\Tools\ILMerge.exe" /t:library /targetplatform:v4 /keyfile:..\..\..\..\..\TheCodeKing.snk /out:"$(SolutionDir)..\bin\XDMessaging.dll" XDMessaging.dll AWSSDK.dll Conditions.dll
+)</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

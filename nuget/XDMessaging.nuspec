@@ -1,0 +1,23 @@
+<?xml version="1.0"?>
+<package >
+	<metadata>
+		<id>XDMessaging</id>
+		<version>5.0.0</version>
+		<title>XDMessaging Library</title>
+		<authors>TheCodeKing</authors>
+		<owners>TheCodeKing</owners>
+		<licenseUrl>https://github.com/TheCodeKing/XDMessaging.Net/blob/master/License</licenseUrl>
+		<projectUrl>http://thecodeking.github.com/XDMessaging.Net/</projectUrl>
+		<requireLicenseAcceptance>false</requireLicenseAcceptance>
+		<description>The XDMessaging library provides an easy-to-use, zero configuration solution to inter-process communication for .NET applications. It provides a simple API for broadcasting and receiving messages across application domain, process, and even network boundaries.</description>
+		<copyright>Copyright 2016</copyright>
+		<tags>IPC crossdomain interprocess communication messaging amazon queuing messaging remoting AWS pubsub</tags>
+		<references>
+			<reference file="XDMessaging.dll" />
+		</references>
+	</metadata>
+	<files>
+		<file src="app.config.transform" target="content" />
+		<file src="..\bin\XDMessaging.dll" target="lib\net40-Client\" />
+	</files>
+</package>

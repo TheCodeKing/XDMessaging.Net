@@ -1,0 +1,102 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="14.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
+    <ProjectGuid>{4553E294-3705-4FF5-B7D7-67EED5688671}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <AppDesignerFolder>Properties</AppDesignerFolder>
+    <RootNamespace>XDMessaging</RootNamespace>
+    <AssemblyName>XDMessaging.Lite</AssemblyName>
+    <TargetFrameworkVersion>v4.5.2</TargetFrameworkVersion>
+    <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile>
+    </TargetFrameworkProfile>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
+    <DebugType>pdbonly</DebugType>
+    <Optimize>true</Optimize>
+    <OutputPath>bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <ErrorReport>prompt</ErrorReport>
+    <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'SignedRelease|AnyCPU'">
+    <OutputPath>bin\SignedRelease\</OutputPath>
+    <DefineConstants>TRACE;SIGNED</DefineConstants>
+    <Optimize>true</Optimize>
+    <DebugType>pdbonly</DebugType>
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <ErrorReport>prompt</ErrorReport>
+    <CodeAnalysisRuleSet>MinimumRecommendedRules.ruleset</CodeAnalysisRuleSet>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="Conditions, Version=2.1.0.24, Culture=neutral, processorArchitecture=MSIL">
+      <HintPath>..\packages\Conditions.2.1.0\lib\portable-net45+win+wpa81+wp80+MonoAndroid10+MonoTouch10\Conditions.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Runtime.Serialization" />
+    <Reference Include="System.Windows.Forms" />
+    <Reference Include="System.Xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="Entities\Broadcasters.cs" />
+    <Compile Include="IXDBroadcaster.cs" />
+    <Compile Include="Messages\DataGram.cs" />
+    <Compile Include="Messages\TypedDataGram.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Serialization\BinaryBase64Serializer.cs" />
+    <Compile Include="Serialization\JsonSerializer.cs" />
+    <Compile Include="Serialization\SpecializedSerializer.cs" />
+    <Compile Include="Transport\IOStream\RegisterWithClient.cs" />
+    <Compile Include="Transport\IOStream\XDIOStreamBroadcaster.cs" />
+    <Compile Include="Transport\IOStream\XDIOStreamListener.cs" />
+    <Compile Include="Transport\WindowsMessaging\RegisterWithClient.cs" />
+    <Compile Include="Transport\WindowsMessaging\WindowsEnum.cs" />
+    <Compile Include="Transport\WindowsMessaging\WindowEnumFilter.cs" />
+    <Compile Include="Transport\WindowsMessaging\XDWinMsgBroadcaster.cs" />
+    <Compile Include="XDMessageEventArgs.cs" />
+    <Compile Include="XDTransportMode.cs" />
+    <Compile Include="Entities\Listeners.cs" />
+    <Compile Include="IXDListener.cs" />
+    <Compile Include="Properties\CommonAssemblyInfo.cs" />
+    <Compile Include="Transport\WindowsMessaging\WinMsgDataGram.cs" />
+    <Compile Include="Transport\WindowsMessaging\Native.cs" />
+    <Compile Include="Transport\WindowsMessaging\XDWinMsgListener.cs" />
+    <Compile Include="Serialization\ISerializer.cs" />
+    <Compile Include="XDMessagingClient.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="packages.config">
+      <SubType>Designer</SubType>
+    </None>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
+  <PropertyGroup>
+    <PostBuildEvent>if "$(ConfigurationName)" == "SignedRelease" (
+"$(SolutionDir)packages\ILMerge.2.14.1208\Tools\ILMerge.exe" /t:library /targetplatform:v4,"$(MSBuildExtensionsPath)\..\Reference Assemblies\Microsoft\Framework\.NETFramework\v4.0\Profile\Client" /keyfile:..\..\..\..\..\TheCodeKing.snk /out:"$(SolutionDir)..\bin\XDMessaging.Lite.dll" XDMessaging.Lite.dll Conditions.dll
+)</PostBuildEvent>
+  </PropertyGroup>
+  <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
+       Other similar extension points exist, see Microsoft.Common.targets.
+  <Target Name="BeforeBuild">
+  </Target>
+  <Target Name="AfterBuild">
+  </Target>
+  -->
+</Project>

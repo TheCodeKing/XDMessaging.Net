@@ -4,7 +4,7 @@ The XDMessaging library provides an easy-to-use, zero configuration solution to 
 
 The library allows the use of user-defined pseudo channels through which messages may be sent and received. Any application can send a message to any channel, but it must register as a listener with the channel in order to receive. In this way developers can quickly and programmatically devise how their applications will communicate with each other best to work in harmony.
 
-The XDMessaging library comes in 2 flavours. The full version provides the option to use Amazon Queues for sending and receiving messages to remote machines. It also supports network propagtion more which broadcasts messages to processes on remote machines as well as the local machine. 
+The XDMessaging library comes in 2 flavours. The full version provides the option to use Amazon Queues for sending and receiving messages to remote machines. It also supports network propagtion mode which broadcasts messages to processes on remote machines as well as the local machine. 
 
 The XDMessaging.Lite version is for same box communication only, and is therefore is much more lightweight.
 

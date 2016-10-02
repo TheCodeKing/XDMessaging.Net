@@ -4,6 +4,7 @@ title: Usage
 tagline: quick start
 group: navigation
 weight: 3
+theme: thecodeking
 ---
 {% include JB/setup %}
 

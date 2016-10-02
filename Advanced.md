@@ -4,6 +4,7 @@ title: Advanced
 tagline: beyond basics
 group: navigation
 weight: 1
+theme: thecodeking
 ---
 {% include JB/setup %}
 

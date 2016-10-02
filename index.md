@@ -2,6 +2,7 @@
 layout: page
 title: Welcome
 tagline: about the library
+theme: thecodeking
 ---
 {% include JB/setup %}
 

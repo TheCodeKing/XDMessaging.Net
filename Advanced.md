@@ -22,7 +22,7 @@ The default implementation of `RemoteNetwork` mode uses `Amazon Web Services`, s
 	  </appSettings>
 	</configuration>
 	
-Alternatively by adding a reference to the `XDMessaging.Transport.Amazon.dll` assembly it's possible to define these programmatically. Additionally it's possible to then set the desired AWS region.
+Alternatively it's possible to define these programmatically and set the desired AWS region.
 
 	XDMessagingClient client = new XDMessagingClient()
 		.WithAmazonSettings(accessKey, accessSecret, RegionEndPoint.EUWest1);

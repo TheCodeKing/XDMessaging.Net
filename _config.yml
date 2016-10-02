@@ -18,6 +18,7 @@ author :
   twitter : TheCodeKing
   feedburner : false
 
+theme: thecodeking
 # The production_url is only used when full-domain names are needed
 # such as sitemap.txt 
 # Most places will/should use BASE_PATH to make the urls
@@ -57,6 +58,8 @@ JB :
   #     This means always setting the protocol (http|https) or prefixing with "/"
   BASE_PATH : http://thecodeking.github.com/XDMessaging.Net
 
+  THEME-NAME: thecodeking
+  
   # By default, the asset_path is automatically defined relative to BASE_PATH plus the enabled theme.
   # ex: [BASE_PATH]/assets/themes/[THEME-NAME]
   #

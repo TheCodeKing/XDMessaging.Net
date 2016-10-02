@@ -12,7 +12,7 @@ The library allows the use of user-defined pseudo channels through which message
 
 The XDMessaging library comes in 2 flavours. The full version provides the option to use Amazon Queues for sending and receiving messages to remote machines. It also supports network propagtion mode, which broadcasts messages to processes on remote machines as well as the local machine.
 
-The XDMessaging.Lite version is for same box communication only, and is therefore is much more lightweight.
+The XDMessaging.Lite version is for same box communication only, and is therefore much more lightweight.
 
 ### Installation
 

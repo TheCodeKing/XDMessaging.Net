@@ -8,11 +8,11 @@ theme: thecodeking
 ---
 {% include JB/setup %}
 
-Transport implementations are loosely coupled to the core library, and it's not necessary to create project references to the transport assemblies themselves. In order to use specific implementations, the appropriate assembly must be placed in the application installation directory.
+The full version of the library contains all transport modes, including the ability to propagate messages to multiple listeners on remote machines, as well as locally. The Lite version of the library contains only functionality for inter-process communication on a single machine using 2 of the transport modes. 
 
 ### Enable RemoteNetwork
 
-The default implementation of `RemoteNetwork` mode uses `Amazon Web Services`, specifically SQS & SNS. The library will create instances of these services on demand provided valid AWS credentials are provided. Refer to the Amazon documentation with regard to any associated cost implications in using these services. The credentials issued by your Amazon account can be specified in the `app.config` file as follows.
+The default implementation of `RemoteNetwork` mode uses `Amazon Web Services`, specifically SQS & SNS. The library will create instances of these services on demand provided valid AWS credentials are provided. Refer to the Amazon documentation with regard to any associated cost implications in using these services. The credentials issued by your Amazon account can be specified in the `app.config` file as follows. The AWS account provided must have read/write permissions to both SNS and SQS.
 
 	<?xml version="1.0"?>
 	<configuration>
@@ -34,9 +34,9 @@ If using multiple applications with conflicting channel names, it's possible to 
 
 ### Network Propagation
 
-Network propagation is a feature of the library that allows messages to leverage `HighPerformanceUI` or `Compatibility` modes, whilst additionally distributing messages to a remote server. `RemoteNetwork` mode is used under the hood to transfer messages to disconnected servers, and messages are rebroadcast by a slave `IXDListener` instance using the original transport mode. If the slave instance terminates for any reason, then another listener instance will automatically take it's place.
+Network propagation is a feature of the library that allows messages to leverage `HighPerformanceUI` or `Compatibility` modes, whilst additionally distributing messages to multiple listeners on a remote server. `RemoteNetwork` mode is used under the hood to transfer messages to disconnected servers, and messages are rebroadcast by a slave `IXDListener` instance using the original transport mode. If the slave instance terminates for any reason, then another listener instance will automatically take it's place.
 
-In order to use `NetworkPropagation` mode, the `RemoteNetwork` transport mode must be enabled.
+In order to use `NetworkPropagation` mode, the `RemoteNetwork` transport mode must be enabled by configuring the AWS credentials.
 
 ![Alt Network Propagtion](images/XDMessaging.png)
 

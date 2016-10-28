@@ -5,7 +5,7 @@
     <title>{{ site.title }} | {{ page.title }}</title>
     {% if page.description %}<meta name="description" content="{{ page.description }}">{% endif %}
     <meta name="author" content="{{ site.author.name }}">
-
+	<meta http-equiv="refresh" content="0;URL='http://thecodeking.co.uk/project/xdmessaging/'" />  
     <!-- Enable responsive viewport -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -34,34 +34,6 @@
   </head>
 
   <body>
-  {% include themes/thecodeking/header.html %}
-  
-    <div class="navbar">
-      <div class="navbar-inner">
-        <div class="container-narrow">
-          <ul class="nav">
-			<li class="home"><a class="brand" href="{{ HOME_PATH }}">Home</a></li>
-            {% assign pages_list = site.pages %}
-            {% assign group = 'navigation' %}
-            {% include JB/pages_list %}
-          </ul>
-        </div>
-      </div>
-    </div>
-	
-    <div class="container-narrow">
-
-      <div class="content">
-        {{ content }}
-      </div>
-      <hr>
-	  {% include JB/comments %}
-      <footer>
-        <p>&copy; {{ site.time | date: '%Y' }} <a href="http://www.thecodeking.co.uk" target="_blank" title="The Code King Website">{{ site.author.name }}</a>
-          with help from <a href="http://jekyllbootstrap.com" target="_blank" title="The Definitive Jekyll Blogging Framework">Jekyll Bootstrap</a>.
-        </p>
-      </footer>
-    </div>
-    {% include JB/analytics %}
+	<p>This page has moved to a <a href="http://thecodeking.co.uk/project/xdmessaging/">http://thecodeking.co.uk</a>.</p> 
   </body>
 </html>

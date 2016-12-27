@@ -41,42 +41,50 @@ Three different transport modes are supported, with a common API. Developers may
 
 To begin create an instance of the `XDMessagingCient`:
 
-	// Create XDMessagingClient instance
-	XDMessagingClient client = new XDMessagingClient();
+```csharp
+// Create XDMessagingClient instance
+XDMessagingClient client = new XDMessagingClient();
+```
 
 To send messages use the client to create an instance of `IXDBroadcaster` for a particular transport mode. Use the instance to broadcast messages on a named channel. A channel is an arbitrary string chosen to represent a channel and are not case sensitive.
 
-	// Create broadcaster instance using HighPerformanceUI mode
-	IXDBroadcaster broadcaster = client.Broadcasters
-	    .GetBroadcasterForMode(XDTransportMode.HighPerformanceUI);
+```csharp
+// Create broadcaster instance using HighPerformanceUI mode
+IXDBroadcaster broadcaster = client.Broadcasters
+    .GetBroadcasterForMode(XDTransportMode.HighPerformanceUI);
 
-	// Send a shutdown message on the commands channel
-	broadcaster.SendToChannel("commands", "shutdown");
+// Send a shutdown message on the commands channel
+broadcaster.SendToChannel("commands", "shutdown");
+```
 
 To receive messages use the client to create an instance of `IXDListener` for a particular transport mode. Use the instance to register a channel to listen on.
 
-	// Create listener instance using HighPerformanceUI mode
-	IXDListener listener = client.Listeners
-	    .GetListenerForMode(XDTransportMode.HighPerformanceUI);
+```csharp
+// Create listener instance using HighPerformanceUI mode
+IXDListener listener = client.Listeners
+    .GetListenerForMode(XDTransportMode.HighPerformanceUI);
 
-	// Register channel to listen on
-	listener.RegisterChannel("commands");
+// Register channel to listen on
+listener.RegisterChannel("commands");
+```
 
 To handle messages received by the listener, attach a `MessageReceived` event handler. The `DataGram` contains the original message and channel name.
 
-	// Attach event handler for incoming messages
-	listener.MessageReceived += (o,e) => {
-	    // e.DataGram.Message is the message
-	    // e.DataGram.Channel is the channel name
-	    if (e.DataGram.Channel == "commands")
-	    {
-	       switch(e.DataGram.Message)
-	       {
-		case "shutdown":
-		   this.Close();
-		   break;
-	       }
-	    }
-	}
+```csharp
+// Attach event handler for incoming messages
+listener.MessageReceived += (o,e) => {
+    // e.DataGram.Message is the message
+    // e.DataGram.Channel is the channel name
+    if (e.DataGram.Channel == "commands")
+    {
+       switch(e.DataGram.Message)
+       {
+	case "shutdown":
+	   this.Close();
+	   break;
+       }
+    }
+}
+```
 	
 For advanced uses cases see [this guide](http://thecodeking.co.uk/project/xdmessaging/advanced/).

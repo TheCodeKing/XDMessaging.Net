@@ -26,7 +26,7 @@ namespace XDMessaging.Serialization
             {
                 var serializer = new DataContractJsonSerializer(typeof (T));
                 serializer.WriteObject(stream, obj);
-                return Encoding.Default.GetString(stream.ToArray());
+                return Encoding.UTF8.GetString(stream.ToArray());
             }
         }
     }

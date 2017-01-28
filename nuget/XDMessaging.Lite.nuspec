@@ -2,7 +2,7 @@
 <package >
 	<metadata>
 		<id>XDMessaging.Lite</id>
-		<version>5.0.1</version>
+		<version>5.0.2</version>
 		<title>XDMessaging Lite Library</title>
 		<authors>TheCodeKing</authors>
 		<owners>TheCodeKing</owners>
@@ -10,7 +10,7 @@
 		<projectUrl>http://thecodeking.github.com/XDMessaging.Net/</projectUrl>
 		<requireLicenseAcceptance>false</requireLicenseAcceptance>
 		<description>The XDMessaging library provides an easy-to-use, zero configuration solution to inter-process communication for .NET applications. It provides a simple API for broadcasting and receiving messages across application domain and process. Lite version excludes network propagation functionality.</description>
-		<copyright>Copyright 2016</copyright>
+		<copyright>Copyright 2017</copyright>
 		<tags>IPC crossdomain interprocess communication messaging amazon queuing messaging remoting AWS pubsub</tags>
 		<references>
 			<reference file="XDMessaging.Lite.dll" />

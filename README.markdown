@@ -23,6 +23,7 @@ Install the Lite version of the library using Nuget. This version is for same bo
 Three different transport modes are supported, with a common API. Developers may switch transport mode at any time.
 - **Windows Messaging** (`HighPerformanceUI`)
   - Uses the `WM_COPYDATA` Windows Message to copy data between applications. The broadcaster implementation sends the Windows Messages directly to a hidden window on the listener instance, which dispatches the MessageReceived event with the copied data.
+  - Listeners in this mode must be created on the UI Thread.
   - Channels are created by adding/removing Windows properties.
   - This offers the most performant solution for Windows Forms based applications, but does not work for Windows Services, Console apps, or other applications without a message pump.
   

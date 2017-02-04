@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Runtime.Serialization;
 using System.Runtime.Serialization.Json;
 using System.Text;
 using Conditions;
@@ -14,7 +15,14 @@ namespace XDMessaging.Serialization
             var serializer = new DataContractJsonSerializer(typeof (T));
             using (var stream = new MemoryStream(Encoding.UTF8.GetBytes(data)))
             {
-                return serializer.ReadObject(stream) as T;
+                try
+                {
+                    return serializer.ReadObject(stream) as T;
+                }
+                catch (SerializationException)
+                {
+                    return null;
+                }
             }
         }
 

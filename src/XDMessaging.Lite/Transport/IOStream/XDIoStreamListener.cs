@@ -183,7 +183,7 @@ namespace XDMessaging.Transport.IOStream
                 }
 
                 var dataGram = serializer.Deserialize<DataGram>(rawmessage);
-                if (dataGram.IsValid)
+                if (dataGram!=null && dataGram.IsValid)
                 {
                     MessageReceived?.Invoke(this, new XDMessageEventArgs(dataGram));
                 }

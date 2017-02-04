@@ -76,6 +76,21 @@ namespace XDMessaging.Test
         }
 
         [Test]
+        public void GivenAPartiallySerializedDataGramWhenDeserializedThenNull()
+        {
+            // arrange
+            const string msg =
+                "{\"ver\":\"2.0\",\"type\":\"" + assemblyQualifiedName + "\",\"channel\":\"" + channel +
+                "\",\"messag";
+
+            // act
+            var dataGram = serializer.Deserialize<DataGram>(msg);
+
+            // assert
+            Assert.That(dataGram, Is.Null);
+        }
+
+        [Test]
         public void GivenASerializedDataGramVersion1WhenDeserializedThenSuccess()
         {
             // arrange

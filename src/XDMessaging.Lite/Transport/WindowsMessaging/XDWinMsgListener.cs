@@ -97,7 +97,7 @@ namespace XDMessaging.Transport.WindowsMessaging
 
             using (var dataGram = WinMsgDataGram.FromPointer(msg.LParam, serializer))
             {
-                if (MessageReceived != null && dataGram.IsValid)
+                if (MessageReceived != null && dataGram != null && dataGram.IsValid)
                 {
                     MessageReceived.Invoke(this, new XDMessageEventArgs(dataGram));
                 }

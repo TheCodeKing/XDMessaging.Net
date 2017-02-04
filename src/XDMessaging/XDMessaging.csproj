@@ -154,7 +154,7 @@
     <Compile Include="Transport\Amazon\Repositories\TopicRepository.cs" />
     <Compile Include="Transport\Amazon\ResourceCounter.cs" />
     <Compile Include="Transport\Amazon\XDAmazonBroadcaster.cs" />
-    <Compile Include="Transport\Amazon\XdAmazonListener.cs" />
+    <Compile Include="Transport\Amazon\XDAmazonListener.cs" />
     <Compile Include="XDTransportMode.cs" />
   </ItemGroup>
   <ItemGroup>

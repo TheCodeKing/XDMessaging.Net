@@ -34,7 +34,14 @@ namespace XDMessaging.Serialization
             using (var rs = new MemoryStream(bytes, 0, bytes.Length))
             {
                 var sf = new BinaryFormatter();
-                return sf.Deserialize(rs);
+                try
+                {
+                    return sf.Deserialize(rs);
+                }
+                catch (SerializationException)
+                {
+                    return null;
+                }
             }
         }
 

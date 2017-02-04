@@ -143,7 +143,16 @@ namespace XDMessaging.Transport.Amazon
                 }
 
                 var notification = serializer.Deserialize<AmazonSqsNotification>(message.Body);
+                if (notification == null)
+                {
+                    return;
+                }
+
                 var dataGram = serializer.Deserialize<DataGram>(notification.Message);
+                if (dataGram == null)
+                {
+                    return;
+                }
 
                 var topic = topicRepository.GetTopic(dataGram.Channel);
                 var subscriber = subscriberRepository.GetSubscriber(dataGram.Channel, uniqueInstanceId);

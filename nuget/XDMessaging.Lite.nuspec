@@ -2,7 +2,7 @@
 <package >
 	<metadata>
 		<id>XDMessaging.Lite</id>
-		<version>5.0.3</version>
+		<version>5.0.4</version>
 		<title>XDMessaging Lite Library</title>
 		<authors>TheCodeKing</authors>
 		<owners>TheCodeKing</owners>
@@ -17,6 +17,6 @@
 		</references>
 	</metadata>
 	<files>
-		<file src="..\bin\XDMessaging.Lite.dll" target="lib\net40-Client\" />
+		<file src="..\bin\XDMessaging.Lite.dll" target="lib\net452\" />
 	</files>
 </package>

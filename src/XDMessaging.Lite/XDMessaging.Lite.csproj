@@ -48,12 +48,14 @@
       <Private>True</Private>
     </Reference>
     <Reference Include="System" />
+    <Reference Include="System.Configuration" />
     <Reference Include="System.Core" />
     <Reference Include="System.Runtime.Serialization" />
     <Reference Include="System.Windows.Forms" />
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Config\Settings.cs" />
     <Compile Include="Entities\Broadcasters.cs" />
     <Compile Include="IXDBroadcaster.cs" />
     <Compile Include="Messages\DataGram.cs" />

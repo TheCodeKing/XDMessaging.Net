@@ -55,6 +55,9 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="..\XDMessaging.Lite\Config\Settings.cs">
+      <Link>Config\Settings.cs</Link>
+    </Compile>
     <Compile Include="..\XDMessaging.Lite\IXDBroadcaster.cs">
       <Link>IXDBroadcaster.cs</Link>
     </Compile>

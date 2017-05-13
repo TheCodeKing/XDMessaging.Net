@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Configuration;
 using Conditions;
+using XDMessaging.Config;
 using XDMessaging.Entities.Amazon;
 using XDMessaging.Serialization;
 using XDMessaging.Specialized;
@@ -71,7 +72,7 @@ namespace XDMessaging.Entities
                 case XDTransportMode.HighPerformanceUI:
                     return new XDWinMsgBroadcaster(serializer);
                 case XDTransportMode.Compatibility:
-                    return new XDIOStreamBroadcaster(serializer);
+                    return new XDIOStreamBroadcaster(serializer, Settings.IoStreamMessageTimeoutInMilliseconds);
                 case XDTransportMode.RemoteNetwork:
                     return CreateNetworkBroadcaster();
                 default:

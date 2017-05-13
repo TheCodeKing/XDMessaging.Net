@@ -12,7 +12,7 @@ namespace XDMessaging.Transport.IOStream
     // ReSharper disable once InconsistentNaming
     public sealed class XDIOStreamBroadcaster : IXDBroadcaster
     {
-        private const int FileTimeoutMilliseconds = 5000;
+        private readonly int fileTimeoutMilliseconds;
 
         private const string MutexCleanUpKey = @"Global\XDIOStreamBroadcastv4.Cleanup";
 
@@ -28,11 +28,12 @@ namespace XDMessaging.Transport.IOStream
                 "XDMessagingv4");
         }
 
-        internal XDIOStreamBroadcaster(ISerializer serializer)
+        internal XDIOStreamBroadcaster(ISerializer serializer, uint messageTimeoutInMilliseconds)
         {
             serializer.Requires("serializer").IsNotNull();
 
             this.serializer = serializer;
+            this.fileTimeoutMilliseconds = Convert.ToInt32(messageTimeoutInMilliseconds);
         }
 
         public void SendToChannel(string channelName, object message)
@@ -95,7 +96,7 @@ namespace XDMessaging.Transport.IOStream
             return channelName;
         }
 
-        private static void CleanUpMessages(object state)
+        private void CleanUpMessages(object state)
         {
             var directory = (DirectoryInfo) state;
 
@@ -110,7 +111,7 @@ namespace XDMessaging.Transport.IOStream
                 {
                     try
                     {
-                        Thread.Sleep(FileTimeoutMilliseconds);
+                        Thread.Sleep(fileTimeoutMilliseconds);
                     }
                     catch (ThreadInterruptedException)
                     {
@@ -125,7 +126,7 @@ namespace XDMessaging.Transport.IOStream
             }
         }
 
-        private static void CleanUpMessages(DirectoryInfo directory)
+        private void CleanUpMessages(DirectoryInfo directory)
         {
             try
             {
@@ -136,7 +137,7 @@ namespace XDMessaging.Transport.IOStream
 
                 foreach (var file in directory.GetFiles("*.msg"))
                 {
-                    if (file.CreationTimeUtc > DateTime.UtcNow.AddMilliseconds(-FileTimeoutMilliseconds)
+                    if (file.CreationTimeUtc > DateTime.UtcNow.AddMilliseconds(-fileTimeoutMilliseconds)
                         || !File.Exists(file.FullName))
                     {
                         continue;

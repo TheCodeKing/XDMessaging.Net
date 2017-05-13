@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Configuration;
 using Conditions;
+using XDMessaging.Config;
 using XDMessaging.Serialization;
 using XDMessaging.Transport.IOStream;
 using XDMessaging.Transport.WindowsMessaging;
@@ -24,7 +26,7 @@ namespace XDMessaging.Entities
                 case XDTransportMode.HighPerformanceUI:
                     return new XDWinMsgBroadcaster(serializer);
                 case XDTransportMode.Compatibility:
-                    return new XDIOStreamBroadcaster(serializer);
+                    return new XDIOStreamBroadcaster(serializer, Settings.IoStreamMessageTimeoutInMilliseconds);
                 default:
                     throw new ArgumentOutOfRangeException(nameof(transportMode), transportMode, null);
             }

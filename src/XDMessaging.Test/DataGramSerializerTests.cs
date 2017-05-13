@@ -34,10 +34,10 @@ namespace XDMessaging.Test
             var result = serializer.Serialize(dataGram);
 
             // assert
-            Assert.That(result, Is.StringContaining(channel));
-            Assert.That(result, Is.StringContaining(specialMsg));
-            Assert.That(result, Is.StringContaining(assemblyQualifiedName));
-            Assert.That(result, Is.StringContaining("1.1"));
+            Assert.That(result, Does.Contain(channel));
+            Assert.That(result, Does.Contain(specialMsg));
+            Assert.That(result, Does.Contain(assemblyQualifiedName));
+            Assert.That(result, Does.Contain("1.1"));
         }
 
         [Test]
@@ -50,10 +50,10 @@ namespace XDMessaging.Test
             var result = serializer.Serialize(dataGram);
 
             // assert
-            Assert.That(result, Is.StringContaining(channel));
-            Assert.That(result, Is.StringContaining(message));
-            Assert.That(result, Is.StringContaining(assemblyQualifiedName));
-            Assert.That(result, Is.StringContaining("1.1"));
+            Assert.That(result,Does.Contain(channel));
+            Assert.That(result,Does.Contain(message));
+            Assert.That(result,Does.Contain(assemblyQualifiedName));
+            Assert.That(result,Does.Contain("1.1"));
         }
 
         [Test]

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.IO;
+using System.Linq;
 using System.Security.AccessControl;
 using System.Security.Principal;
 using System.Threading;
+using System.Threading.Tasks;
 using Conditions;
 using XDMessaging.Messages;
 using XDMessaging.Serialization;
@@ -12,7 +14,7 @@ namespace XDMessaging.Transport.IOStream
     // ReSharper disable once InconsistentNaming
     public sealed class XDIOStreamBroadcaster : IXDBroadcaster
     {
-        private readonly int fileTimeoutMilliseconds;
+        private readonly int messageTimeoutInMilliseconds;
 
         private const string MutexCleanUpKey = @"Global\XDIOStreamBroadcastv4.Cleanup";
 
@@ -33,7 +35,9 @@ namespace XDMessaging.Transport.IOStream
             serializer.Requires("serializer").IsNotNull();
 
             this.serializer = serializer;
-            this.fileTimeoutMilliseconds = Convert.ToInt32(messageTimeoutInMilliseconds);
+            this.messageTimeoutInMilliseconds = Convert.ToInt32(messageTimeoutInMilliseconds);
+
+            Task.Run(() => CleanUpOldMessagesForAllChannels());
         }
 
         public void SendToChannel(string channelName, object message)
@@ -61,6 +65,21 @@ namespace XDMessaging.Transport.IOStream
                 if (!Directory.Exists(folder))
                 {
                     Directory.CreateDirectory(folder);
+                    try
+                    {
+                        var directorySecurity = Directory.GetAccessControl(folder);
+                        var everyone = new SecurityIdentifier(WellKnownSidType.WorldSid, null);
+                        directorySecurity.AddAccessRule(new FileSystemAccessRule(everyone,
+                            FileSystemRights.Modify | FileSystemRights.Read | FileSystemRights.Write |
+                            FileSystemRights.Delete |
+                            FileSystemRights.Synchronize,
+                            InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None,
+                            AccessControlType.Allow));
+                        Directory.SetAccessControl(folder, directorySecurity);
+                    }
+                    catch (UnauthorizedAccessException)
+                    {
+                    }
                 }
                 return folder;
             }
@@ -111,12 +130,12 @@ namespace XDMessaging.Transport.IOStream
                 {
                     try
                     {
-                        Thread.Sleep(fileTimeoutMilliseconds);
+                        Thread.Sleep(messageTimeoutInMilliseconds);
                     }
                     catch (ThreadInterruptedException)
                     {
                     }
-                    CleanUpMessages(directory);
+                    CleanUpMessages(directory, messageTimeoutInMilliseconds);
                     mutex.ReleaseMutex();
                 }
             }
@@ -126,7 +145,7 @@ namespace XDMessaging.Transport.IOStream
             }
         }
 
-        private void CleanUpMessages(DirectoryInfo directory)
+        private static void CleanUpMessages(DirectoryInfo directory, int fileTimeoutMilliseconds)
         {
             try
             {
@@ -161,6 +180,19 @@ namespace XDMessaging.Transport.IOStream
             catch (UnauthorizedAccessException)
             {
             }
+        }
+
+        private void CleanUpOldMessagesForAllChannels()
+        {
+            Parallel.ForEach(Directory.EnumerateDirectories(TemporaryFolder, "*", SearchOption.TopDirectoryOnly), x =>
+            {
+                var directory = new DirectoryInfo(x);
+                CleanUpMessages(directory, messageTimeoutInMilliseconds);
+                if (!directory.GetFiles("*.*").Any() && directory.LastAccessTime < DateTime.UtcNow.AddDays(-30))
+                {
+                    directory.Delete();
+                }
+            });
         }
 
         private void SendToChannel(string channelName, string dataType, string message)

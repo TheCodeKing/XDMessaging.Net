@@ -6,6 +6,7 @@ using System.Security.Principal;
 using System.Threading;
 using System.Threading.Tasks;
 using Conditions;
+using log4net;
 using XDMessaging.Messages;
 using XDMessaging.Serialization;
 
@@ -23,6 +24,8 @@ namespace XDMessaging.Transport.IOStream
         private static readonly string TemporaryFolder;
 
         private readonly ISerializer serializer;
+
+        static readonly ILog Log = LogManager.GetLogger(typeof(XDIOStreamBroadcaster));
 
         static XDIOStreamBroadcaster()
         {
@@ -136,7 +139,15 @@ namespace XDMessaging.Transport.IOStream
                     {
                     }
                     CleanUpMessages(directory, messageTimeoutInMilliseconds);
-                    mutex.ReleaseMutex();
+
+                    try
+                    { 
+                        mutex.ReleaseMutex();
+                    }
+                    catch(Exception e)
+                    {
+                        Log.Error(e);
+                    }
                 }
             }
             if (createdNew)

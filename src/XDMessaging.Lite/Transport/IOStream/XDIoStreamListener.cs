@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using Conditions;
+using log4net;
 using XDMessaging.Entities;
 using XDMessaging.Messages;
 using XDMessaging.Serialization;
@@ -18,6 +19,8 @@ namespace XDMessaging.Transport.IOStream
         private bool disposed;
 
         private Dictionary<string, FileSystemWatcher> watcherList;
+
+        private static ILog Log = LogManager.GetLogger(typeof(XDIOStreamListener));
 
         internal XDIOStreamListener(ISerializer serializer)
         {
@@ -195,14 +198,17 @@ namespace XDMessaging.Transport.IOStream
             {
                 throw new UnauthorizedAccessException(
                     "Unable to bind to channel as access is denied." +
-                    $" Ensure the process has read/write access to the directory '{fullPath}'.",
-                    ue);
+                    $" Ensure the process has read/write access to the directory '{fullPath}'.", ue);
             }
             catch (IOException ie)
             {
-                throw new IOException(
+                Log.Error(new IOException(
                     "There was an unexpected IO error binding to a channel." +
-                    $" Ensure the process is unable to read/write to directory '{fullPath}'.", ie);
+                    $" Ensure the process is unable to read/write to directory '{fullPath}'.", ie));
+            }
+            catch(Exception e)
+            {
+                Log.Error(e);
             }
         }
 
